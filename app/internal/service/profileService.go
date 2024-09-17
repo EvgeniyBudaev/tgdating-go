@@ -25,6 +25,9 @@ const (
 type ProfileRepository interface {
 	AddProfile(ctx context.Context, p *entity.ProfileEntity) (*entity.ProfileEntity, error)
 	AddImage(ctx context.Context, p *entity.ProfileImageEntity) (*entity.ProfileImageEntity, error)
+	AddNavigator(ctx context.Context, p *entity.ProfileNavigatorEntity) (*entity.ProfileNavigatorEntity, error)
+	AddFilter(ctx context.Context, p *entity.ProfileFilterEntity) (*entity.ProfileFilterEntity, error)
+	AddTelegram(ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error)
 }
 
 type ProfileService struct {
@@ -40,7 +43,7 @@ func NewProfileService(l logger.Logger, r ProfileRepository) *ProfileService {
 }
 
 func (s *ProfileService) AddProfile(
-	ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error) {
+	ctx context.Context, ctf *fiber.Ctx, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error) {
 	profile := &entity.ProfileEntity{
 		SessionID:      pr.SessionID,
 		DisplayName:    pr.DisplayName,
@@ -65,35 +68,70 @@ func (s *ProfileService) AddProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	_, err = s.AddNavigator(ctx, pr)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "AddNavigator")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	responseProfile := &response.ProfileAddResponseDto{
 		SessionID: newProfile.SessionID,
+	}
+	if err := s.AddImageList(ctx, ctf, newProfile.SessionID); err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "AddImageList")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	_, err = s.AddFilter(ctx, pr)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "AddFilter")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	_, err = s.AddTelegram(ctx, pr)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "AddTelegram")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
 	}
 	return responseProfile, err
 }
 
-func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
+func (s *ProfileService) AddImageList(
+	ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
 	form, err := ctf.MultipartForm()
 	if err != nil {
-		errorMessage := s.getErrorMessage("AddProfile", "MultipartForm")
+		errorMessage := s.getErrorMessage("AddImageList", "MultipartForm")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
 	files := form.File["image"]
 	for _, file := range files {
-		imageConverted, err := s.uploadImageToFileSystem(ctx, ctf, file, sessionId)
+		_, err := s.AddImage(ctx, ctf, sessionId, file)
 		if err != nil {
-			errorMessage := s.getErrorMessage("AddImage", "uploadImageToFileSystem")
-			s.logger.Debug(errorMessage, zap.Error(err))
-			return err
-		}
-		_, err = s.repository.AddImage(ctx, imageConverted)
-		if err != nil {
-			errorMessage := s.getErrorMessage("AddImage", "AddImage")
+			errorMessage := s.getErrorMessage("AddImageList", "AddImage")
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return err
 		}
 	}
 	return nil
+}
+
+func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId string,
+	file *multipart.FileHeader) (*entity.ProfileImageEntity, error) {
+	imageConverted, err := s.uploadImageToFileSystem(ctx, ctf, file, sessionId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddImage", "uploadImageToFileSystem")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	imageResponse, err := s.repository.AddImage(ctx, imageConverted)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddImage", "AddImage")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return imageResponse, err
 }
 
 func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber.Ctx, file *multipart.FileHeader,
@@ -204,4 +242,75 @@ func (s *ProfileService) replaceExtension(filename string) string {
 func (s *ProfileService) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
 		errorFilePath)
+}
+
+func (s *ProfileService) AddNavigator(
+	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileNavigatorEntity, error) {
+	point := &entity.PointEntity{
+		Latitude:  pr.Latitude,
+		Longitude: pr.Longitude,
+	}
+	navigatorRequest := &entity.ProfileNavigatorEntity{
+		SessionID: pr.SessionID,
+		Location:  point,
+		IsDeleted: false,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	NavigatorResponse, err := s.repository.AddNavigator(ctx, navigatorRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddNavigator", "AddNavigator")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return NavigatorResponse, nil
+}
+
+func (s *ProfileService) AddFilter(
+	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileFilterEntity, error) {
+	filterRequest := &entity.ProfileFilterEntity{
+		SessionID:    pr.SessionID,
+		SearchGender: pr.SearchGender,
+		LookingFor:   pr.LookingFor,
+		AgeFrom:      pr.AgeFrom,
+		AgeTo:        pr.AgeTo,
+		Distance:     pr.Distance,
+		Page:         pr.Page,
+		Size:         pr.Size,
+		IsDeleted:    false,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+	filterResponse, err := s.repository.AddFilter(ctx, filterRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddFilter", "AddFilter")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return filterResponse, nil
+}
+
+func (s *ProfileService) AddTelegram(
+	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileTelegramEntity, error) {
+	telegramRequest := &entity.ProfileTelegramEntity{
+		SessionID:       pr.SessionID,
+		UserID:          pr.TelegramUserID,
+		UserName:        pr.TelegramUsername,
+		Firstname:       pr.TelegramFirstname,
+		Lastname:        pr.TelegramLastname,
+		LanguageCode:    pr.TelegramLanguageCode,
+		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
+		QueryID:         pr.TelegramQueryID,
+		ChatID:          pr.TelegramChatID,
+		IsDeleted:       false,
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
+	}
+	telegramResponse, err := s.repository.AddTelegram(ctx, telegramRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddTelegram", "AddTelegram")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return telegramResponse, nil
 }

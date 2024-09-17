@@ -6,9 +6,11 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/controller/http/api/v1"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
+	"mime/multipart"
 	"net/http"
 	"time"
 )
@@ -18,8 +20,14 @@ const (
 )
 
 type ProfileService interface {
-	AddProfile(ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
-	AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId string) error
+	AddProfile(
+		ctx context.Context, ctf *fiber.Ctx, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
+	AddImageList(ctx context.Context, ctf *fiber.Ctx, sessionId string) error
+	AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId string,
+		file *multipart.FileHeader) (*entity.ProfileImageEntity, error)
+	AddNavigator(ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileNavigatorEntity, error)
+	AddFilter(ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileFilterEntity, error)
+	AddTelegram(ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileTelegramEntity, error)
 }
 
 type ProfileController struct {
@@ -48,18 +56,13 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		fmt.Println("ProfileAddRequestDto: ", req)
-		newProfile, err := pc.service.AddProfile(ctx, &req)
+		profileResponse, err := pc.service.AddProfile(ctx, ctf, &req)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("AddProfile", "AddProfile")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		if err := pc.service.AddImage(ctx, ctf, newProfile.SessionID); err != nil {
-			errorMessage := pc.getErrorMessage("AddProfile", "AddImage")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-		}
-		return v1.ResponseCreated(ctf, newProfile)
+		return v1.ResponseCreated(ctf, profileResponse)
 	}
 }
 
