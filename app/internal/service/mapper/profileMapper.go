@@ -13,6 +13,7 @@ type ProfileMapper struct {
 func (pm *ProfileMapper) MapToResponse(
 	profileEntity *entity.ProfileEntity,
 	navigatorResponse *response.ProfileNavigatorResponseDto,
+	filterResponse *response.ProfileFilterResponseDto,
 	telegramResponse *response.ProfileTelegramResponseDto,
 ) *response.ProfileUpdateResponseDto {
 	return &response.ProfileUpdateResponseDto{
@@ -33,6 +34,7 @@ func (pm *ProfileMapper) MapToResponse(
 		UpdatedAt:      profileEntity.UpdatedAt,
 		LastOnline:     profileEntity.LastOnline,
 		Navigator:      navigatorResponse,
+		Filter:         filterResponse,
 		Telegram:       telegramResponse,
 	}
 }
@@ -43,16 +45,17 @@ func (pm *ProfileMapper) MapToAddResponse(profileEntity *entity.ProfileEntity) *
 	}
 }
 
-func (pm *ProfileMapper) MapToAddRequest(pr *request.ProfileAddRequestDto) *entity.ProfileEntity {
+func (pm *ProfileMapper) MapToAddRequest(
+	profileAddRequestDto *request.ProfileAddRequestDto) *entity.ProfileEntity {
 	return &entity.ProfileEntity{
-		SessionID:      pr.SessionID,
-		DisplayName:    pr.DisplayName,
-		Birthday:       pr.Birthday,
-		Gender:         pr.Gender,
-		Location:       pr.Location,
-		Description:    pr.Description,
-		Height:         pr.Height,
-		Weight:         pr.Weight,
+		SessionID:      profileAddRequestDto.SessionID,
+		DisplayName:    profileAddRequestDto.DisplayName,
+		Birthday:       profileAddRequestDto.Birthday,
+		Gender:         profileAddRequestDto.Gender,
+		Location:       profileAddRequestDto.Location,
+		Description:    profileAddRequestDto.Description,
+		Height:         profileAddRequestDto.Height,
+		Weight:         profileAddRequestDto.Weight,
 		IsDeleted:      false,
 		IsBlocked:      false,
 		IsPremium:      false,
@@ -64,16 +67,17 @@ func (pm *ProfileMapper) MapToAddRequest(pr *request.ProfileAddRequestDto) *enti
 	}
 }
 
-func (pm *ProfileMapper) MapToUpdateRequest(pr *request.ProfileUpdateRequestDto) *entity.ProfileEntity {
+func (pm *ProfileMapper) MapToUpdateRequest(
+	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *entity.ProfileEntity {
 	return &entity.ProfileEntity{
-		SessionID:   pr.SessionID,
-		DisplayName: pr.DisplayName,
-		Birthday:    pr.Birthday,
-		Gender:      pr.Gender,
-		Location:    pr.Location,
-		Description: pr.Description,
-		Height:      pr.Height,
-		Weight:      pr.Weight,
+		SessionID:   profileUpdateRequestDto.SessionID,
+		DisplayName: profileUpdateRequestDto.DisplayName,
+		Birthday:    profileUpdateRequestDto.Birthday,
+		Gender:      profileUpdateRequestDto.Gender,
+		Location:    profileUpdateRequestDto.Location,
+		Description: profileUpdateRequestDto.Description,
+		Height:      profileUpdateRequestDto.Height,
+		Weight:      profileUpdateRequestDto.Weight,
 		UpdatedAt:   time.Now().UTC(),
 		LastOnline:  time.Now().UTC(),
 	}

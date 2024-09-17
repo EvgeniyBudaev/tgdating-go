@@ -15,6 +15,10 @@ const (
 	errorFilePath = "internal/repository/psql/profileRepository.go"
 )
 
+var (
+	ErrNotRowsFound = errors.New("no rows found")
+)
+
 type ProfileRepository struct {
 	logger logger.Logger
 	db     *sql.DB
@@ -82,10 +86,9 @@ func (r *ProfileRepository) FindProfileBySessionID(
 		" WHERE session_id=$1"
 	row := r.db.QueryRowContext(ctx, query, sessionID)
 	if row == nil {
-		err := errors.New("no rows found")
 		errorMessage := r.getErrorMessage("FindProfileBySessionID", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+		return nil, ErrNotRowsFound
 	}
 	err := row.Scan(&p.ID, &p.SessionID, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
 		&p.Description, &p.Height, &p.Weight, &p.IsDeleted, &p.IsBlocked, &p.IsPremium,
@@ -101,7 +104,7 @@ func (r *ProfileRepository) FindProfileBySessionID(
 func (r *ProfileRepository) AddImage(
 	ctx context.Context, p *entity.ProfileImageEntity) (*entity.ProfileImageEntity, error) {
 	query := "INSERT INTO profile_images (session_id, name, url, size, is_deleted, is_blocked, is_primary," +
-		"  is_private, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id"
+		" is_private, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id"
 	fmt.Println("Repository p: ", p)
 	err := r.db.QueryRowContext(ctx, query, &p.SessionID, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked,
 		&p.IsPrimary, &p.IsPrivate, &p.CreatedAt, &p.UpdatedAt).Scan(&p.ID)
@@ -166,11 +169,10 @@ func (r *ProfileRepository) FindNavigatorBySessionID(
 			  WHERE session_id = $1`
 	row := r.db.QueryRowContext(ctx, query, sessionID)
 	if row == nil {
-		err := errors.New("no rows found")
 		errorMessage := r.getErrorMessage("FindNavigatorBySessionID",
 			"QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+		return nil, ErrNotRowsFound
 	}
 	err := row.Scan(&p.ID, &p.SessionID, &longitude, &latitude, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
@@ -202,12 +204,63 @@ func (r *ProfileRepository) AddFilter(
 	return p, nil
 }
 
+func (r *ProfileRepository) UpdateFilter(
+	ctx context.Context, p *entity.ProfileFilterEntity) (*entity.ProfileFilterEntity, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		errorMessage := r.getErrorMessage("UpdateFilter", "Begin")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
+	query := "UPDATE profile_filters SET search_gender=$1, looking_for=$2, age_from=$3, age_to=$4, distance=$5," +
+		" page=$6, size=$7, updated_at=$8 WHERE session_id=$9"
+	_, err = r.db.ExecContext(ctx, query, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo,
+		&p.Distance, &p.Page, &p.Size, &p.UpdatedAt, &p.SessionID)
+	if err != nil {
+		errorMessage := r.getErrorMessage("UpdateFilter", "ExecContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	tx.Commit()
+	filterResponse, err := r.FindFilterBySessionID(ctx, p.SessionID)
+	if err != nil {
+		errorMessage := r.getErrorMessage("UpdateFilter", "FindFilterBySessionID")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return filterResponse, nil
+}
+
+func (r *ProfileRepository) FindFilterBySessionID(
+	ctx context.Context, sessionID string) (*entity.ProfileFilterEntity, error) {
+	p := &entity.ProfileFilterEntity{}
+	query := "SELECT id, session_id, search_gender, looking_for, age_from, age_to, distance, page, size, is_deleted," +
+		" created_at, updated_at" +
+		" FROM profile_filters" +
+		" WHERE session_id = $1"
+	row := r.db.QueryRowContext(ctx, query, sessionID)
+	if row == nil {
+		errorMessage := r.getErrorMessage("FindFilterBySessionID", "QueryRowContext")
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+		return nil, ErrNotRowsFound
+	}
+	err := row.Scan(&p.ID, &p.SessionID, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo, &p.Distance, &p.Page,
+		&p.Size, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		errorMessage := r.getErrorMessage("FindFilterBySessionID", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return p, nil
+}
+
 func (r *ProfileRepository) AddTelegram(
 	ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error) {
 	query := "INSERT INTO profile_telegrams (session_id, user_id, username, first_name, last_name, language_code," +
 		" allows_write_to_pm, query_id, chat_id, is_deleted, created_at, updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id"
-	err := r.db.QueryRowContext(ctx, query, &p.SessionID, &p.UserID, &p.UserName, &p.Firstname, &p.Lastname,
+	err := r.db.QueryRowContext(ctx, query, &p.SessionID, &p.UserID, &p.UserName, &p.FirstName, &p.LastName,
 		&p.LanguageCode, &p.AllowsWriteToPm, &p.QueryID, &p.ChatID, &p.IsDeleted, &p.CreatedAt,
 		&p.UpdatedAt).Scan(&p.ID)
 	if err != nil {
@@ -230,7 +283,7 @@ func (r *ProfileRepository) UpdateTelegram(
 	query := "UPDATE profile_telegrams SET username=$1, first_name=$2, last_name=$3, language_code=$4," +
 		" allows_write_to_pm=$5, updated_at=$6" +
 		" WHERE session_id=$7"
-	_, err = r.db.ExecContext(ctx, query, &p.UserName, &p.Firstname, &p.Lastname, &p.LanguageCode, &p.AllowsWriteToPm,
+	_, err = r.db.ExecContext(ctx, query, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode, &p.AllowsWriteToPm,
 		&p.UpdatedAt, &p.SessionID)
 	if err != nil {
 		errorMessage := r.getErrorMessage("UpdateTelegram", "ExecContext")
@@ -256,13 +309,12 @@ func (r *ProfileRepository) FindTelegramBySessionID(
 		" WHERE session_id = $1"
 	row := r.db.QueryRowContext(ctx, query, sessionID)
 	if row == nil {
-		err := errors.New("no rows found")
 		errorMessage := r.getErrorMessage("FindTelegramBySessionID",
 			"QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+		return nil, ErrNotRowsFound
 	}
-	err := row.Scan(&p.ID, &p.SessionID, &p.UserID, &p.UserName, &p.Firstname, &p.Lastname, &p.LanguageCode,
+	err := row.Scan(&p.ID, &p.SessionID, &p.UserID, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
 		&p.AllowsWriteToPm, &p.QueryID, &p.ChatID, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindTelegramBySessionID", "Scan")

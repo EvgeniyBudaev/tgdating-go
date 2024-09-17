@@ -10,48 +10,51 @@ import (
 type ProfileTelegramMapper struct {
 }
 
-func (pm *ProfileTelegramMapper) MapToResponse(r *entity.ProfileTelegramEntity) *response.ProfileTelegramResponseDto {
+func (pm *ProfileTelegramMapper) MapToResponse(
+	profileTelegramEntity *entity.ProfileTelegramEntity) *response.ProfileTelegramResponseDto {
 	return &response.ProfileTelegramResponseDto{
-		SessionID:       r.SessionID,
-		UserID:          r.UserID,
-		Username:        r.UserName,
-		FirstName:       r.FirstName,
-		LastName:        r.LastName,
-		LanguageCode:    r.LanguageCode,
-		AllowsWriteToPm: r.AllowsWriteToPm,
-		QueryID:         r.QueryID,
-		ChatID:          r.ChatID,
+		SessionID:       profileTelegramEntity.SessionID,
+		UserID:          profileTelegramEntity.UserID,
+		Username:        profileTelegramEntity.UserName,
+		FirstName:       profileTelegramEntity.FirstName,
+		LastName:        profileTelegramEntity.LastName,
+		LanguageCode:    profileTelegramEntity.LanguageCode,
+		AllowsWriteToPm: profileTelegramEntity.AllowsWriteToPm,
+		QueryID:         profileTelegramEntity.QueryID,
+		ChatID:          profileTelegramEntity.ChatID,
 	}
 }
 
-func (pm *ProfileTelegramMapper) MapToAddRequest(r *request.ProfileAddRequestDto) *entity.ProfileTelegramEntity {
+func (pm *ProfileTelegramMapper) MapToAddRequest(
+	profileAddRequestDto *request.ProfileAddRequestDto) *entity.ProfileTelegramEntity {
 	return &entity.ProfileTelegramEntity{
-		SessionID:       r.SessionID,
-		UserID:          r.TelegramUserID,
-		UserName:        r.TelegramUsername,
-		FirstName:       r.TelegramFirstName,
-		LastName:        r.TelegramLastName,
-		LanguageCode:    r.TelegramLanguageCode,
-		AllowsWriteToPm: r.TelegramAllowsWriteToPm,
-		QueryID:         r.TelegramQueryID,
-		ChatID:          r.TelegramChatID,
+		SessionID:       profileAddRequestDto.SessionID,
+		UserID:          profileAddRequestDto.TelegramUserID,
+		UserName:        profileAddRequestDto.TelegramUsername,
+		FirstName:       profileAddRequestDto.TelegramFirstName,
+		LastName:        profileAddRequestDto.TelegramLastName,
+		LanguageCode:    profileAddRequestDto.TelegramLanguageCode,
+		AllowsWriteToPm: profileAddRequestDto.TelegramAllowsWriteToPm,
+		QueryID:         profileAddRequestDto.TelegramQueryID,
+		ChatID:          profileAddRequestDto.TelegramChatID,
 		IsDeleted:       false,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
 	}
 }
 
-func (pm *ProfileTelegramMapper) MapToUpdateRequest(r *request.ProfileUpdateRequestDto) *entity.ProfileTelegramEntity {
+func (pm *ProfileTelegramMapper) MapToUpdateRequest(
+	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *entity.ProfileTelegramEntity {
 	return &entity.ProfileTelegramEntity{
-		SessionID:       r.SessionID,
-		UserID:          r.TelegramUserID,
-		UserName:        r.TelegramUsername,
-		FirstName:       r.TelegramFirstName,
-		LastName:        r.TelegramLastName,
-		LanguageCode:    r.TelegramLanguageCode,
-		AllowsWriteToPm: r.TelegramAllowsWriteToPm,
-		QueryID:         r.TelegramQueryID,
-		ChatID:          r.TelegramChatID,
+		SessionID:       profileUpdateRequestDto.SessionID,
+		UserID:          profileUpdateRequestDto.TelegramUserID,
+		UserName:        profileUpdateRequestDto.TelegramUsername,
+		FirstName:       profileUpdateRequestDto.TelegramFirstName,
+		LastName:        profileUpdateRequestDto.TelegramLastName,
+		LanguageCode:    profileUpdateRequestDto.TelegramLanguageCode,
+		AllowsWriteToPm: profileUpdateRequestDto.TelegramAllowsWriteToPm,
+		QueryID:         profileUpdateRequestDto.TelegramQueryID,
+		ChatID:          profileUpdateRequestDto.TelegramChatID,
 		UpdatedAt:       time.Now(),
 	}
 }

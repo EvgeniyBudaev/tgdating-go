@@ -31,6 +31,7 @@ type ProfileRepository interface {
 	UpdateNavigator(
 		ctx context.Context, p *request.ProfileNavigatorUpdateRequestDto) (*entity.ProfileNavigatorEntity, error)
 	AddFilter(ctx context.Context, p *entity.ProfileFilterEntity) (*entity.ProfileFilterEntity, error)
+	UpdateFilter(ctx context.Context, p *entity.ProfileFilterEntity) (*entity.ProfileFilterEntity, error)
 	AddTelegram(ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error)
 	UpdateTelegram(ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error)
 }
@@ -94,25 +95,34 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	profileNavigatorMapper := &mapper.ProfileNavigatorMapper{}
-	navigatorRequest := profileNavigatorMapper.MapToUpdateRequest(profileUpdated, pr)
+	navigatorMapper := &mapper.ProfileNavigatorMapper{}
+	navigatorRequest := navigatorMapper.MapToUpdateRequest(profileUpdated, pr)
 	navigatorUpdated, err := s.repository.UpdateNavigator(ctx, navigatorRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile", "UpdateNavigator")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	navigatorResponse := profileNavigatorMapper.MapToResponse(profileUpdated, navigatorUpdated)
-	profileTelegramMapper := &mapper.ProfileTelegramMapper{}
-	telegramRequest := profileTelegramMapper.MapToUpdateRequest(pr)
+	navigatorResponse := navigatorMapper.MapToResponse(profileUpdated, navigatorUpdated)
+	filterMapper := &mapper.ProfileFilterMapper{}
+	filterRequest := filterMapper.MapToUpdateRequest(pr)
+	filterUpdated, err := s.repository.UpdateFilter(ctx, filterRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "UpdateFilter")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	filterResponse := filterMapper.MapToResponse(filterUpdated)
+	telegramMapper := &mapper.ProfileTelegramMapper{}
+	telegramRequest := telegramMapper.MapToUpdateRequest(pr)
 	telegramUpdated, err := s.repository.UpdateTelegram(ctx, telegramRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile", "UpdateTelegram")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	telegramResponse := profileTelegramMapper.MapToResponse(telegramUpdated)
-	profileResponse := profileMapper.MapToResponse(profileUpdated, navigatorResponse, telegramResponse)
+	telegramResponse := telegramMapper.MapToResponse(telegramUpdated)
+	profileResponse := profileMapper.MapToResponse(profileUpdated, navigatorResponse, filterResponse, telegramResponse)
 	return profileResponse, nil
 }
 

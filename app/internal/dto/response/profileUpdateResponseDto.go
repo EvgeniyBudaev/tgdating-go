@@ -20,5 +20,6 @@ type ProfileUpdateResponseDto struct {
 	UpdatedAt      time.Time                    `json:"updatedAt"`
 	LastOnline     time.Time                    `json:"lastOnline"`
 	Navigator      *ProfileNavigatorResponseDto `json:"navigator"`
+	Filter         *ProfileFilterResponseDto    `json:"filter"`
 	Telegram       *ProfileTelegramResponseDto  `json:"telegram"`
 }
