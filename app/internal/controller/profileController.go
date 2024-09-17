@@ -6,11 +6,9 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/controller/http/api/v1"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
-	"mime/multipart"
 	"net/http"
 	"time"
 )
@@ -20,14 +18,10 @@ const (
 )
 
 type ProfileService interface {
-	AddProfile(
-		ctx context.Context, ctf *fiber.Ctx, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
-	AddImageList(ctx context.Context, ctf *fiber.Ctx, sessionId string) error
-	AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId string,
-		file *multipart.FileHeader) (*entity.ProfileImageEntity, error)
-	AddNavigator(ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileNavigatorEntity, error)
-	AddFilter(ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileFilterEntity, error)
-	AddTelegram(ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileTelegramEntity, error)
+	AddProfile(ctx context.Context, ctf *fiber.Ctx,
+		pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
+	UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
+		pr *request.ProfileUpdateRequestDto) (*response.ProfileUpdateResponseDto, error)
 }
 
 type ProfileController struct {
@@ -59,6 +53,28 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 		profileResponse, err := pc.service.AddProfile(ctx, ctf, &req)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("AddProfile", "AddProfile")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) UpdateProfile() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("PUT /api/v1/profiles")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		req := request.ProfileUpdateRequestDto{}
+		if err := ctf.BodyParser(&req); err != nil {
+			errorMessage := pc.getErrorMessage("UpdateProfile", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		fmt.Println("ProfileUpdateRequestDto: ", req)
+		profileResponse, err := pc.service.UpdateProfile(ctx, ctf, &req)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("UpdateProfile", "UpdateProfile")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}

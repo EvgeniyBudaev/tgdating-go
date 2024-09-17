@@ -2,7 +2,7 @@ package request
 
 import "time"
 
-type ProfileAddRequestDto struct {
+type ProfileUpdateRequestDto struct {
 	SessionID               string    `json:"sessionId"`
 	DisplayName             string    `json:"displayName"`
 	Birthday                time.Time `json:"birthday"`

@@ -11,9 +11,9 @@ type ProfileEntity struct {
 	Birthday       time.Time `json:"birthday"`
 	Gender         string    `json:"gender"`
 	Location       string    `json:"location"`
+	Description    string    `json:"description"`
 	Height         float64   `json:"height"`
 	Weight         float64   `json:"weight"`
-	Description    string    `json:"description"`
 	IsDeleted      bool      `json:"isDeleted"`
 	IsBlocked      bool      `json:"isBlocked"`
 	IsPremium      bool      `json:"isPremium"`

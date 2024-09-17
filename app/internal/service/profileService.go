@@ -7,6 +7,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/service/mapper"
 	"github.com/gofiber/fiber/v2"
 	"github.com/h2non/bimg"
 	"go.uber.org/zap"
@@ -24,10 +25,14 @@ const (
 
 type ProfileRepository interface {
 	AddProfile(ctx context.Context, p *entity.ProfileEntity) (*entity.ProfileEntity, error)
+	UpdateProfile(ctx context.Context, p *entity.ProfileEntity) (*entity.ProfileEntity, error)
 	AddImage(ctx context.Context, p *entity.ProfileImageEntity) (*entity.ProfileImageEntity, error)
 	AddNavigator(ctx context.Context, p *entity.ProfileNavigatorEntity) (*entity.ProfileNavigatorEntity, error)
+	UpdateNavigator(
+		ctx context.Context, p *request.ProfileNavigatorUpdateRequestDto) (*entity.ProfileNavigatorEntity, error)
 	AddFilter(ctx context.Context, p *entity.ProfileFilterEntity) (*entity.ProfileFilterEntity, error)
 	AddTelegram(ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error)
+	UpdateTelegram(ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error)
 }
 
 type ProfileService struct {
@@ -44,25 +49,9 @@ func NewProfileService(l logger.Logger, r ProfileRepository) *ProfileService {
 
 func (s *ProfileService) AddProfile(
 	ctx context.Context, ctf *fiber.Ctx, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error) {
-	profile := &entity.ProfileEntity{
-		SessionID:      pr.SessionID,
-		DisplayName:    pr.DisplayName,
-		Birthday:       pr.Birthday,
-		Gender:         pr.Gender,
-		Location:       pr.Location,
-		Description:    pr.Description,
-		Height:         pr.Height,
-		Weight:         pr.Weight,
-		IsDeleted:      false,
-		IsBlocked:      false,
-		IsPremium:      false,
-		IsShowDistance: true,
-		IsInvisible:    false,
-		CreatedAt:      time.Now().UTC(),
-		UpdatedAt:      time.Now().UTC(),
-		LastOnline:     time.Now().UTC(),
-	}
-	newProfile, err := s.repository.AddProfile(ctx, profile)
+	profileMapper := &mapper.ProfileMapper{}
+	profileRequest := profileMapper.MapToAddRequest(pr)
+	profileCreated, err := s.repository.AddProfile(ctx, profileRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddProfile", "AddProfile")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -74,10 +63,8 @@ func (s *ProfileService) AddProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	responseProfile := &response.ProfileAddResponseDto{
-		SessionID: newProfile.SessionID,
-	}
-	if err := s.AddImageList(ctx, ctf, newProfile.SessionID); err != nil {
+	responseProfile := profileMapper.MapToAddResponse(profileCreated)
+	if err := s.AddImageList(ctx, ctf, profileCreated.SessionID); err != nil {
 		errorMessage := s.getErrorMessage("AddProfile", "AddImageList")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -95,6 +82,38 @@ func (s *ProfileService) AddProfile(
 		return nil, err
 	}
 	return responseProfile, err
+}
+
+func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
+	pr *request.ProfileUpdateRequestDto) (*response.ProfileUpdateResponseDto, error) {
+	profileMapper := &mapper.ProfileMapper{}
+	profileRequest := profileMapper.MapToUpdateRequest(pr)
+	profileUpdated, err := s.repository.UpdateProfile(ctx, profileRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "UpdateProfile")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	profileNavigatorMapper := &mapper.ProfileNavigatorMapper{}
+	navigatorRequest := profileNavigatorMapper.MapToUpdateRequest(profileUpdated, pr)
+	navigatorUpdated, err := s.repository.UpdateNavigator(ctx, navigatorRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "UpdateNavigator")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	navigatorResponse := profileNavigatorMapper.MapToResponse(profileUpdated, navigatorUpdated)
+	profileTelegramMapper := &mapper.ProfileTelegramMapper{}
+	telegramRequest := profileTelegramMapper.MapToUpdateRequest(pr)
+	telegramUpdated, err := s.repository.UpdateTelegram(ctx, telegramRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "UpdateTelegram")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	telegramResponse := profileTelegramMapper.MapToResponse(telegramUpdated)
+	profileResponse := profileMapper.MapToResponse(profileUpdated, navigatorResponse, telegramResponse)
+	return profileResponse, nil
 }
 
 func (s *ProfileService) AddImageList(
@@ -246,17 +265,8 @@ func (s *ProfileService) getErrorMessage(repositoryMethodName string, callMethod
 
 func (s *ProfileService) AddNavigator(
 	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileNavigatorEntity, error) {
-	point := &entity.PointEntity{
-		Latitude:  pr.Latitude,
-		Longitude: pr.Longitude,
-	}
-	navigatorRequest := &entity.ProfileNavigatorEntity{
-		SessionID: pr.SessionID,
-		Location:  point,
-		IsDeleted: false,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	navigatorMapper := &mapper.ProfileNavigatorMapper{}
+	navigatorRequest := navigatorMapper.MapToAddRequest(pr)
 	NavigatorResponse, err := s.repository.AddNavigator(ctx, navigatorRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddNavigator", "AddNavigator")
@@ -268,19 +278,8 @@ func (s *ProfileService) AddNavigator(
 
 func (s *ProfileService) AddFilter(
 	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileFilterEntity, error) {
-	filterRequest := &entity.ProfileFilterEntity{
-		SessionID:    pr.SessionID,
-		SearchGender: pr.SearchGender,
-		LookingFor:   pr.LookingFor,
-		AgeFrom:      pr.AgeFrom,
-		AgeTo:        pr.AgeTo,
-		Distance:     pr.Distance,
-		Page:         pr.Page,
-		Size:         pr.Size,
-		IsDeleted:    false,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-	}
+	filterMapper := &mapper.ProfileFilterMapper{}
+	filterRequest := filterMapper.MapToAddRequest(pr)
 	filterResponse, err := s.repository.AddFilter(ctx, filterRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddFilter", "AddFilter")
@@ -292,20 +291,8 @@ func (s *ProfileService) AddFilter(
 
 func (s *ProfileService) AddTelegram(
 	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileTelegramEntity, error) {
-	telegramRequest := &entity.ProfileTelegramEntity{
-		SessionID:       pr.SessionID,
-		UserID:          pr.TelegramUserID,
-		UserName:        pr.TelegramUsername,
-		Firstname:       pr.TelegramFirstname,
-		Lastname:        pr.TelegramLastname,
-		LanguageCode:    pr.TelegramLanguageCode,
-		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
-		QueryID:         pr.TelegramQueryID,
-		ChatID:          pr.TelegramChatID,
-		IsDeleted:       false,
-		CreatedAt:       time.Now(),
-		UpdatedAt:       time.Now(),
-	}
+	telegramMapper := &mapper.ProfileTelegramMapper{}
+	telegramRequest := telegramMapper.MapToAddRequest(pr)
 	telegramResponse, err := s.repository.AddTelegram(ctx, telegramRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddTelegram", "AddTelegram")

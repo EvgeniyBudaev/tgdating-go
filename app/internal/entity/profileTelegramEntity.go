@@ -7,8 +7,8 @@ type ProfileTelegramEntity struct {
 	SessionID       string    `json:"sessionId"`
 	UserID          uint64    `json:"userId"`
 	UserName        string    `json:"username"`
-	Firstname       string    `json:"firstName"`
-	Lastname        string    `json:"lastName"`
+	FirstName       string    `json:"firstName"`
+	LastName        string    `json:"lastName"`
 	LanguageCode    string    `json:"languageCode"`
 	AllowsWriteToPm bool      `json:"allowsWriteToPm"`
 	QueryID         string    `json:"queryId"`
