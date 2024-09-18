@@ -16,6 +16,7 @@ type ProfileUpdateResponseDto struct {
 	IsPremium      bool                         `json:"isPremium"`
 	IsShowDistance bool                         `json:"isShowDistance"`
 	IsInvisible    bool                         `json:"isInvisible"`
+	IsOnline       bool                         `json:"isOnline"`
 	CreatedAt      time.Time                    `json:"createdAt"`
 	UpdatedAt      time.Time                    `json:"updatedAt"`
 	LastOnline     time.Time                    `json:"lastOnline"`

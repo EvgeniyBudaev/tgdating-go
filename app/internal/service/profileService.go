@@ -26,14 +26,21 @@ const (
 type ProfileRepository interface {
 	AddProfile(ctx context.Context, p *entity.ProfileEntity) (*entity.ProfileEntity, error)
 	UpdateProfile(ctx context.Context, p *entity.ProfileEntity) (*entity.ProfileEntity, error)
+	FindProfileBySessionID(ctx context.Context, sessionID string) (*entity.ProfileEntity, error)
 	AddImage(ctx context.Context, p *entity.ProfileImageEntity) (*entity.ProfileImageEntity, error)
+	UpdateImage(ctx context.Context, p *entity.ProfileImageEntity) (*entity.ProfileImageEntity, error)
+	FindImageById(ctx context.Context, imageID uint64) (*entity.ProfileImageEntity, error)
+	SelectImageListPublicBySessionID(ctx context.Context, sessionID string) ([]*entity.ProfileImageEntity, error)
 	AddNavigator(ctx context.Context, p *entity.ProfileNavigatorEntity) (*entity.ProfileNavigatorEntity, error)
 	UpdateNavigator(
 		ctx context.Context, p *request.ProfileNavigatorUpdateRequestDto) (*entity.ProfileNavigatorEntity, error)
+	FindNavigatorBySessionID(ctx context.Context, sessionID string) (*entity.ProfileNavigatorEntity, error)
 	AddFilter(ctx context.Context, p *entity.ProfileFilterEntity) (*entity.ProfileFilterEntity, error)
 	UpdateFilter(ctx context.Context, p *entity.ProfileFilterEntity) (*entity.ProfileFilterEntity, error)
+	FindFilterBySessionID(ctx context.Context, sessionID string) (*entity.ProfileFilterEntity, error)
 	AddTelegram(ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error)
 	UpdateTelegram(ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error)
+	FindTelegramBySessionID(ctx context.Context, sessionID string) (*entity.ProfileTelegramEntity, error)
 }
 
 type ProfileService struct {
@@ -95,6 +102,11 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	if err := s.UpdateImageList(ctx, ctf, profileUpdated.SessionID); err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "UpdateImageList")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	navigatorMapper := &mapper.ProfileNavigatorMapper{}
 	navigatorRequest := navigatorMapper.MapToUpdateRequest(profileUpdated, pr)
 	navigatorUpdated, err := s.repository.UpdateNavigator(ctx, navigatorRequest)
@@ -122,7 +134,9 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 		return nil, err
 	}
 	telegramResponse := telegramMapper.MapToResponse(telegramUpdated)
-	profileResponse := profileMapper.MapToResponse(profileUpdated, navigatorResponse, filterResponse, telegramResponse)
+	isOnline := s.CheckIsOnline(profileUpdated.LastOnline)
+	profileResponse := profileMapper.MapToResponse(profileUpdated, navigatorResponse, filterResponse, telegramResponse,
+		isOnline)
 	return profileResponse, nil
 }
 
@@ -135,15 +149,22 @@ func (s *ProfileService) AddImageList(
 		return err
 	}
 	files := form.File["image"]
-	for _, file := range files {
-		_, err := s.AddImage(ctx, ctf, sessionId, file)
-		if err != nil {
-			errorMessage := s.getErrorMessage("AddImageList", "AddImage")
-			s.logger.Debug(errorMessage, zap.Error(err))
-			return err
+	if len(files) > 0 {
+		for _, file := range files {
+			_, err := s.AddImage(ctx, ctf, sessionId, file)
+			if err != nil {
+				errorMessage := s.getErrorMessage("AddImageList", "AddImage")
+				s.logger.Debug(errorMessage, zap.Error(err))
+				return err
+			}
 		}
 	}
 	return nil
+}
+
+func (s *ProfileService) UpdateImageList(
+	ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
+	return s.AddImageList(ctx, ctf, sessionId)
 }
 
 func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId string,
@@ -310,4 +331,15 @@ func (s *ProfileService) AddTelegram(
 		return nil, err
 	}
 	return telegramResponse, nil
+}
+
+func (s *ProfileService) GetNowUtc() time.Time {
+	return time.Now().UTC()
+}
+
+func (s *ProfileService) CheckIsOnline(lastOnline time.Time) bool {
+	now := time.Now().UTC()
+	duration := now.Sub(lastOnline)
+	minutes := duration.Minutes()
+	return minutes < 5
 }

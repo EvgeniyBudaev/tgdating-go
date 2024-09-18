@@ -116,6 +116,86 @@ func (r *ProfileRepository) AddImage(
 	return p, nil
 }
 
+func (r *ProfileRepository) UpdateImage(
+	ctx context.Context, p *entity.ProfileImageEntity) (*entity.ProfileImageEntity, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		errorMessage := r.getErrorMessage("UpdateImage", "Begin")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
+	query := "UPDATE profile_images SET name=$1, url=$2, size=$3, is_deleted=$4, is_blocked=$5," +
+		" is_primary=$6, is_private=$7, updated_at=$8 WHERE id=$9"
+	_, err = r.db.ExecContext(ctx, query, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked,
+		&p.IsPrimary, &p.IsPrivate, &p.UpdatedAt, &p.ID)
+	if err != nil {
+		errorMessage := r.getErrorMessage("UpdateImage", "ExecContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	tx.Commit()
+	imageResponse, err := r.FindImageById(ctx, p.ID)
+	if err != nil {
+		errorMessage := r.getErrorMessage("UpdateImage", "FindImageById")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return imageResponse, nil
+}
+
+func (r *ProfileRepository) FindImageById(ctx context.Context, imageID uint64) (*entity.ProfileImageEntity, error) {
+	p := &entity.ProfileImageEntity{}
+	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
+		" is_private, created_at, updated_at" +
+		" FROM profile_images" +
+		" WHERE id=$1"
+	row := r.db.QueryRowContext(ctx, query, imageID)
+	if row == nil {
+		errorMessage := r.getErrorMessage("FindImageById", "QueryRowContext")
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+		return nil, ErrNotRowsFound
+	}
+	err := row.Scan(&p.ID, &p.SessionID, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
+		&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		errorMessage := r.getErrorMessage("FindImageById", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return p, nil
+}
+
+func (r *ProfileRepository) SelectImageListPublicBySessionID(
+	ctx context.Context, sessionID string) ([]*entity.ProfileImageEntity, error) {
+	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
+		" is_private, created_at, updated_at" +
+		" FROM profile_images" +
+		" WHERE session_id=$1 AND is_deleted=false AND is_blocked=false AND is_private=false"
+	rows, err := r.db.QueryContext(ctx, query, sessionID)
+	if err != nil {
+		errorMessage := r.getErrorMessage("SelectImageListPublicBySessionID",
+			"QueryContext")
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+		return nil, err
+	}
+	defer rows.Close()
+	list := make([]*entity.ProfileImageEntity, 0)
+	for rows.Next() {
+		p := entity.ProfileImageEntity{}
+		err := rows.Scan(&p.ID, &p.SessionID, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
+			&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
+		if err != nil {
+			errorMessage := r.getErrorMessage("SelectImageListPublicBySessionID",
+				"Scan")
+			r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+			continue
+		}
+		list = append(list, &p)
+	}
+	return list, nil
+}
+
 func (r *ProfileRepository) AddNavigator(
 	ctx context.Context, p *entity.ProfileNavigatorEntity) (*entity.ProfileNavigatorEntity, error) {
 	query := "INSERT INTO profile_navigators (session_id, location, is_deleted, created_at, updated_at)" +

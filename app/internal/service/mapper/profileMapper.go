@@ -15,6 +15,7 @@ func (pm *ProfileMapper) MapToResponse(
 	navigatorResponse *response.ProfileNavigatorResponseDto,
 	filterResponse *response.ProfileFilterResponseDto,
 	telegramResponse *response.ProfileTelegramResponseDto,
+	isOnline bool,
 ) *response.ProfileUpdateResponseDto {
 	return &response.ProfileUpdateResponseDto{
 		SessionID:      profileEntity.SessionID,
@@ -30,6 +31,7 @@ func (pm *ProfileMapper) MapToResponse(
 		IsPremium:      profileEntity.IsPremium,
 		IsShowDistance: profileEntity.IsShowDistance,
 		IsInvisible:    profileEntity.IsInvisible,
+		IsOnline:       isOnline,
 		CreatedAt:      profileEntity.CreatedAt,
 		UpdatedAt:      profileEntity.UpdatedAt,
 		LastOnline:     profileEntity.LastOnline,
