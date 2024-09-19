@@ -10,6 +10,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/service/mapper"
 	"github.com/gofiber/fiber/v2"
 	"github.com/h2non/bimg"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"image/jpeg"
 	"mime/multipart"
@@ -24,22 +25,40 @@ const (
 )
 
 type ProfileRepository interface {
-	AddProfile(ctx context.Context, p *entity.ProfileEntity) (*entity.ProfileEntity, error)
-	UpdateProfile(ctx context.Context, p *entity.ProfileEntity) (*entity.ProfileEntity, error)
+	AddProfile(ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*entity.ProfileEntity, error)
+	UpdateProfile(ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*entity.ProfileEntity, error)
+	DeleteProfile(ctx context.Context, p *request.ProfileDeleteRequestRepositoryDto) (*entity.ProfileEntity, error)
+	FindProfileByID(ctx context.Context, id uint64) (*entity.ProfileEntity, error)
 	FindProfileBySessionID(ctx context.Context, sessionID string) (*entity.ProfileEntity, error)
-	AddImage(ctx context.Context, p *entity.ProfileImageEntity) (*entity.ProfileImageEntity, error)
-	UpdateImage(ctx context.Context, p *entity.ProfileImageEntity) (*entity.ProfileImageEntity, error)
+	AddImage(ctx context.Context, p *request.ProfileImageAddRequestRepositoryDto) (*entity.ProfileImageEntity, error)
+	UpdateImage(ctx context.Context,
+		p *request.ProfileImageUpdateRequestRepositoryDto) (*entity.ProfileImageEntity, error)
+	DeleteImage(ctx context.Context,
+		p *request.ProfileImageDeleteRequestRepositoryDto) (*entity.ProfileImageEntity, error)
 	FindImageById(ctx context.Context, imageID uint64) (*entity.ProfileImageEntity, error)
 	SelectImageListPublicBySessionID(ctx context.Context, sessionID string) ([]*entity.ProfileImageEntity, error)
-	AddNavigator(ctx context.Context, p *entity.ProfileNavigatorEntity) (*entity.ProfileNavigatorEntity, error)
-	UpdateNavigator(
-		ctx context.Context, p *request.ProfileNavigatorUpdateRequestDto) (*entity.ProfileNavigatorEntity, error)
+	SelectImageListBySessionID(ctx context.Context, sessionID string) ([]*entity.ProfileImageEntity, error)
+	AddNavigator(ctx context.Context,
+		p *request.ProfileNavigatorAddRequestRepositoryDto) (*entity.ProfileNavigatorEntity, error)
+	UpdateNavigator(ctx context.Context,
+		p *request.ProfileNavigatorUpdateRequestDto) (*entity.ProfileNavigatorEntity, error)
+	DeleteNavigator(ctx context.Context,
+		p *request.ProfileNavigatorDeleteRequestDto) (*entity.ProfileNavigatorEntity, error)
+	FindNavigatorByID(ctx context.Context, id uint64) (*entity.ProfileNavigatorEntity, error)
 	FindNavigatorBySessionID(ctx context.Context, sessionID string) (*entity.ProfileNavigatorEntity, error)
-	AddFilter(ctx context.Context, p *entity.ProfileFilterEntity) (*entity.ProfileFilterEntity, error)
-	UpdateFilter(ctx context.Context, p *entity.ProfileFilterEntity) (*entity.ProfileFilterEntity, error)
+	AddFilter(ctx context.Context, p *request.ProfileFilterAddRequestRepositoryDto) (*entity.ProfileFilterEntity, error)
+	UpdateFilter(ctx context.Context,
+		p *request.ProfileFilterUpdateRequestRepositoryDto) (*entity.ProfileFilterEntity, error)
+	DeleteFilter(ctx context.Context,
+		p *request.ProfileFilterDeleteRequestRepositoryDto) (*entity.ProfileFilterEntity, error)
 	FindFilterBySessionID(ctx context.Context, sessionID string) (*entity.ProfileFilterEntity, error)
-	AddTelegram(ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error)
-	UpdateTelegram(ctx context.Context, p *entity.ProfileTelegramEntity) (*entity.ProfileTelegramEntity, error)
+	AddTelegram(ctx context.Context,
+		p *request.ProfileTelegramAddRequestRepositoryDto) (*entity.ProfileTelegramEntity, error)
+	UpdateTelegram(ctx context.Context,
+		p *request.ProfileTelegramUpdateRequestRepositoryDto) (*entity.ProfileTelegramEntity, error)
+	DeleteTelegram(ctx context.Context,
+		p *request.ProfileTelegramDeleteRequestRepositoryDto) (*entity.ProfileTelegramEntity, error)
+	FindTelegramByID(ctx context.Context, id uint64) (*entity.ProfileTelegramEntity, error)
 	FindTelegramBySessionID(ctx context.Context, sessionID string) (*entity.ProfileTelegramEntity, error)
 }
 
@@ -94,6 +113,16 @@ func (s *ProfileService) AddProfile(
 
 func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 	pr *request.ProfileUpdateRequestDto) (*response.ProfileUpdateResponseDto, error) {
+	isDeleted, err := s.checkUserExists(ctx, pr.SessionID)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "checkUserExists")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	if isDeleted {
+		err := errors.Wrap(err, "user has already been deleted")
+		return nil, err
+	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToUpdateRequest(pr)
 	profileUpdated, err := s.repository.UpdateProfile(ctx, profileRequest)
@@ -134,10 +163,67 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 		return nil, err
 	}
 	telegramResponse := telegramMapper.MapToResponse(telegramUpdated)
-	isOnline := s.CheckIsOnline(profileUpdated.LastOnline)
+	isOnline := s.checkIsOnline(profileUpdated.LastOnline)
 	profileResponse := profileMapper.MapToResponse(profileUpdated, navigatorResponse, filterResponse, telegramResponse,
 		isOnline)
 	return profileResponse, nil
+}
+
+func (s *ProfileService) DeleteProfile(
+	ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error) {
+	sessionID := pr.SessionID
+	isDeleted, err := s.checkUserExists(ctx, sessionID)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "checkUserExists")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	if isDeleted {
+		err := errors.Wrap(err, "user has already been deleted")
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileMapper{}
+	profileRequest := profileMapper.MapToDeleteRequest(sessionID)
+	_, err = s.repository.DeleteProfile(ctx, profileRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "DeleteProfile")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	navigatorMapper := &mapper.ProfileNavigatorMapper{}
+	navigatorRequest := navigatorMapper.MapToDeleteRequest(sessionID)
+	_, err = s.repository.DeleteNavigator(ctx, navigatorRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "DeleteNavigator")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	err = s.DeleteImageList(ctx, sessionID)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "DeleteImageList")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	filterMapper := &mapper.ProfileFilterMapper{}
+	filterRequest := filterMapper.MapToDeleteRequest(sessionID)
+	_, err = s.repository.DeleteFilter(ctx, filterRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "DeleteFilter")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	telegramMapper := &mapper.ProfileTelegramMapper{}
+	telegramRequest := telegramMapper.MapToDeleteRequest(sessionID)
+	_, err = s.repository.DeleteTelegram(ctx, telegramRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "DeleteTelegram")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	profileResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return profileResponse, err
 }
 
 func (s *ProfileService) AddImageList(
@@ -162,11 +248,6 @@ func (s *ProfileService) AddImageList(
 	return nil
 }
 
-func (s *ProfileService) UpdateImageList(
-	ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
-	return s.AddImageList(ctx, ctf, sessionId)
-}
-
 func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId string,
 	file *multipart.FileHeader) (*entity.ProfileImageEntity, error) {
 	imageConverted, err := s.uploadImageToFileSystem(ctx, ctf, file, sessionId)
@@ -184,8 +265,53 @@ func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId
 	return imageResponse, err
 }
 
+func (s *ProfileService) UpdateImageList(
+	ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
+	return s.AddImageList(ctx, ctf, sessionId)
+}
+
+func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) error {
+	imageList, err := s.repository.SelectImageListBySessionID(ctx, sessionId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteImageList",
+			"SelectImageListBySessionID")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return err
+	}
+	if len(imageList) > 0 {
+		for _, image := range imageList {
+			_, err := s.DeleteImage(ctx, image)
+			if err != nil {
+				errorMessage := s.getErrorMessage("DeleteImageList", "DeleteImage")
+				s.logger.Debug(errorMessage, zap.Error(err))
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (s *ProfileService) DeleteImage(
+	ctx context.Context, image *entity.ProfileImageEntity) (*entity.ProfileImageEntity, error) {
+	filePath := image.Url
+	if err := os.Remove(filePath); err != nil {
+		errorMessage := s.getErrorMessage("DeleteImage", "Remove")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	imageMapper := &mapper.ProfileImageMapper{}
+	imageRequest := imageMapper.MapToDeleteRequest(image.ID)
+	imageDeleted, err := s.repository.DeleteImage(ctx, imageRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteImage", "DeleteImage")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return imageDeleted, nil
+}
+
 func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber.Ctx, file *multipart.FileHeader,
-	sessionId string) (*entity.ProfileImageEntity, error) {
+	sessionId string) (*request.ProfileImageAddRequestRepositoryDto, error) {
 	directoryPath := fmt.Sprintf("static/profiles/%s/images", sessionId)
 	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(directoryPath, 0755); err != nil {
@@ -206,7 +332,7 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	imageConverted := &entity.ProfileImageEntity{
+	imageConverted := &request.ProfileImageAddRequestRepositoryDto{
 		SessionID: sessionId,
 		Name:      newFileName,
 		Url:       newFilePath,
@@ -333,13 +459,27 @@ func (s *ProfileService) AddTelegram(
 	return telegramResponse, nil
 }
 
-func (s *ProfileService) GetNowUtc() time.Time {
+func (s *ProfileService) getNowUtc() time.Time {
 	return time.Now().UTC()
 }
 
-func (s *ProfileService) CheckIsOnline(lastOnline time.Time) bool {
-	now := time.Now().UTC()
+func (s *ProfileService) checkIsOnline(lastOnline time.Time) bool {
+	now := s.getNowUtc()
 	duration := now.Sub(lastOnline)
 	minutes := duration.Minutes()
 	return minutes < 5
+}
+
+func (s *ProfileService) checkUserExists(ctx context.Context, sessionID string) (bool, error) {
+	p, err := s.repository.FindProfileBySessionID(ctx, sessionID)
+	if err != nil {
+		errorMessage := s.getErrorMessage("checkUserExists", "FindProfileBySessionID")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return false, err
+	}
+	isDeleted := p.IsDeleted
+	if isDeleted {
+		return true, err
+	}
+	return false, nil
 }

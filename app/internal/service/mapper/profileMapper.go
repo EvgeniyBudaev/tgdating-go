@@ -48,8 +48,8 @@ func (pm *ProfileMapper) MapToAddResponse(profileEntity *entity.ProfileEntity) *
 }
 
 func (pm *ProfileMapper) MapToAddRequest(
-	profileAddRequestDto *request.ProfileAddRequestDto) *entity.ProfileEntity {
-	return &entity.ProfileEntity{
+	profileAddRequestDto *request.ProfileAddRequestDto) *request.ProfileAddRequestRepositoryDto {
+	return &request.ProfileAddRequestRepositoryDto{
 		SessionID:      profileAddRequestDto.SessionID,
 		DisplayName:    profileAddRequestDto.DisplayName,
 		Birthday:       profileAddRequestDto.Birthday,
@@ -70,8 +70,8 @@ func (pm *ProfileMapper) MapToAddRequest(
 }
 
 func (pm *ProfileMapper) MapToUpdateRequest(
-	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *entity.ProfileEntity {
-	return &entity.ProfileEntity{
+	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *request.ProfileUpdateRequestRepositoryDto {
+	return &request.ProfileUpdateRequestRepositoryDto{
 		SessionID:   profileUpdateRequestDto.SessionID,
 		DisplayName: profileUpdateRequestDto.DisplayName,
 		Birthday:    profileUpdateRequestDto.Birthday,
@@ -82,5 +82,14 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 		Weight:      profileUpdateRequestDto.Weight,
 		UpdatedAt:   time.Now().UTC(),
 		LastOnline:  time.Now().UTC(),
+	}
+}
+
+func (pm *ProfileMapper) MapToDeleteRequest(sessionId string) *request.ProfileDeleteRequestRepositoryDto {
+	return &request.ProfileDeleteRequestRepositoryDto{
+		SessionID:  sessionId,
+		IsDeleted:  true,
+		UpdatedAt:  time.Now().UTC(),
+		LastOnline: time.Now().UTC(),
 	}
 }

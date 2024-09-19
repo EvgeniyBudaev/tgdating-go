@@ -20,12 +20,12 @@ func (pm *ProfileNavigatorMapper) MapToResponse(
 }
 
 func (pm *ProfileNavigatorMapper) MapToAddRequest(
-	profileAddRequestDto *request.ProfileAddRequestDto) *entity.ProfileNavigatorEntity {
+	profileAddRequestDto *request.ProfileAddRequestDto) *request.ProfileNavigatorAddRequestRepositoryDto {
 	point := &entity.PointEntity{
 		Latitude:  profileAddRequestDto.Latitude,
 		Longitude: profileAddRequestDto.Longitude,
 	}
-	return &entity.ProfileNavigatorEntity{
+	return &request.ProfileNavigatorAddRequestRepositoryDto{
 		SessionID: profileAddRequestDto.SessionID,
 		Location:  point,
 		IsDeleted: false,
@@ -41,6 +41,14 @@ func (pm *ProfileNavigatorMapper) MapToUpdateRequest(
 		SessionID: profileEntity.SessionID,
 		Longitude: profileUpdateRequestDto.Longitude,
 		Latitude:  profileUpdateRequestDto.Latitude,
+		UpdatedAt: time.Now().UTC(),
+	}
+}
+
+func (pm *ProfileNavigatorMapper) MapToDeleteRequest(sessionId string) *request.ProfileNavigatorDeleteRequestDto {
+	return &request.ProfileNavigatorDeleteRequestDto{
+		SessionID: sessionId,
+		IsDeleted: true,
 		UpdatedAt: time.Now().UTC(),
 	}
 }

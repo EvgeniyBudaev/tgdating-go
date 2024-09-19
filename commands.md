@@ -26,6 +26,11 @@ https://pkg.go.dev/go.uber.org/zap
 go get -u go.uber.org/zap
 ```
 
+Errors
+```
+go get -u github.com/pkg/errors
+```
+
 Подключение к БД
 Драйвер для Postgres
 ```

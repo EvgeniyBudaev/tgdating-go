@@ -8,6 +8,7 @@ import (
 func InitPublicRoutes(router fiber.Router, profileController *controller.ProfileController) {
 	router.Post("/profiles", profileController.AddProfile())
 	router.Put("/profiles", profileController.UpdateProfile())
+	router.Delete("/profiles", profileController.DeleteProfile())
 }
 
 func InitProtectedRoutes(router fiber.Router, profileController *controller.ProfileController) {}

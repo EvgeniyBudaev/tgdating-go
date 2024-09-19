@@ -26,8 +26,8 @@ func (pm *ProfileTelegramMapper) MapToResponse(
 }
 
 func (pm *ProfileTelegramMapper) MapToAddRequest(
-	profileAddRequestDto *request.ProfileAddRequestDto) *entity.ProfileTelegramEntity {
-	return &entity.ProfileTelegramEntity{
+	profileAddRequestDto *request.ProfileAddRequestDto) *request.ProfileTelegramAddRequestRepositoryDto {
+	return &request.ProfileTelegramAddRequestRepositoryDto{
 		SessionID:       profileAddRequestDto.SessionID,
 		UserID:          profileAddRequestDto.TelegramUserID,
 		UserName:        profileAddRequestDto.TelegramUsername,
@@ -44,8 +44,8 @@ func (pm *ProfileTelegramMapper) MapToAddRequest(
 }
 
 func (pm *ProfileTelegramMapper) MapToUpdateRequest(
-	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *entity.ProfileTelegramEntity {
-	return &entity.ProfileTelegramEntity{
+	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *request.ProfileTelegramUpdateRequestRepositoryDto {
+	return &request.ProfileTelegramUpdateRequestRepositoryDto{
 		SessionID:       profileUpdateRequestDto.SessionID,
 		UserID:          profileUpdateRequestDto.TelegramUserID,
 		UserName:        profileUpdateRequestDto.TelegramUsername,
@@ -56,5 +56,13 @@ func (pm *ProfileTelegramMapper) MapToUpdateRequest(
 		QueryID:         profileUpdateRequestDto.TelegramQueryID,
 		ChatID:          profileUpdateRequestDto.TelegramChatID,
 		UpdatedAt:       time.Now(),
+	}
+}
+
+func (pm *ProfileTelegramMapper) MapToDeleteRequest(sessionID string) *request.ProfileTelegramDeleteRequestRepositoryDto {
+	return &request.ProfileTelegramDeleteRequestRepositoryDto{
+		SessionID: sessionID,
+		IsDeleted: true,
+		UpdatedAt: time.Now(),
 	}
 }

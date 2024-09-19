@@ -22,6 +22,7 @@ type ProfileService interface {
 		pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
 	UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 		pr *request.ProfileUpdateRequestDto) (*response.ProfileUpdateResponseDto, error)
+	DeleteProfile(ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
 }
 
 type ProfileController struct {
@@ -43,14 +44,14 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 		pc.logger.Info("POST /api/v1/profiles")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
-		req := request.ProfileAddRequestDto{}
+		req := &request.ProfileAddRequestDto{}
 		if err := ctf.BodyParser(&req); err != nil {
 			errorMessage := pc.getErrorMessage("AddProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		fmt.Println("ProfileAddRequestDto: ", req)
-		profileResponse, err := pc.service.AddProfile(ctx, ctf, &req)
+		profileResponse, err := pc.service.AddProfile(ctx, ctf, req)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("AddProfile", "AddProfile")
 			pc.logger.Debug(errorMessage, zap.Error(err))
@@ -65,16 +66,38 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 		pc.logger.Info("PUT /api/v1/profiles")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
-		req := request.ProfileUpdateRequestDto{}
+		req := &request.ProfileUpdateRequestDto{}
 		if err := ctf.BodyParser(&req); err != nil {
 			errorMessage := pc.getErrorMessage("UpdateProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		fmt.Println("ProfileUpdateRequestDto: ", req)
-		profileResponse, err := pc.service.UpdateProfile(ctx, ctf, &req)
+		profileResponse, err := pc.service.UpdateProfile(ctx, ctf, req)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("UpdateProfile", "UpdateProfile")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) DeleteProfile() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("DELETE /api/v1/profiles")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		req := &request.ProfileDeleteRequestDto{}
+		if err := ctf.BodyParser(&req); err != nil {
+			errorMessage := pc.getErrorMessage("DeleteProfile", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		fmt.Println("ProfileDeleteRequestDto: ", req)
+		profileResponse, err := pc.service.DeleteProfile(ctx, req)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("DeleteProfile", "DeleteProfile")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}

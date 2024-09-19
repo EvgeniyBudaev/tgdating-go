@@ -25,8 +25,8 @@ func (pm *ProfileFilterMapper) MapToResponse(
 }
 
 func (pm *ProfileFilterMapper) MapToAddRequest(
-	profileAddRequestDto *request.ProfileAddRequestDto) *entity.ProfileFilterEntity {
-	return &entity.ProfileFilterEntity{
+	profileAddRequestDto *request.ProfileAddRequestDto) *request.ProfileFilterAddRequestRepositoryDto {
+	return &request.ProfileFilterAddRequestRepositoryDto{
 		SessionID:    profileAddRequestDto.SessionID,
 		SearchGender: profileAddRequestDto.SearchGender,
 		LookingFor:   profileAddRequestDto.LookingFor,
@@ -42,8 +42,8 @@ func (pm *ProfileFilterMapper) MapToAddRequest(
 }
 
 func (pm *ProfileFilterMapper) MapToUpdateRequest(
-	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *entity.ProfileFilterEntity {
-	return &entity.ProfileFilterEntity{
+	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *request.ProfileFilterUpdateRequestRepositoryDto {
+	return &request.ProfileFilterUpdateRequestRepositoryDto{
 		SessionID:    profileUpdateRequestDto.SessionID,
 		SearchGender: profileUpdateRequestDto.SearchGender,
 		LookingFor:   profileUpdateRequestDto.LookingFor,
@@ -52,8 +52,14 @@ func (pm *ProfileFilterMapper) MapToUpdateRequest(
 		Distance:     profileUpdateRequestDto.Distance,
 		Page:         profileUpdateRequestDto.Page,
 		Size:         profileUpdateRequestDto.Size,
-		IsDeleted:    false,
-		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
+	}
+}
+
+func (pm *ProfileFilterMapper) MapToDeleteRequest(sessionId string) *request.ProfileFilterDeleteRequestRepositoryDto {
+	return &request.ProfileFilterDeleteRequestRepositoryDto{
+		SessionID: sessionId,
+		IsDeleted: true,
+		UpdatedAt: time.Now(),
 	}
 }
