@@ -54,13 +54,7 @@ func (r *ProfileRepository) AddProfile(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	profileResponse, err := r.FindProfileByID(ctx, id)
-	if err != nil {
-		errorMessage := r.getErrorMessage("AddProfile", "FindProfileBySessionID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return profileResponse, nil
+	return r.FindProfileByID(ctx, id)
 }
 
 func (r *ProfileRepository) UpdateProfile(
@@ -83,13 +77,7 @@ func (r *ProfileRepository) UpdateProfile(
 		return nil, err
 	}
 	tx.Commit()
-	profileResponse, err := r.FindProfileBySessionID(ctx, p.SessionID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateProfile", "FindProfileBySessionID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return profileResponse, nil
+	return r.FindProfileBySessionID(ctx, p.SessionID)
 }
 
 func (r *ProfileRepository) DeleteProfile(
@@ -109,13 +97,7 @@ func (r *ProfileRepository) DeleteProfile(
 		return nil, err
 	}
 	tx.Commit()
-	profileResponse, err := r.FindProfileBySessionID(ctx, p.SessionID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteProfile", "FindProfileBySessionID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return profileResponse, nil
+	return r.FindProfileBySessionID(ctx, p.SessionID)
 }
 
 func (r *ProfileRepository) FindProfileByID(
@@ -184,13 +166,7 @@ func (r *ProfileRepository) AddImage(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	imageResponse, err := r.FindImageById(ctx, id)
-	if err != nil {
-		errorMessage := r.getErrorMessage("AddImage", "FindImageById")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return imageResponse, nil
+	return r.FindImageById(ctx, id)
 }
 
 func (r *ProfileRepository) UpdateImage(
@@ -212,13 +188,7 @@ func (r *ProfileRepository) UpdateImage(
 		return nil, err
 	}
 	tx.Commit()
-	imageResponse, err := r.FindImageById(ctx, p.ID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateImage", "FindImageById")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return imageResponse, nil
+	return r.FindImageById(ctx, p.ID)
 }
 
 func (r *ProfileRepository) DeleteImage(
@@ -238,13 +208,7 @@ func (r *ProfileRepository) DeleteImage(
 		return nil, err
 	}
 	tx.Commit()
-	imageResponse, err := r.FindImageById(ctx, p.ID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteImage", "FindImageById")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return imageResponse, nil
+	return r.FindImageById(ctx, p.ID)
 }
 
 func (r *ProfileRepository) FindImageById(ctx context.Context, imageID uint64) (*entity.ProfileImageEntity, error) {
@@ -347,13 +311,7 @@ func (r *ProfileRepository) AddNavigator(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	navigatorResponse, err := r.FindNavigatorByID(ctx, id)
-	if err != nil {
-		errorMessage := r.getErrorMessage("AddNavigator", "FindNavigatorByID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return navigatorResponse, nil
+	return r.FindNavigatorByID(ctx, id)
 }
 
 func (r *ProfileRepository) UpdateNavigator(
@@ -374,14 +332,7 @@ func (r *ProfileRepository) UpdateNavigator(
 		return nil, err
 	}
 	tx.Commit()
-	navigatorResponse, err := r.FindNavigatorBySessionID(ctx, p.SessionID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateNavigator",
-			"FindNavigatorBySessionID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return navigatorResponse, nil
+	return r.FindNavigatorBySessionID(ctx, p.SessionID)
 }
 
 func (r *ProfileRepository) DeleteNavigator(
@@ -401,14 +352,7 @@ func (r *ProfileRepository) DeleteNavigator(
 		return nil, err
 	}
 	tx.Commit()
-	navigatorResponse, err := r.FindNavigatorBySessionID(ctx, p.SessionID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteNavigator",
-			"FindNavigatorBySessionID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return navigatorResponse, nil
+	return r.FindNavigatorBySessionID(ctx, p.SessionID)
 }
 
 func (r *ProfileRepository) FindNavigatorByID(
@@ -492,13 +436,7 @@ func (r *ProfileRepository) AddFilter(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	filterResponse, err := r.FindFilterByID(ctx, id)
-	if err != nil {
-		errorMessage := r.getErrorMessage("AddFilter", "FindFilterByID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return filterResponse, nil
+	return r.FindFilterByID(ctx, id)
 }
 
 func (r *ProfileRepository) UpdateFilter(
@@ -520,13 +458,7 @@ func (r *ProfileRepository) UpdateFilter(
 		return nil, err
 	}
 	tx.Commit()
-	filterResponse, err := r.FindFilterBySessionID(ctx, p.SessionID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateFilter", "FindFilterBySessionID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return filterResponse, nil
+	return r.FindFilterBySessionID(ctx, p.SessionID)
 }
 
 func (r *ProfileRepository) DeleteFilter(
@@ -546,13 +478,7 @@ func (r *ProfileRepository) DeleteFilter(
 		return nil, err
 	}
 	tx.Commit()
-	filterResponse, err := r.FindFilterBySessionID(ctx, p.SessionID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteFilter", "FindFilterBySessionID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return filterResponse, nil
+	return r.FindFilterBySessionID(ctx, p.SessionID)
 }
 
 func (r *ProfileRepository) FindFilterByID(
@@ -620,13 +546,7 @@ func (r *ProfileRepository) AddTelegram(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	telegramResponse, err := r.FindTelegramByID(ctx, id)
-	if err != nil {
-		errorMessage := r.getErrorMessage("AddTelegram", "FindTelegramByID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return telegramResponse, nil
+	return r.FindTelegramByID(ctx, id)
 }
 
 func (r *ProfileRepository) UpdateTelegram(
@@ -649,13 +569,7 @@ func (r *ProfileRepository) UpdateTelegram(
 		return nil, err
 	}
 	tx.Commit()
-	telegramResponse, err := r.FindTelegramBySessionID(ctx, p.SessionID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateTelegram", "FindTelegramBySessionID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return telegramResponse, nil
+	return r.FindTelegramBySessionID(ctx, p.SessionID)
 }
 
 func (r *ProfileRepository) DeleteTelegram(
@@ -675,13 +589,7 @@ func (r *ProfileRepository) DeleteTelegram(
 		return nil, err
 	}
 	tx.Commit()
-	telegramResponse, err := r.FindTelegramBySessionID(ctx, p.SessionID)
-	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteTelegram", "FindTelegramBySessionID")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return telegramResponse, nil
+	return r.FindTelegramBySessionID(ctx, p.SessionID)
 }
 
 func (r *ProfileRepository) FindTelegramByID(
@@ -725,6 +633,48 @@ func (r *ProfileRepository) FindTelegramBySessionID(
 		&p.AllowsWriteToPm, &p.QueryID, &p.ChatID, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindTelegramBySessionID", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return p, nil
+}
+
+func (r *ProfileRepository) AddBlock(
+	ctx context.Context, p *request.ProfileBlockAddRequestRepositoryDto) (*entity.ProfileBlockEntity, error) {
+	query := "INSERT INTO profile_blocks (session_id, blocked_user_session_id, is_blocked, created_at, updated_at)" +
+		" VALUES ($1, $2, $3, $4, $5)" +
+		" RETURNING id"
+	row := r.db.QueryRowContext(ctx, query, &p.SessionID, &p.BlockedUserSessionID, &p.IsBlocked, &p.CreatedAt,
+		&p.UpdatedAt)
+	if row == nil {
+		errorMessage := r.getErrorMessage("AddBlock", "QueryRowContext")
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+		return nil, ErrNotRowsFound
+	}
+	id := uint64(0)
+	err := row.Scan(&id)
+	if err != nil {
+		errorMessage := r.getErrorMessage("AddBlock", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return r.FindBlockByID(ctx, id)
+}
+
+func (r *ProfileRepository) FindBlockByID(ctx context.Context, id uint64) (*entity.ProfileBlockEntity, error) {
+	p := &entity.ProfileBlockEntity{}
+	query := "SELECT id, session_id, blocked_user_session_id, is_blocked, created_at, updated_at " +
+		" FROM profile_blocks " +
+		" WHERE id=$1"
+	row := r.db.QueryRowContext(ctx, query, id)
+	if row == nil {
+		errorMessage := r.getErrorMessage("FindBlockByID", "QueryRowContext")
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+		return nil, ErrNotRowsFound
+	}
+	err := row.Scan(&p.ID, &p.SessionID, &p.BlockedUserSessionID, &p.IsBlocked, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		errorMessage := r.getErrorMessage("FindBlockByID", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}

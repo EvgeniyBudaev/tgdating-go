@@ -60,6 +60,8 @@ type ProfileRepository interface {
 		p *request.ProfileTelegramDeleteRequestRepositoryDto) (*entity.ProfileTelegramEntity, error)
 	FindTelegramByID(ctx context.Context, id uint64) (*entity.ProfileTelegramEntity, error)
 	FindTelegramBySessionID(ctx context.Context, sessionID string) (*entity.ProfileTelegramEntity, error)
+	AddBlock(ctx context.Context, p *request.ProfileBlockAddRequestRepositoryDto) (*entity.ProfileBlockEntity, error)
+	FindBlockByID(ctx context.Context, id uint64) (*entity.ProfileBlockEntity, error)
 }
 
 type ProfileService struct {
@@ -256,13 +258,7 @@ func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	imageResponse, err := s.repository.AddImage(ctx, imageConverted)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddImage", "AddImage")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return imageResponse, err
+	return s.repository.AddImage(ctx, imageConverted)
 }
 
 func (s *ProfileService) UpdateImageList(
@@ -301,13 +297,7 @@ func (s *ProfileService) DeleteImage(
 	}
 	imageMapper := &mapper.ProfileImageMapper{}
 	imageRequest := imageMapper.MapToDeleteRequest(image.ID)
-	imageDeleted, err := s.repository.DeleteImage(ctx, imageRequest)
-	if err != nil {
-		errorMessage := s.getErrorMessage("DeleteImage", "DeleteImage")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return imageDeleted, nil
+	return s.repository.DeleteImage(ctx, imageRequest)
 }
 
 func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber.Ctx, file *multipart.FileHeader,
@@ -400,12 +390,46 @@ func (s *ProfileService) convertImage(directoryPath, filePath, fileName string) 
 }
 
 func (s *ProfileService) deleteFile(filePath string) error {
-	if err := os.Remove(filePath); err != nil {
-		errorMessage := s.getErrorMessage("deleteFile", "Remove")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return err
-	}
-	return nil
+	return os.Remove(filePath)
+}
+
+func (s *ProfileService) AddNavigator(
+	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileNavigatorEntity, error) {
+	navigatorMapper := &mapper.ProfileNavigatorMapper{}
+	navigatorRequest := navigatorMapper.MapToAddRequest(pr)
+	return s.repository.AddNavigator(ctx, navigatorRequest)
+}
+
+func (s *ProfileService) AddFilter(
+	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileFilterEntity, error) {
+	filterMapper := &mapper.ProfileFilterMapper{}
+	filterRequest := filterMapper.MapToAddRequest(pr)
+	return s.repository.AddFilter(ctx, filterRequest)
+}
+
+func (s *ProfileService) AddTelegram(
+	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileTelegramEntity, error) {
+	telegramMapper := &mapper.ProfileTelegramMapper{}
+	telegramRequest := telegramMapper.MapToAddRequest(pr)
+	return s.repository.AddTelegram(ctx, telegramRequest)
+}
+
+func (s *ProfileService) AddBlock(
+	ctx context.Context, pr *request.ProfileBlockRequestDto) (*entity.ProfileBlockEntity, error) {
+	blockMapper := &mapper.ProfileBlockMapper{}
+	blockRequest := blockMapper.MapToAddRequest(pr)
+	return s.repository.AddBlock(ctx, blockRequest)
+}
+
+func (s *ProfileService) getNowUtc() time.Time {
+	return time.Now().UTC()
+}
+
+func (s *ProfileService) checkIsOnline(lastOnline time.Time) bool {
+	now := s.getNowUtc()
+	duration := now.Sub(lastOnline)
+	minutes := duration.Minutes()
+	return minutes < 5
 }
 
 func (s *ProfileService) replaceExtension(filename string) string {
@@ -418,56 +442,6 @@ func (s *ProfileService) replaceExtension(filename string) string {
 func (s *ProfileService) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
 		errorFilePath)
-}
-
-func (s *ProfileService) AddNavigator(
-	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileNavigatorEntity, error) {
-	navigatorMapper := &mapper.ProfileNavigatorMapper{}
-	navigatorRequest := navigatorMapper.MapToAddRequest(pr)
-	NavigatorResponse, err := s.repository.AddNavigator(ctx, navigatorRequest)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddNavigator", "AddNavigator")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return NavigatorResponse, nil
-}
-
-func (s *ProfileService) AddFilter(
-	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileFilterEntity, error) {
-	filterMapper := &mapper.ProfileFilterMapper{}
-	filterRequest := filterMapper.MapToAddRequest(pr)
-	filterResponse, err := s.repository.AddFilter(ctx, filterRequest)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddFilter", "AddFilter")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return filterResponse, nil
-}
-
-func (s *ProfileService) AddTelegram(
-	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.ProfileTelegramEntity, error) {
-	telegramMapper := &mapper.ProfileTelegramMapper{}
-	telegramRequest := telegramMapper.MapToAddRequest(pr)
-	telegramResponse, err := s.repository.AddTelegram(ctx, telegramRequest)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddTelegram", "AddTelegram")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return telegramResponse, nil
-}
-
-func (s *ProfileService) getNowUtc() time.Time {
-	return time.Now().UTC()
-}
-
-func (s *ProfileService) checkIsOnline(lastOnline time.Time) bool {
-	now := s.getNowUtc()
-	duration := now.Sub(lastOnline)
-	minutes := duration.Minutes()
-	return minutes < 5
 }
 
 func (s *ProfileService) checkUserExists(ctx context.Context, sessionID string) (bool, error) {

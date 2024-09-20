@@ -6,6 +6,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/controller/http/api/v1"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -23,6 +24,7 @@ type ProfileService interface {
 	UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 		pr *request.ProfileUpdateRequestDto) (*response.ProfileUpdateResponseDto, error)
 	DeleteProfile(ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
+	AddBlock(ctx context.Context, pr *request.ProfileBlockRequestDto) (*entity.ProfileBlockEntity, error)
 }
 
 type ProfileController struct {
@@ -50,7 +52,6 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("ProfileAddRequestDto: ", req)
 		profileResponse, err := pc.service.AddProfile(ctx, ctf, req)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("AddProfile", "AddProfile")
@@ -72,7 +73,6 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("ProfileUpdateRequestDto: ", req)
 		profileResponse, err := pc.service.UpdateProfile(ctx, ctf, req)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("UpdateProfile", "UpdateProfile")
@@ -94,10 +94,30 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("ProfileDeleteRequestDto: ", req)
 		profileResponse, err := pc.service.DeleteProfile(ctx, req)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("DeleteProfile", "DeleteProfile")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) AddBlock() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("POST /api/v1/profiles/blocks")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		req := &request.ProfileBlockRequestDto{}
+		if err := ctf.BodyParser(&req); err != nil {
+			errorMessage := pc.getErrorMessage("AddBlock", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileResponse, err := pc.service.AddBlock(ctx, req)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("AddBlock", "AddBlock")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
