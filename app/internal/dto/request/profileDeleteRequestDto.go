@@ -1,5 +1,5 @@
 package request
 
 type ProfileDeleteRequestDto struct {
-	SessionID string `json:"sessionId"`
+	SessionId string `json:"sessionId"`
 }

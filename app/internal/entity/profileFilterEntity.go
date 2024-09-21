@@ -3,8 +3,8 @@ package entity
 import "time"
 
 type ProfileFilterEntity struct {
-	ID           uint64    `json:"id"`
-	SessionID    string    `json:"sessionId"`
+	Id           uint64    `json:"id"`
+	SessionId    string    `json:"sessionId"`
 	SearchGender string    `json:"searchGender"`
 	LookingFor   string    `json:"lookingFor"`
 	AgeFrom      byte      `json:"ageFrom"`

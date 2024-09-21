@@ -5,7 +5,7 @@ import (
 )
 
 type ProfileImageUpdateRequestRepositoryDto struct {
-	ID        uint64    `json:"id"`
+	Id        uint64    `json:"id"`
 	Name      string    `json:"name"`
 	Url       string    `json:"url"`
 	Size      int64     `json:"size"`

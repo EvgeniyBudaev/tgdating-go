@@ -5,7 +5,7 @@ import (
 )
 
 type ProfileFilterAddRequestRepositoryDto struct {
-	SessionID    string    `json:"sessionId"`
+	SessionId    string    `json:"sessionId"`
 	SearchGender string    `json:"searchGender"`
 	LookingFor   string    `json:"lookingFor"`
 	AgeFrom      byte      `json:"ageFrom"`

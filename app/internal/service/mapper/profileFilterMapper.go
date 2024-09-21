@@ -11,30 +11,30 @@ type ProfileFilterMapper struct {
 }
 
 func (pm *ProfileFilterMapper) MapToResponse(
-	profileFilterEntity *entity.ProfileFilterEntity) *response.ProfileFilterResponseDto {
+	pe *entity.ProfileFilterEntity) *response.ProfileFilterResponseDto {
 	return &response.ProfileFilterResponseDto{
-		SessionID:    profileFilterEntity.SessionID,
-		SearchGender: profileFilterEntity.SearchGender,
-		LookingFor:   profileFilterEntity.LookingFor,
-		AgeFrom:      profileFilterEntity.AgeFrom,
-		AgeTo:        profileFilterEntity.AgeTo,
-		Distance:     profileFilterEntity.Distance,
-		Page:         profileFilterEntity.Page,
-		Size:         profileFilterEntity.Size,
+		SessionId:    pe.SessionId,
+		SearchGender: pe.SearchGender,
+		LookingFor:   pe.LookingFor,
+		AgeFrom:      pe.AgeFrom,
+		AgeTo:        pe.AgeTo,
+		Distance:     pe.Distance,
+		Page:         pe.Page,
+		Size:         pe.Size,
 	}
 }
 
 func (pm *ProfileFilterMapper) MapToAddRequest(
-	profileAddRequestDto *request.ProfileAddRequestDto) *request.ProfileFilterAddRequestRepositoryDto {
+	pr *request.ProfileAddRequestDto) *request.ProfileFilterAddRequestRepositoryDto {
 	return &request.ProfileFilterAddRequestRepositoryDto{
-		SessionID:    profileAddRequestDto.SessionID,
-		SearchGender: profileAddRequestDto.SearchGender,
-		LookingFor:   profileAddRequestDto.LookingFor,
-		AgeFrom:      profileAddRequestDto.AgeFrom,
-		AgeTo:        profileAddRequestDto.AgeTo,
-		Distance:     profileAddRequestDto.Distance,
-		Page:         profileAddRequestDto.Page,
-		Size:         profileAddRequestDto.Size,
+		SessionId:    pr.SessionId,
+		SearchGender: pr.SearchGender,
+		LookingFor:   pr.LookingFor,
+		AgeFrom:      pr.AgeFrom,
+		AgeTo:        pr.AgeTo,
+		Distance:     pr.Distance,
+		Page:         pr.Page,
+		Size:         pr.Size,
 		IsDeleted:    false,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
@@ -42,23 +42,23 @@ func (pm *ProfileFilterMapper) MapToAddRequest(
 }
 
 func (pm *ProfileFilterMapper) MapToUpdateRequest(
-	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *request.ProfileFilterUpdateRequestRepositoryDto {
+	pr *request.ProfileUpdateRequestDto) *request.ProfileFilterUpdateRequestRepositoryDto {
 	return &request.ProfileFilterUpdateRequestRepositoryDto{
-		SessionID:    profileUpdateRequestDto.SessionID,
-		SearchGender: profileUpdateRequestDto.SearchGender,
-		LookingFor:   profileUpdateRequestDto.LookingFor,
-		AgeFrom:      profileUpdateRequestDto.AgeFrom,
-		AgeTo:        profileUpdateRequestDto.AgeTo,
-		Distance:     profileUpdateRequestDto.Distance,
-		Page:         profileUpdateRequestDto.Page,
-		Size:         profileUpdateRequestDto.Size,
+		SessionId:    pr.SessionId,
+		SearchGender: pr.SearchGender,
+		LookingFor:   pr.LookingFor,
+		AgeFrom:      pr.AgeFrom,
+		AgeTo:        pr.AgeTo,
+		Distance:     pr.Distance,
+		Page:         pr.Page,
+		Size:         pr.Size,
 		UpdatedAt:    time.Now(),
 	}
 }
 
 func (pm *ProfileFilterMapper) MapToDeleteRequest(sessionId string) *request.ProfileFilterDeleteRequestRepositoryDto {
 	return &request.ProfileFilterDeleteRequestRepositoryDto{
-		SessionID: sessionId,
+		SessionId: sessionId,
 		IsDeleted: true,
 		UpdatedAt: time.Now(),
 	}

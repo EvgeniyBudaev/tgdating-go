@@ -5,8 +5,8 @@ import (
 )
 
 type ProfileBlockAddRequestRepositoryDto struct {
-	SessionID            string    `json:"sessionId"`
-	BlockedUserSessionID string    `json:"blockedUserSessionId"`
+	SessionId            string    `json:"sessionId"`
+	BlockedUserSessionId string    `json:"blockedUserSessionId"`
 	IsBlocked            bool      `json:"isBlocked"`
 	CreatedAt            time.Time `json:"createdAt"`
 	UpdatedAt            time.Time `json:"updatedAt"`

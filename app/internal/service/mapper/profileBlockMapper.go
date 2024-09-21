@@ -9,10 +9,10 @@ type ProfileBlockMapper struct {
 }
 
 func (pm *ProfileBlockMapper) MapToAddRequest(
-	profileBlockRequestDto *request.ProfileBlockRequestDto) *request.ProfileBlockAddRequestRepositoryDto {
+	pr *request.ProfileBlockRequestDto) *request.ProfileBlockAddRequestRepositoryDto {
 	return &request.ProfileBlockAddRequestRepositoryDto{
-		SessionID:            profileBlockRequestDto.SessionID,
-		BlockedUserSessionID: profileBlockRequestDto.BlockedUserSessionID,
+		SessionId:            pr.SessionId,
+		BlockedUserSessionId: pr.BlockedUserSessionId,
 		IsBlocked:            true,
 		CreatedAt:            time.Now(),
 		UpdatedAt:            time.Now(),

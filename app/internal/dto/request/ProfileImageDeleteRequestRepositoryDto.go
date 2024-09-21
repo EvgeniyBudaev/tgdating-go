@@ -5,7 +5,7 @@ import (
 )
 
 type ProfileImageDeleteRequestRepositoryDto struct {
-	ID        uint64    `json:"id"`
+	Id        uint64    `json:"id"`
 	IsDeleted bool      `json:"isDeleted"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }

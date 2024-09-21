@@ -3,7 +3,7 @@ package request
 import "time"
 
 type ProfileAddRequestDto struct {
-	SessionID               string    `json:"sessionId"`
+	SessionId               string    `json:"sessionId"`
 	DisplayName             string    `json:"displayName"`
 	Birthday                time.Time `json:"birthday"`
 	Gender                  string    `json:"gender"`
@@ -13,14 +13,14 @@ type ProfileAddRequestDto struct {
 	Height                  float64   `json:"height"`
 	Weight                  float64   `json:"weight"`
 	LookingFor              string    `json:"lookingFor"`
-	TelegramUserID          uint64    `json:"telegramUserId"`
+	TelegramUserId          uint64    `json:"telegramUserId"`
 	TelegramUsername        string    `json:"telegramUsername"`
 	TelegramFirstName       string    `json:"telegramFirstName"`
 	TelegramLastName        string    `json:"telegramLastName"`
 	TelegramLanguageCode    string    `json:"telegramLanguageCode"`
 	TelegramAllowsWriteToPm bool      `json:"telegramAllowsWriteToPm"`
-	TelegramQueryID         string    `json:"telegramQueryId"`
-	TelegramChatID          uint64    `json:"telegramChatId"`
+	TelegramQueryId         string    `json:"telegramQueryId"`
+	TelegramChatId          uint64    `json:"telegramChatId"`
 	Latitude                float64   `json:"latitude"`
 	Longitude               float64   `json:"longitude"`
 	AgeFrom                 byte      `json:"ageFrom"`

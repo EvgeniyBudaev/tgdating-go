@@ -6,7 +6,7 @@ import (
 )
 
 type ProfileNavigatorAddRequestRepositoryDto struct {
-	SessionID string              `json:"sessionId"`
+	SessionId string              `json:"sessionId"`
 	Location  *entity.PointEntity `json:"location"`
 	IsDeleted bool                `json:"isDeleted"`
 	CreatedAt time.Time           `json:"createdAt"`

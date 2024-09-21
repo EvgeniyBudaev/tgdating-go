@@ -1,9 +1,12 @@
 package response
 
-import "time"
+import (
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
+	"time"
+)
 
-type ProfileUpdateResponseDto struct {
-	SessionID      string                       `json:"sessionId"`
+type ProfileResponseDto struct {
+	SessionId      string                       `json:"sessionId"`
 	DisplayName    string                       `json:"displayName"`
 	Birthday       time.Time                    `json:"birthday"`
 	Gender         string                       `json:"gender"`
@@ -23,4 +26,5 @@ type ProfileUpdateResponseDto struct {
 	Navigator      *ProfileNavigatorResponseDto `json:"navigator"`
 	Filter         *ProfileFilterResponseDto    `json:"filter"`
 	Telegram       *ProfileTelegramResponseDto  `json:"telegram"`
+	Images         []*entity.ProfileImageEntity `json:"images"`
 }

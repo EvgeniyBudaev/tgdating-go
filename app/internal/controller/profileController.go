@@ -22,9 +22,13 @@ type ProfileService interface {
 	AddProfile(ctx context.Context, ctf *fiber.Ctx,
 		pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
 	UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
-		pr *request.ProfileUpdateRequestDto) (*response.ProfileUpdateResponseDto, error)
+		pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error)
 	DeleteProfile(ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
+	GetProfileBySessionId(ctx context.Context, sessionId string,
+		pr *request.ProfileGetBySessionIdRequestDto) (*response.ProfileResponseDto, error)
 	AddBlock(ctx context.Context, pr *request.ProfileBlockRequestDto) (*entity.ProfileBlockEntity, error)
+	AddLike(ctx context.Context, pr *request.ProfileLikeAddRequestDto) (*response.ProfileLikeResponseDto, error)
+	AddComplaint(ctx context.Context, pr *request.ProfileComplaintAddRequestDto) (*entity.ProfileComplaintEntity, error)
 }
 
 type ProfileController struct {
@@ -47,15 +51,13 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileAddRequestDto{}
-		if err := ctf.BodyParser(&req); err != nil {
+		if err := ctf.BodyParser(req); err != nil {
 			errorMessage := pc.getErrorMessage("AddProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		profileResponse, err := pc.service.AddProfile(ctx, ctf, req)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("AddProfile", "AddProfile")
-			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, profileResponse)
@@ -68,15 +70,13 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileUpdateRequestDto{}
-		if err := ctf.BodyParser(&req); err != nil {
+		if err := ctf.BodyParser(req); err != nil {
 			errorMessage := pc.getErrorMessage("UpdateProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		profileResponse, err := pc.service.UpdateProfile(ctx, ctf, req)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("UpdateProfile", "UpdateProfile")
-			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, profileResponse)
@@ -89,15 +89,33 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileDeleteRequestDto{}
-		if err := ctf.BodyParser(&req); err != nil {
+		if err := ctf.BodyParser(req); err != nil {
 			errorMessage := pc.getErrorMessage("DeleteProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		profileResponse, err := pc.service.DeleteProfile(ctx, req)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("DeleteProfile", "DeleteProfile")
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /api/v1/profiles/:sessionId")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		req := &request.ProfileGetBySessionIdRequestDto{}
+		if err := ctf.QueryParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileBySessionId", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		sessionId := ctf.Params("sessionId")
+		profileResponse, err := pc.service.GetProfileBySessionId(ctx, sessionId, req)
+		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, profileResponse)
@@ -110,15 +128,51 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileBlockRequestDto{}
-		if err := ctf.BodyParser(&req); err != nil {
+		if err := ctf.BodyParser(req); err != nil {
 			errorMessage := pc.getErrorMessage("AddBlock", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		profileResponse, err := pc.service.AddBlock(ctx, req)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("AddBlock", "AddBlock")
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) AddLike() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("POST /api/v1/profiles/likes")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		req := &request.ProfileLikeAddRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("AddLike", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileResponse, err := pc.service.AddLike(ctx, req)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) AddComplaint() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("POST /api/v1/profiles/complaints")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		req := &request.ProfileComplaintAddRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("AddComplaint", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileResponse, err := pc.service.AddComplaint(ctx, req)
+		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, profileResponse)

@@ -5,7 +5,7 @@ import (
 )
 
 type ProfileImageAddRequestRepositoryDto struct {
-	SessionID string    `json:"sessionId"`
+	SessionId string    `json:"sessionId"`
 	Name      string    `json:"name"`
 	Url       string    `json:"url"`
 	Size      int64     `json:"size"`

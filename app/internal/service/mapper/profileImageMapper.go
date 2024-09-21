@@ -10,7 +10,7 @@ type ProfileImageMapper struct {
 
 func (pm *ProfileImageMapper) MapToDeleteRequest(id uint64) *request.ProfileImageDeleteRequestRepositoryDto {
 	return &request.ProfileImageDeleteRequestRepositoryDto{
-		ID:        id,
+		Id:        id,
 		IsDeleted: true,
 		UpdatedAt: time.Now().UTC(),
 	}

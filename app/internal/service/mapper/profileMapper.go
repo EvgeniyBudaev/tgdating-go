@@ -15,10 +15,11 @@ func (pm *ProfileMapper) MapToResponse(
 	navigatorResponse *response.ProfileNavigatorResponseDto,
 	filterResponse *response.ProfileFilterResponseDto,
 	telegramResponse *response.ProfileTelegramResponseDto,
+	imageEntityList []*entity.ProfileImageEntity,
 	isOnline bool,
-) *response.ProfileUpdateResponseDto {
-	return &response.ProfileUpdateResponseDto{
-		SessionID:      profileEntity.SessionID,
+) *response.ProfileResponseDto {
+	return &response.ProfileResponseDto{
+		SessionId:      profileEntity.SessionId,
 		DisplayName:    profileEntity.DisplayName,
 		Birthday:       profileEntity.Birthday,
 		Gender:         profileEntity.Gender,
@@ -38,19 +39,20 @@ func (pm *ProfileMapper) MapToResponse(
 		Navigator:      navigatorResponse,
 		Filter:         filterResponse,
 		Telegram:       telegramResponse,
+		Images:         imageEntityList,
 	}
 }
 
 func (pm *ProfileMapper) MapToAddResponse(profileEntity *entity.ProfileEntity) *response.ProfileAddResponseDto {
 	return &response.ProfileAddResponseDto{
-		SessionID: profileEntity.SessionID,
+		SessionId: profileEntity.SessionId,
 	}
 }
 
 func (pm *ProfileMapper) MapToAddRequest(
 	profileAddRequestDto *request.ProfileAddRequestDto) *request.ProfileAddRequestRepositoryDto {
 	return &request.ProfileAddRequestRepositoryDto{
-		SessionID:      profileAddRequestDto.SessionID,
+		SessionId:      profileAddRequestDto.SessionId,
 		DisplayName:    profileAddRequestDto.DisplayName,
 		Birthday:       profileAddRequestDto.Birthday,
 		Gender:         profileAddRequestDto.Gender,
@@ -72,7 +74,7 @@ func (pm *ProfileMapper) MapToAddRequest(
 func (pm *ProfileMapper) MapToUpdateRequest(
 	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *request.ProfileUpdateRequestRepositoryDto {
 	return &request.ProfileUpdateRequestRepositoryDto{
-		SessionID:   profileUpdateRequestDto.SessionID,
+		SessionId:   profileUpdateRequestDto.SessionId,
 		DisplayName: profileUpdateRequestDto.DisplayName,
 		Birthday:    profileUpdateRequestDto.Birthday,
 		Gender:      profileUpdateRequestDto.Gender,
@@ -87,7 +89,7 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 
 func (pm *ProfileMapper) MapToDeleteRequest(sessionId string) *request.ProfileDeleteRequestRepositoryDto {
 	return &request.ProfileDeleteRequestRepositoryDto{
-		SessionID:  sessionId,
+		SessionId:  sessionId,
 		IsDeleted:  true,
 		UpdatedAt:  time.Now().UTC(),
 		LastOnline: time.Now().UTC(),

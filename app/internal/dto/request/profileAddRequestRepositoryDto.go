@@ -3,7 +3,7 @@ package request
 import "time"
 
 type ProfileAddRequestRepositoryDto struct {
-	SessionID      string    `json:"sessionId"`
+	SessionId      string    `json:"sessionId"`
 	DisplayName    string    `json:"displayName"`
 	Birthday       time.Time `json:"birthday"`
 	Gender         string    `json:"gender"`

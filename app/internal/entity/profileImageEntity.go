@@ -3,8 +3,8 @@ package entity
 import "time"
 
 type ProfileImageEntity struct {
-	ID        uint64    `json:"id"`
-	SessionID string    `json:"sessionId"`
+	Id        uint64    `json:"id"`
+	SessionId string    `json:"sessionId"`
 	Name      string    `json:"name"`
 	Url       string    `json:"url"`
 	Size      int64     `json:"size"`

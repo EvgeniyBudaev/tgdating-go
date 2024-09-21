@@ -11,22 +11,25 @@ type ProfileNavigatorMapper struct {
 }
 
 func (pm *ProfileNavigatorMapper) MapToResponse(
-	profileEntity *entity.ProfileEntity,
-	navigatorEntity *entity.ProfileNavigatorEntity) *response.ProfileNavigatorResponseDto {
+	sessionId string, longitude float64, latitude float64) *response.ProfileNavigatorResponseDto {
+	location := &entity.PointEntity{
+		Longitude: longitude,
+		Latitude:  latitude,
+	}
 	return &response.ProfileNavigatorResponseDto{
-		SessionID: profileEntity.SessionID,
-		Location:  navigatorEntity.Location,
+		SessionId: sessionId,
+		Location:  location,
 	}
 }
 
 func (pm *ProfileNavigatorMapper) MapToAddRequest(
-	profileAddRequestDto *request.ProfileAddRequestDto) *request.ProfileNavigatorAddRequestRepositoryDto {
+	pr *request.ProfileAddRequestDto) *request.ProfileNavigatorAddRequestRepositoryDto {
 	point := &entity.PointEntity{
-		Latitude:  profileAddRequestDto.Latitude,
-		Longitude: profileAddRequestDto.Longitude,
+		Longitude: pr.Longitude,
+		Latitude:  pr.Latitude,
 	}
 	return &request.ProfileNavigatorAddRequestRepositoryDto{
-		SessionID: profileAddRequestDto.SessionID,
+		SessionId: pr.SessionId,
 		Location:  point,
 		IsDeleted: false,
 		CreatedAt: time.Now(),
@@ -35,19 +38,18 @@ func (pm *ProfileNavigatorMapper) MapToAddRequest(
 }
 
 func (pm *ProfileNavigatorMapper) MapToUpdateRequest(
-	profileEntity *entity.ProfileEntity,
-	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *request.ProfileNavigatorUpdateRequestDto {
+	sessionId string, longitude float64, latitude float64) *request.ProfileNavigatorUpdateRequestDto {
 	return &request.ProfileNavigatorUpdateRequestDto{
-		SessionID: profileEntity.SessionID,
-		Longitude: profileUpdateRequestDto.Longitude,
-		Latitude:  profileUpdateRequestDto.Latitude,
+		SessionId: sessionId,
+		Longitude: longitude,
+		Latitude:  latitude,
 		UpdatedAt: time.Now().UTC(),
 	}
 }
 
 func (pm *ProfileNavigatorMapper) MapToDeleteRequest(sessionId string) *request.ProfileNavigatorDeleteRequestDto {
 	return &request.ProfileNavigatorDeleteRequestDto{
-		SessionID: sessionId,
+		SessionId: sessionId,
 		IsDeleted: true,
 		UpdatedAt: time.Now().UTC(),
 	}

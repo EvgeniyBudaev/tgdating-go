@@ -5,7 +5,7 @@ import (
 )
 
 type ProfileFilterDeleteRequestRepositoryDto struct {
-	SessionID string    `json:"sessionId"`
+	SessionId string    `json:"sessionId"`
 	IsDeleted bool      `json:"isDeleted"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }

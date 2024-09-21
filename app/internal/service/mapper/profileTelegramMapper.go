@@ -11,32 +11,32 @@ type ProfileTelegramMapper struct {
 }
 
 func (pm *ProfileTelegramMapper) MapToResponse(
-	profileTelegramEntity *entity.ProfileTelegramEntity) *response.ProfileTelegramResponseDto {
+	pe *entity.ProfileTelegramEntity) *response.ProfileTelegramResponseDto {
 	return &response.ProfileTelegramResponseDto{
-		SessionID:       profileTelegramEntity.SessionID,
-		UserID:          profileTelegramEntity.UserID,
-		Username:        profileTelegramEntity.UserName,
-		FirstName:       profileTelegramEntity.FirstName,
-		LastName:        profileTelegramEntity.LastName,
-		LanguageCode:    profileTelegramEntity.LanguageCode,
-		AllowsWriteToPm: profileTelegramEntity.AllowsWriteToPm,
-		QueryID:         profileTelegramEntity.QueryID,
-		ChatID:          profileTelegramEntity.ChatID,
+		SessionId:       pe.SessionId,
+		UserId:          pe.UserId,
+		Username:        pe.UserName,
+		FirstName:       pe.FirstName,
+		LastName:        pe.LastName,
+		LanguageCode:    pe.LanguageCode,
+		AllowsWriteToPm: pe.AllowsWriteToPm,
+		QueryId:         pe.QueryId,
+		ChatId:          pe.ChatId,
 	}
 }
 
 func (pm *ProfileTelegramMapper) MapToAddRequest(
-	profileAddRequestDto *request.ProfileAddRequestDto) *request.ProfileTelegramAddRequestRepositoryDto {
+	pr *request.ProfileAddRequestDto) *request.ProfileTelegramAddRequestRepositoryDto {
 	return &request.ProfileTelegramAddRequestRepositoryDto{
-		SessionID:       profileAddRequestDto.SessionID,
-		UserID:          profileAddRequestDto.TelegramUserID,
-		UserName:        profileAddRequestDto.TelegramUsername,
-		FirstName:       profileAddRequestDto.TelegramFirstName,
-		LastName:        profileAddRequestDto.TelegramLastName,
-		LanguageCode:    profileAddRequestDto.TelegramLanguageCode,
-		AllowsWriteToPm: profileAddRequestDto.TelegramAllowsWriteToPm,
-		QueryID:         profileAddRequestDto.TelegramQueryID,
-		ChatID:          profileAddRequestDto.TelegramChatID,
+		SessionId:       pr.SessionId,
+		UserId:          pr.TelegramUserId,
+		UserName:        pr.TelegramUsername,
+		FirstName:       pr.TelegramFirstName,
+		LastName:        pr.TelegramLastName,
+		LanguageCode:    pr.TelegramLanguageCode,
+		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
+		QueryId:         pr.TelegramQueryId,
+		ChatId:          pr.TelegramChatId,
 		IsDeleted:       false,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
@@ -44,24 +44,24 @@ func (pm *ProfileTelegramMapper) MapToAddRequest(
 }
 
 func (pm *ProfileTelegramMapper) MapToUpdateRequest(
-	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *request.ProfileTelegramUpdateRequestRepositoryDto {
+	pr *request.ProfileUpdateRequestDto) *request.ProfileTelegramUpdateRequestRepositoryDto {
 	return &request.ProfileTelegramUpdateRequestRepositoryDto{
-		SessionID:       profileUpdateRequestDto.SessionID,
-		UserID:          profileUpdateRequestDto.TelegramUserID,
-		UserName:        profileUpdateRequestDto.TelegramUsername,
-		FirstName:       profileUpdateRequestDto.TelegramFirstName,
-		LastName:        profileUpdateRequestDto.TelegramLastName,
-		LanguageCode:    profileUpdateRequestDto.TelegramLanguageCode,
-		AllowsWriteToPm: profileUpdateRequestDto.TelegramAllowsWriteToPm,
-		QueryID:         profileUpdateRequestDto.TelegramQueryID,
-		ChatID:          profileUpdateRequestDto.TelegramChatID,
+		SessionId:       pr.SessionId,
+		UserId:          pr.TelegramUserId,
+		UserName:        pr.TelegramUsername,
+		FirstName:       pr.TelegramFirstName,
+		LastName:        pr.TelegramLastName,
+		LanguageCode:    pr.TelegramLanguageCode,
+		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
+		QueryId:         pr.TelegramQueryId,
+		ChatId:          pr.TelegramChatId,
 		UpdatedAt:       time.Now(),
 	}
 }
 
-func (pm *ProfileTelegramMapper) MapToDeleteRequest(sessionID string) *request.ProfileTelegramDeleteRequestRepositoryDto {
+func (pm *ProfileTelegramMapper) MapToDeleteRequest(sessionId string) *request.ProfileTelegramDeleteRequestRepositoryDto {
 	return &request.ProfileTelegramDeleteRequestRepositoryDto{
-		SessionID: sessionID,
+		SessionId: sessionId,
 		IsDeleted: true,
 		UpdatedAt: time.Now(),
 	}

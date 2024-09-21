@@ -5,8 +5,8 @@ import (
 )
 
 type ProfileEntity struct {
-	ID             uint64    `json:"id"`
-	SessionID      string    `json:"sessionId"`
+	Id             uint64    `json:"id"`
+	SessionId      string    `json:"sessionId"`
 	DisplayName    string    `json:"displayName"`
 	Birthday       time.Time `json:"birthday"`
 	Gender         string    `json:"gender"`
