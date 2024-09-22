@@ -100,8 +100,7 @@ func (r *ProfileRepository) DeleteProfile(
 	return r.FindProfileBySessionId(ctx, p.SessionId)
 }
 
-func (r *ProfileRepository) FindProfileById(
-	ctx context.Context, id uint64) (*entity.ProfileEntity, error) {
+func (r *ProfileRepository) FindProfileById(ctx context.Context, id uint64) (*entity.ProfileEntity, error) {
 	p := &entity.ProfileEntity{}
 	query := "SELECT id, session_id, display_name, birthday, gender, location, description, height, weight," +
 		" is_deleted, is_blocked, is_premium, is_show_distance, is_invisible, created_at, updated_at, last_online" +

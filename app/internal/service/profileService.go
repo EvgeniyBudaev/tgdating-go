@@ -163,8 +163,8 @@ func (s *ProfileService) DeleteProfile(
 	return profileResponse, err
 }
 
-func (s *ProfileService) GetProfileBySessionId(
-	ctx context.Context, sessionId string, pr *request.ProfileGetBySessionIdRequestDto) (*response.ProfileResponseDto, error) {
+func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId string,
+	pr *request.ProfileGetBySessionIdRequestDto) (*response.ProfileResponseDto, error) {
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		return nil, err
 	}
@@ -210,8 +210,7 @@ func (s *ProfileService) GetProfileBySessionId(
 	return profileResponse, err
 }
 
-func (s *ProfileService) AddImageList(
-	ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
+func (s *ProfileService) AddImageList(ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
 	form, err := ctf.MultipartForm()
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddImageList", "MultipartForm")
@@ -241,8 +240,7 @@ func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId
 	return s.imageRepository.AddImage(ctx, imageConverted)
 }
 
-func (s *ProfileService) UpdateImageList(
-	ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
+func (s *ProfileService) UpdateImageList(ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
 	return s.AddImageList(ctx, ctf, sessionId)
 }
 
@@ -262,8 +260,7 @@ func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) 
 	return nil
 }
 
-func (s *ProfileService) DeleteImage(
-	ctx context.Context, image *entity.ImageEntity) (*entity.ImageEntity, error) {
+func (s *ProfileService) DeleteImage(ctx context.Context, image *entity.ImageEntity) (*entity.ImageEntity, error) {
 	filePath := image.Url
 	if err := os.Remove(filePath); err != nil {
 		errorMessage := s.getErrorMessage("DeleteImage", "Remove")
@@ -389,8 +386,7 @@ func (s *ProfileService) AddTelegram(
 	return s.telegramRepository.AddTelegram(ctx, telegramRequest)
 }
 
-func (s *ProfileService) AddBlock(
-	ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error) {
+func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error) {
 	blockMapper := &mapper.BlockMapper{}
 	blockRequest := blockMapper.MapToAddRequest(pr)
 	return s.blockRepository.AddBlock(ctx, blockRequest)
