@@ -26,9 +26,9 @@ type ProfileService interface {
 	DeleteProfile(ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
 	GetProfileBySessionId(ctx context.Context, sessionId string,
 		pr *request.ProfileGetBySessionIdRequestDto) (*response.ProfileResponseDto, error)
-	AddBlock(ctx context.Context, pr *request.ProfileBlockRequestDto) (*entity.ProfileBlockEntity, error)
-	AddLike(ctx context.Context, pr *request.ProfileLikeAddRequestDto) (*response.ProfileLikeResponseDto, error)
-	AddComplaint(ctx context.Context, pr *request.ProfileComplaintAddRequestDto) (*entity.ProfileComplaintEntity, error)
+	AddBlock(ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error)
+	AddLike(ctx context.Context, pr *request.LikeAddRequestDto) (*response.LikeResponseDto, error)
+	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error)
 }
 
 type ProfileController struct {
@@ -127,7 +127,7 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 		pc.logger.Info("POST /api/v1/profiles/blocks")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
-		req := &request.ProfileBlockRequestDto{}
+		req := &request.BlockRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
 			errorMessage := pc.getErrorMessage("AddBlock", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
@@ -146,7 +146,7 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 		pc.logger.Info("POST /api/v1/profiles/likes")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
-		req := &request.ProfileLikeAddRequestDto{}
+		req := &request.LikeAddRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
 			errorMessage := pc.getErrorMessage("AddLike", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
@@ -165,7 +165,7 @@ func (pc *ProfileController) AddComplaint() fiber.Handler {
 		pc.logger.Info("POST /api/v1/profiles/complaints")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
-		req := &request.ProfileComplaintAddRequestDto{}
+		req := &request.ComplaintAddRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
 			errorMessage := pc.getErrorMessage("AddComplaint", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))

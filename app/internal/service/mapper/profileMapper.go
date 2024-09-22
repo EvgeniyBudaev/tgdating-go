@@ -12,10 +12,10 @@ type ProfileMapper struct {
 
 func (pm *ProfileMapper) MapToResponse(
 	profileEntity *entity.ProfileEntity,
-	navigatorResponse *response.ProfileNavigatorResponseDto,
-	filterResponse *response.ProfileFilterResponseDto,
-	telegramResponse *response.ProfileTelegramResponseDto,
-	imageEntityList []*entity.ProfileImageEntity,
+	navigatorResponse *response.NavigatorResponseDto,
+	filterResponse *response.FilterResponseDto,
+	telegramResponse *response.TelegramResponseDto,
+	imageEntityList []*entity.ImageEntity,
 	isOnline bool,
 ) *response.ProfileResponseDto {
 	return &response.ProfileResponseDto{
