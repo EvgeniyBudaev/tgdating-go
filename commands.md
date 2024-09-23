@@ -98,3 +98,8 @@ migrate create -ext sql -dir migrations initSchema force 20240410053939
 
 Create Let’s Encrypt Wildcard Certificates in NGINX
 https://www.webhi.com/how-to/generate-lets-encrypt-wildcard-certificates-nginx/
+
+Keycloak
+```
+./kc.sh start-dev --http-port=8181
+```

@@ -210,6 +210,53 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	return profileResponse, err
 }
 
+func (s *ProfileService) GetProfileList(ctx context.Context,
+	pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error) {
+	sessionId := pr.SessionId
+	err := s.updateLastOnline(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	if pr.Longitude != 0 && pr.Latitude != 0 {
+		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+		if err != nil {
+			return nil, err
+		}
+	}
+	profileMapper := &mapper.ProfileMapper{}
+	profileRequest := profileMapper.MapToListRequest(pr)
+	paginationProfileEntityList, err := s.profileRepository.SelectProfileListBySessionId(ctx, profileRequest)
+	if err != nil {
+		return nil, err
+	}
+	profileContentResponse := make([]*response.ProfileListItemResponseDto, 0)
+	if len(paginationProfileEntityList.Content) > 0 {
+		for _, profileEntity := range paginationProfileEntityList.Content {
+			lastImage, err := s.imageRepository.FindLastImageBySessionId(ctx, profileEntity.SessionId)
+			if err != nil {
+				return nil, err
+			}
+			url := lastImage.Url
+			lastOnline := profileEntity.LastOnline
+			isOnline := s.checkIsOnline(lastOnline)
+			distance := profileEntity.Distance
+			profileItem := response.ProfileListItemResponseDto{
+				SessionId:  profileEntity.SessionId,
+				Distance:   distance,
+				Url:        url,
+				IsOnline:   isOnline,
+				LastOnline: lastOnline,
+			}
+			profileContentResponse = append(profileContentResponse, &profileItem)
+		}
+	}
+	profileListResponse := &response.ProfileListResponseDto{
+		PaginationEntity: paginationProfileEntityList.PaginationEntity,
+		Content:          profileContentResponse,
+	}
+	return profileListResponse, err
+}
+
 func (s *ProfileService) AddImageList(ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
 	form, err := ctf.MultipartForm()
 	if err != nil {

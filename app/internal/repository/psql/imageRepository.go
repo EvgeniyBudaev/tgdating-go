@@ -116,6 +116,31 @@ func (r *ImageRepository) FindImageById(ctx context.Context, imageId uint64) (*e
 	return p, nil
 }
 
+func (r *ImageRepository) FindLastImageBySessionId(ctx context.Context, sessionId string) (*entity.ImageEntity, error) {
+	p := &entity.ImageEntity{}
+	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
+		" is_private, created_at, updated_at" +
+		" FROM profile_images" +
+		" WHERE session_id = $1" +
+		" ORDER BY id DESC" +
+		" LIMIT 1"
+	row := r.db.QueryRowContext(ctx, query, sessionId)
+	if row == nil {
+		errorMessage := r.getErrorMessage("FindLastImageBySessionId",
+			"QueryRowContext")
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
+		return nil, ErrNotRowsFoundImage
+	}
+	err := row.Scan(&p.Id, &p.SessionId, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
+		&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		errorMessage := r.getErrorMessage("FindLastImageBySessionId", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return p, nil
+}
+
 func (r *ImageRepository) SelectImageListPublicBySessionId(
 	ctx context.Context, sessionId string) ([]*entity.ImageEntity, error) {
 	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
@@ -166,8 +191,7 @@ func (r *ImageRepository) SelectImageListBySessionId(
 		err := rows.Scan(&p.Id, &p.SessionId, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
 			&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
-			errorMessage := r.getErrorMessage("SelectImageListBySessionId",
-				"Scan")
+			errorMessage := r.getErrorMessage("SelectImageListBySessionId", "Scan")
 			r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
 			continue
 		}

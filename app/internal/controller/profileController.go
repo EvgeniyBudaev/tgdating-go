@@ -89,7 +89,7 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 
 func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /api/v1/profiles/:sessionId")
+		pc.logger.Info("GET /api/v1/profiles/session/:sessionId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetBySessionIdRequestDto{}
@@ -104,6 +104,26 @@ func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) GetProfileList() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /api/v1/profiles/list")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		req := &request.ProfileGetListRequestDto{}
+		if err := ctf.QueryParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileList", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		fmt.Println("GetProfileList req: ", req)
+		profileListResponse, err := pc.service.GetProfileList(ctx, req)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileListResponse)
 	}
 }
 

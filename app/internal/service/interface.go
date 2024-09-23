@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 )
 
@@ -12,6 +13,8 @@ type ProfileRepository interface {
 	DeleteProfile(ctx context.Context, p *request.ProfileDeleteRequestRepositoryDto) (*entity.ProfileEntity, error)
 	FindProfileById(ctx context.Context, id uint64) (*entity.ProfileEntity, error)
 	FindProfileBySessionId(ctx context.Context, sessionId string) (*entity.ProfileEntity, error)
+	SelectProfileListBySessionId(ctx context.Context,
+		pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error)
 	UpdateLastOnline(ctx context.Context, p *request.ProfileUpdateLastOnlineRequestRepositoryDto) error
 }
 
@@ -43,6 +46,7 @@ type ImageRepository interface {
 	UpdateImage(ctx context.Context, p *request.ImageUpdateRequestRepositoryDto) (*entity.ImageEntity, error)
 	DeleteImage(ctx context.Context, p *request.ImageDeleteRequestRepositoryDto) (*entity.ImageEntity, error)
 	FindImageById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error)
+	FindLastImageBySessionId(ctx context.Context, sessionId string) (*entity.ImageEntity, error)
 	SelectImageListPublicBySessionId(ctx context.Context, sessionId string) ([]*entity.ImageEntity, error)
 	SelectImageListBySessionId(ctx context.Context, sessionId string) ([]*entity.ImageEntity, error)
 }

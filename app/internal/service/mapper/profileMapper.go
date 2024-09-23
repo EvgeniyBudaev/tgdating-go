@@ -11,55 +11,51 @@ type ProfileMapper struct {
 }
 
 func (pm *ProfileMapper) MapToResponse(
-	profileEntity *entity.ProfileEntity,
-	navigatorResponse *response.NavigatorResponseDto,
-	filterResponse *response.FilterResponseDto,
-	telegramResponse *response.TelegramResponseDto,
-	imageEntityList []*entity.ImageEntity,
-	isOnline bool,
+	pe *entity.ProfileEntity, nr *response.NavigatorResponseDto, fr *response.FilterResponseDto,
+	tr *response.TelegramResponseDto, il []*entity.ImageEntity, isOnline bool,
 ) *response.ProfileResponseDto {
 	return &response.ProfileResponseDto{
-		SessionId:      profileEntity.SessionId,
-		DisplayName:    profileEntity.DisplayName,
-		Birthday:       profileEntity.Birthday,
-		Gender:         profileEntity.Gender,
-		Location:       profileEntity.Location,
-		Description:    profileEntity.Description,
-		Height:         profileEntity.Height,
-		Weight:         profileEntity.Weight,
-		IsDeleted:      profileEntity.IsDeleted,
-		IsBlocked:      profileEntity.IsBlocked,
-		IsPremium:      profileEntity.IsPremium,
-		IsShowDistance: profileEntity.IsShowDistance,
-		IsInvisible:    profileEntity.IsInvisible,
+		SessionId:      pe.SessionId,
+		DisplayName:    pe.DisplayName,
+		Birthday:       pe.Birthday,
+		Gender:         pe.Gender,
+		Location:       pe.Location,
+		Description:    pe.Description,
+		Height:         pe.Height,
+		Weight:         pe.Weight,
+		IsDeleted:      pe.IsDeleted,
+		IsBlocked:      pe.IsBlocked,
+		IsPremium:      pe.IsPremium,
+		IsShowDistance: pe.IsShowDistance,
+		IsInvisible:    pe.IsInvisible,
 		IsOnline:       isOnline,
-		CreatedAt:      profileEntity.CreatedAt,
-		UpdatedAt:      profileEntity.UpdatedAt,
-		LastOnline:     profileEntity.LastOnline,
-		Navigator:      navigatorResponse,
-		Filter:         filterResponse,
-		Telegram:       telegramResponse,
-		Images:         imageEntityList,
+		CreatedAt:      pe.CreatedAt,
+		UpdatedAt:      pe.UpdatedAt,
+		LastOnline:     pe.LastOnline,
+		Navigator:      nr,
+		Filter:         fr,
+		Telegram:       tr,
+		Images:         il,
 	}
 }
 
-func (pm *ProfileMapper) MapToAddResponse(profileEntity *entity.ProfileEntity) *response.ProfileAddResponseDto {
+func (pm *ProfileMapper) MapToAddResponse(pe *entity.ProfileEntity) *response.ProfileAddResponseDto {
 	return &response.ProfileAddResponseDto{
-		SessionId: profileEntity.SessionId,
+		SessionId: pe.SessionId,
 	}
 }
 
 func (pm *ProfileMapper) MapToAddRequest(
-	profileAddRequestDto *request.ProfileAddRequestDto) *request.ProfileAddRequestRepositoryDto {
+	pr *request.ProfileAddRequestDto) *request.ProfileAddRequestRepositoryDto {
 	return &request.ProfileAddRequestRepositoryDto{
-		SessionId:      profileAddRequestDto.SessionId,
-		DisplayName:    profileAddRequestDto.DisplayName,
-		Birthday:       profileAddRequestDto.Birthday,
-		Gender:         profileAddRequestDto.Gender,
-		Location:       profileAddRequestDto.Location,
-		Description:    profileAddRequestDto.Description,
-		Height:         profileAddRequestDto.Height,
-		Weight:         profileAddRequestDto.Weight,
+		SessionId:      pr.SessionId,
+		DisplayName:    pr.DisplayName,
+		Birthday:       pr.Birthday,
+		Gender:         pr.Gender,
+		Location:       pr.Location,
+		Description:    pr.Description,
+		Height:         pr.Height,
+		Weight:         pr.Weight,
 		IsDeleted:      false,
 		IsBlocked:      false,
 		IsPremium:      false,
@@ -72,16 +68,16 @@ func (pm *ProfileMapper) MapToAddRequest(
 }
 
 func (pm *ProfileMapper) MapToUpdateRequest(
-	profileUpdateRequestDto *request.ProfileUpdateRequestDto) *request.ProfileUpdateRequestRepositoryDto {
+	pr *request.ProfileUpdateRequestDto) *request.ProfileUpdateRequestRepositoryDto {
 	return &request.ProfileUpdateRequestRepositoryDto{
-		SessionId:   profileUpdateRequestDto.SessionId,
-		DisplayName: profileUpdateRequestDto.DisplayName,
-		Birthday:    profileUpdateRequestDto.Birthday,
-		Gender:      profileUpdateRequestDto.Gender,
-		Location:    profileUpdateRequestDto.Location,
-		Description: profileUpdateRequestDto.Description,
-		Height:      profileUpdateRequestDto.Height,
-		Weight:      profileUpdateRequestDto.Weight,
+		SessionId:   pr.SessionId,
+		DisplayName: pr.DisplayName,
+		Birthday:    pr.Birthday,
+		Gender:      pr.Gender,
+		Location:    pr.Location,
+		Description: pr.Description,
+		Height:      pr.Height,
+		Weight:      pr.Weight,
 		UpdatedAt:   time.Now().UTC(),
 		LastOnline:  time.Now().UTC(),
 	}
@@ -93,5 +89,19 @@ func (pm *ProfileMapper) MapToDeleteRequest(sessionId string) *request.ProfileDe
 		IsDeleted:  true,
 		UpdatedAt:  time.Now().UTC(),
 		LastOnline: time.Now().UTC(),
+	}
+}
+
+func (pm *ProfileMapper) MapToListRequest(
+	pr *request.ProfileGetListRequestDto) *request.ProfileGetListRequestRepositoryDto {
+	return &request.ProfileGetListRequestRepositoryDto{
+		SessionId:    pr.SessionId,
+		SearchGender: pr.SearchGender,
+		LookingFor:   pr.LookingFor,
+		AgeFrom:      pr.AgeFrom,
+		AgeTo:        pr.AgeTo,
+		Distance:     pr.Distance,
+		Page:         pr.Page,
+		Size:         pr.Size,
 	}
 }
