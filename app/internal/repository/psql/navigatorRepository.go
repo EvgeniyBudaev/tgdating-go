@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"go.uber.org/zap"
@@ -98,10 +99,10 @@ func (r *NavigatorRepository) FindNavigatorById(
 	p := &entity.NavigatorEntity{}
 	var longitude sql.NullFloat64
 	var latitude sql.NullFloat64
-	query := `SELECT id, session_id, ST_X(location) as longitude, ST_Y(location) as latitude, is_deleted, created_at,
-                updated_at
-			  FROM profile_navigators
-			  WHERE id = $1`
+	query := "SELECT id, session_id, ST_X(location) as longitude, ST_Y(location) as latitude, is_deleted, created_at," +
+		" updated_at" +
+		" FROM profile_navigators" +
+		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
 	if row == nil {
 		errorMessage := r.getErrorMessage("FindNavigatorById", "QueryRowContext")
@@ -129,10 +130,10 @@ func (r *NavigatorRepository) FindNavigatorBySessionId(
 	p := &entity.NavigatorEntity{}
 	var longitude sql.NullFloat64
 	var latitude sql.NullFloat64
-	query := `SELECT id, session_id, ST_X(location) as longitude, ST_Y(location) as latitude, is_deleted, created_at,
-                updated_at
-			  FROM profile_navigators
-			  WHERE session_id = $1`
+	query := "SELECT id, session_id, ST_X(location) as longitude, ST_Y(location) as latitude, is_deleted, created_at," +
+		" updated_at" +
+		" FROM profile_navigators" +
+		" WHERE session_id = $1"
 	row := r.db.QueryRowContext(ctx, query, sessionId)
 	if row == nil {
 		errorMessage := r.getErrorMessage("FindNavigatorBySessionId",
@@ -143,6 +144,45 @@ func (r *NavigatorRepository) FindNavigatorBySessionId(
 	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindNavigatorBySessionId", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	if !longitude.Valid && !latitude.Valid {
+		return nil, err
+	}
+	p.Location = &entity.PointEntity{
+		Latitude:  latitude.Float64,
+		Longitude: longitude.Float64,
+	}
+	return p, nil
+}
+
+func (r *NavigatorRepository) FindDistance(ctx context.Context, pe *entity.NavigatorEntity,
+	pve *entity.NavigatorEntity) (*response.NavigatorDistanceResponseRepositoryDto, error) {
+	sessionId := pe.SessionId
+	longitudeSession := pe.Location.Longitude
+	latitudeSession := pe.Location.Latitude
+	longitudeViewed := pve.Location.Longitude
+	latitudeViewed := pve.Location.Latitude
+	p := &response.NavigatorDistanceResponseRepositoryDto{}
+	var longitude sql.NullFloat64
+	var latitude sql.NullFloat64
+	query := "SELECT id, session_id, ST_X(location) as longitude, ST_Y(location) as latitude, is_deleted, created_at," +
+		" updated_at," +
+		" ST_DistanceSphere(ST_SetSRID(ST_MakePoint($4, $5),  4326)," +
+		" ST_SetSRID(ST_MakePoint($2, $3),  4326)) as distance" +
+		" FROM profile_navigators" +
+		" WHERE session_id = $1"
+	row := r.db.QueryRowContext(ctx, query, sessionId, longitudeSession, latitudeSession, longitudeViewed,
+		latitudeViewed)
+	if row == nil {
+		errorMessage := r.getErrorMessage("FindDistance", "QueryRowContext")
+		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundNavigator))
+		return nil, ErrNotRowsFoundNavigator
+	}
+	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt, &p.Distance)
+	if err != nil {
+		errorMessage := r.getErrorMessage("FindDistance", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}

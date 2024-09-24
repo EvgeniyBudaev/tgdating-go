@@ -107,6 +107,26 @@ func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) GetProfileDetail() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /api/v1/profiles/detail/:sessionId")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		req := &request.ProfileGetDetailRequestDto{}
+		if err := ctf.QueryParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileDetail", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		sessionId := ctf.Params("sessionId")
+		profileResponse, err := pc.service.GetProfileDetail(ctx, sessionId, req)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
 func (pc *ProfileController) GetProfileList() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("GET /api/v1/profiles/list")

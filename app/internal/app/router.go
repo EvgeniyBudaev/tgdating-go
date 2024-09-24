@@ -10,6 +10,7 @@ func InitPublicRoutes(router fiber.Router, profileController *controller.Profile
 	router.Put("/profiles", profileController.UpdateProfile())
 	router.Delete("/profiles", profileController.DeleteProfile())
 	router.Get("/profiles/session/:sessionId", profileController.GetProfileBySessionId())
+	router.Get("/profiles/detail/:sessionId", profileController.GetProfileDetail())
 	router.Get("/profiles/list", profileController.GetProfileList())
 	router.Post("/profiles/blocks", profileController.AddBlock())
 	router.Post("/profiles/likes", profileController.AddLike())

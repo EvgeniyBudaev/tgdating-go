@@ -24,6 +24,8 @@ type NavigatorRepository interface {
 	DeleteNavigator(ctx context.Context, p *request.NavigatorDeleteRequestDto) (*entity.NavigatorEntity, error)
 	FindNavigatorById(ctx context.Context, id uint64) (*entity.NavigatorEntity, error)
 	FindNavigatorBySessionId(ctx context.Context, sessionId string) (*entity.NavigatorEntity, error)
+	FindDistance(ctx context.Context, pe *entity.NavigatorEntity,
+		pve *entity.NavigatorEntity) (*response.NavigatorDistanceResponseRepositoryDto, error)
 }
 
 type FilterRepository interface {
@@ -54,6 +56,7 @@ type ImageRepository interface {
 type LikeRepository interface {
 	AddLike(ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*entity.LikeEntity, error)
 	FindLikeById(ctx context.Context, id uint64) (*entity.LikeEntity, error)
+	FindLikeBySessionId(ctx context.Context, sessionId string) (*entity.LikeEntity, error)
 }
 
 type BlockRepository interface {

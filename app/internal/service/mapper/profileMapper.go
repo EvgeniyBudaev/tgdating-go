@@ -39,6 +39,35 @@ func (pm *ProfileMapper) MapToResponse(
 	}
 }
 
+func (pm *ProfileMapper) MapToDetailResponse(
+	pe *entity.ProfileEntity, nr *response.NavigatorDetailResponseDto, lr *response.LikeResponseDto,
+	tr *response.TelegramResponseDto, il []*entity.ImageEntity, isOnline bool,
+) *response.ProfileDetailResponseDto {
+	return &response.ProfileDetailResponseDto{
+		SessionId:      pe.SessionId,
+		DisplayName:    pe.DisplayName,
+		Birthday:       pe.Birthday,
+		Gender:         pe.Gender,
+		Location:       pe.Location,
+		Description:    pe.Description,
+		Height:         pe.Height,
+		Weight:         pe.Weight,
+		IsDeleted:      pe.IsDeleted,
+		IsBlocked:      pe.IsBlocked,
+		IsPremium:      pe.IsPremium,
+		IsShowDistance: pe.IsShowDistance,
+		IsInvisible:    pe.IsInvisible,
+		IsOnline:       isOnline,
+		CreatedAt:      pe.CreatedAt,
+		UpdatedAt:      pe.UpdatedAt,
+		LastOnline:     pe.LastOnline,
+		Navigator:      nr,
+		Like:           lr,
+		Telegram:       tr,
+		Images:         il,
+	}
+}
+
 func (pm *ProfileMapper) MapToAddResponse(pe *entity.ProfileEntity) *response.ProfileAddResponseDto {
 	return &response.ProfileAddResponseDto{
 		SessionId: pe.SessionId,

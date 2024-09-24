@@ -73,6 +73,24 @@ func (r *LikeRepository) FindLikeById(ctx context.Context, id uint64) (*entity.L
 	return p, nil
 }
 
+func (r *LikeRepository) FindLikeBySessionId(ctx context.Context, sessionId string) (*entity.LikeEntity, error) {
+	p := &entity.LikeEntity{}
+	query := "SELECT id, session_id, liked_session_id, is_liked, is_deleted, created_at, updated_at " +
+		" FROM profile_likes" +
+		" WHERE session_id=$1"
+	row := r.db.QueryRowContext(ctx, query, sessionId)
+	err := row.Scan(&p.Id, &p.SessionId, &p.LikedSessionId, &p.IsLiked, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		errorMessage := r.getErrorMessage("FindLikeBySessionId", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, nil
+	}
+	return p, nil
+}
+
 func (r *LikeRepository) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
 		errorFilePathILike)

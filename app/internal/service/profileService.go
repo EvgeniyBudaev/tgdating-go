@@ -22,6 +22,7 @@ import (
 
 const (
 	errorFilePath = "internal/service/profileService.go"
+	MIN_DISTANCE  = 100
 )
 
 type ProfileService struct {
@@ -168,12 +169,7 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		return nil, err
 	}
-	profileMapper := &mapper.ProfileMapper{}
-	profileEntity, err := s.profileRepository.FindProfileBySessionId(ctx, sessionId)
-	if err != nil {
-		return nil, err
-	}
-	err = s.updateLastOnline(ctx, sessionId)
+	err := s.updateLastOnline(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -182,6 +178,11 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 		if err != nil {
 			return nil, err
 		}
+	}
+	profileMapper := &mapper.ProfileMapper{}
+	profileEntity, err := s.profileRepository.FindProfileBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
 	}
 	navigatorMapper := &mapper.NavigatorMapper{}
 	navigatorEntity, err := s.navigatorRepository.FindNavigatorBySessionId(ctx, sessionId)
@@ -207,6 +208,76 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	imageEntityList, err := s.imageRepository.SelectImageListPublicBySessionId(ctx, sessionId)
 	profileResponse := profileMapper.MapToResponse(
 		profileEntity, navigatorResponse, filterResponse, telegramResponse, imageEntityList, isOnline)
+	return profileResponse, err
+}
+
+func (s *ProfileService) GetProfileDetail(ctx context.Context, sessionId string,
+	pr *request.ProfileGetDetailRequestDto) (*response.ProfileDetailResponseDto, error) {
+	viewedSessionId := pr.ViewedSessionId
+	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		return nil, err
+	}
+	err := s.updateLastOnline(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	if pr.Longitude != 0 && pr.Latitude != 0 {
+		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+		if err != nil {
+			return nil, err
+		}
+	}
+	profileMapper := &mapper.ProfileMapper{}
+	profileEntity, err := s.profileRepository.FindProfileBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	navigatorMapper := &mapper.NavigatorMapper{}
+	navigatorEntity, err := s.navigatorRepository.FindNavigatorBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	navigatorViewedEntity, err := s.navigatorRepository.FindNavigatorBySessionId(ctx, viewedSessionId)
+	if err != nil {
+		return nil, err
+	}
+	navigatorDistanceResponse, err := s.navigatorRepository.FindDistance(ctx, navigatorEntity, navigatorViewedEntity)
+	if err != nil {
+		return nil, err
+	}
+	distance := navigatorDistanceResponse.Distance
+	if distance < MIN_DISTANCE {
+		distance = MIN_DISTANCE
+	}
+	navigatorResponse := navigatorMapper.MapToDetailResponse(distance)
+	err = s.updateLastOnline(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	if pr.Longitude != 0 && pr.Latitude != 0 {
+		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+		if err != nil {
+			return nil, err
+		}
+	}
+	likeEntity, err := s.likeRepository.FindLikeBySessionId(ctx, sessionId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail", "FindLikeBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	likeMapper := &mapper.LikeMapper{}
+	likeResponse := likeMapper.MapToResponse(likeEntity)
+	telegramEntity, err := s.telegramRepository.FindTelegramBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	telegramMapper := &mapper.TelegramMapper{}
+	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
+	isOnline := s.checkIsOnline(profileEntity.LastOnline)
+	imageEntityList, err := s.imageRepository.SelectImageListPublicBySessionId(ctx, sessionId)
+	profileResponse := profileMapper.MapToDetailResponse(
+		profileEntity, navigatorResponse, likeResponse, telegramResponse, imageEntityList, isOnline)
 	return profileResponse, err
 }
 
@@ -449,7 +520,7 @@ func (s *ProfileService) AddLike(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	likeResponse := likeMapper.MapToAddResponse(likeAdded)
+	likeResponse := likeMapper.MapToResponse(likeAdded)
 	return likeResponse, nil
 }
 func (s *ProfileService) AddComplaint(

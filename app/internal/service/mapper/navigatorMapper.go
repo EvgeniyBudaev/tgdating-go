@@ -4,6 +4,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
+	"math"
 	"time"
 )
 
@@ -19,6 +20,13 @@ func (pm *NavigatorMapper) MapToResponse(
 	return &response.NavigatorResponseDto{
 		SessionId: sessionId,
 		Location:  location,
+	}
+}
+
+func (pm *NavigatorMapper) MapToDetailResponse(distance float64) *response.NavigatorDetailResponseDto {
+	roundedDistance := uint64(math.Ceil(distance))
+	return &response.NavigatorDetailResponseDto{
+		Distance: roundedDistance,
 	}
 }
 

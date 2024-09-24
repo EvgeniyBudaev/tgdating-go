@@ -10,26 +10,29 @@ import (
 type LikeMapper struct {
 }
 
+func (pm *LikeMapper) MapToResponse(
+	pe *entity.LikeEntity) *response.LikeResponseDto {
+	if pe == nil {
+		return nil
+	}
+	return &response.LikeResponseDto{
+		Id:             pe.Id,
+		SessionId:      pe.SessionId,
+		LikedSessionId: pe.LikedSessionId,
+		IsLiked:        pe.IsLiked,
+		CreatedAt:      pe.CreatedAt,
+		UpdatedAt:      pe.UpdatedAt,
+	}
+}
+
 func (pm *LikeMapper) MapToAddRequest(
-	profileLikeAddRequestDto *request.LikeAddRequestDto) *request.LikeAddRequestRepositoryDto {
+	pr *request.LikeAddRequestDto) *request.LikeAddRequestRepositoryDto {
 	return &request.LikeAddRequestRepositoryDto{
-		SessionId:      profileLikeAddRequestDto.SessionId,
-		LikedSessionId: profileLikeAddRequestDto.LikedSessionId,
+		SessionId:      pr.SessionId,
+		LikedSessionId: pr.LikedSessionId,
 		IsLiked:        true,
 		IsDeleted:      false,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
-	}
-}
-
-func (pm *LikeMapper) MapToAddResponse(
-	profileLikeEntity *entity.LikeEntity) *response.LikeResponseDto {
-	return &response.LikeResponseDto{
-		Id:             profileLikeEntity.Id,
-		SessionId:      profileLikeEntity.SessionId,
-		LikedSessionId: profileLikeEntity.LikedSessionId,
-		IsLiked:        profileLikeEntity.IsLiked,
-		CreatedAt:      profileLikeEntity.CreatedAt,
-		UpdatedAt:      profileLikeEntity.UpdatedAt,
 	}
 }
