@@ -117,7 +117,7 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 		return nil, err
 	}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
-	imageEntityList, err := s.imageRepository.SelectImageListPublicBySessionId(ctx, sessionId)
+	imageEntityList, err := s.imageRepository.SelectImageListBySessionId(ctx, sessionId)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
 	profileResponse := profileMapper.MapToResponse(profileEntity, navigatorResponse, filterResponse, telegramResponse,
 		imageEntityList, isOnline)
@@ -205,7 +205,10 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
-	imageEntityList, err := s.imageRepository.SelectImageListPublicBySessionId(ctx, sessionId)
+	imageEntityList, err := s.imageRepository.SelectImageListBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
 	profileResponse := profileMapper.MapToResponse(
 		profileEntity, navigatorResponse, filterResponse, telegramResponse, imageEntityList, isOnline)
 	return profileResponse, err
@@ -275,9 +278,40 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, sessionId string,
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
-	imageEntityList, err := s.imageRepository.SelectImageListPublicBySessionId(ctx, sessionId)
+	imageEntityList, err := s.imageRepository.SelectImageListBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
 	profileResponse := profileMapper.MapToDetailResponse(
 		profileEntity, navigatorResponse, likeResponse, telegramResponse, imageEntityList, isOnline)
+	return profileResponse, err
+}
+
+func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId string,
+	pr *request.ProfileGetShortInfoRequestDto) (*response.ProfileShortInfoResponseDto, error) {
+	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		return nil, err
+	}
+	err := s.updateLastOnline(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	if pr.Longitude != 0 && pr.Latitude != 0 {
+		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+		if err != nil {
+			return nil, err
+		}
+	}
+	profileMapper := &mapper.ProfileMapper{}
+	profileEntity, err := s.profileRepository.FindProfileBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	lastImage, err := s.imageRepository.FindLastImageBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	profileResponse := profileMapper.MapToShortInfoResponse(profileEntity, lastImage.Url)
 	return profileResponse, err
 }
 

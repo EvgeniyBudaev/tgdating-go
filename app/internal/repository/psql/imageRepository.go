@@ -176,7 +176,7 @@ func (r *ImageRepository) SelectImageListBySessionId(
 	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
 		" is_private, created_at, updated_at" +
 		" FROM profile_images" +
-		" WHERE session_id=$1 AND is_deleted=false"
+		" WHERE session_id=$1 AND is_deleted=false AND is_blocked=false"
 	rows, err := r.db.QueryContext(ctx, query, sessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("SelectImageListBySessionId",

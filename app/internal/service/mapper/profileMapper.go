@@ -68,6 +68,15 @@ func (pm *ProfileMapper) MapToDetailResponse(
 	}
 }
 
+func (pm *ProfileMapper) MapToShortInfoResponse(pe *entity.ProfileEntity, imageUrl string) *response.ProfileShortInfoResponseDto {
+	return &response.ProfileShortInfoResponseDto{
+		SessionId: pe.SessionId,
+		ImageUrl:  imageUrl,
+		IsDeleted: pe.IsDeleted,
+		IsBlocked: pe.IsBlocked,
+	}
+}
+
 func (pm *ProfileMapper) MapToAddResponse(pe *entity.ProfileEntity) *response.ProfileAddResponseDto {
 	return &response.ProfileAddResponseDto{
 		SessionId: pe.SessionId,

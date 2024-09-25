@@ -18,6 +18,8 @@ type ProfileService interface {
 		pr *request.ProfileGetBySessionIdRequestDto) (*response.ProfileResponseDto, error)
 	GetProfileDetail(ctx context.Context, sessionId string,
 		pr *request.ProfileGetDetailRequestDto) (*response.ProfileDetailResponseDto, error)
+	GetProfileShortInfo(ctx context.Context, sessionId string,
+		pr *request.ProfileGetShortInfoRequestDto) (*response.ProfileShortInfoResponseDto, error)
 	GetProfileList(ctx context.Context, pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error)
 	AddBlock(ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error)
 	AddLike(ctx context.Context, pr *request.LikeAddRequestDto) (*response.LikeResponseDto, error)
