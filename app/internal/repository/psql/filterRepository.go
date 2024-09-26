@@ -3,7 +3,6 @@ package psql
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
@@ -13,10 +12,6 @@ import (
 
 const (
 	errorFilePathFilter = "internal/repository/psql/filterRepository.go"
-)
-
-var (
-	ErrNotRowsFoundFilter = errors.New("no rows found")
 )
 
 type FilterRepository struct {
@@ -37,11 +32,6 @@ func (r *FilterRepository) AddFilter(
 		" size, is_deleted, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo,
 		&p.Distance, &p.Page, &p.Size, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
-	if row == nil {
-		errorMessage := r.getErrorMessage("AddFilter", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundFilter))
-		return nil, ErrNotRowsFoundFilter
-	}
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -102,11 +92,6 @@ func (r *FilterRepository) FindFilterById(
 		" FROM profile_filters" +
 		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindFilterById", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundFilter))
-		return nil, ErrNotRowsFoundFilter
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo, &p.Distance, &p.Page,
 		&p.Size, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
@@ -125,11 +110,6 @@ func (r *FilterRepository) FindFilterBySessionId(
 		" FROM profile_filters" +
 		" WHERE session_id = $1"
 	row := r.db.QueryRowContext(ctx, query, sessionId)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindFilterBySessionId", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundFilter))
-		return nil, ErrNotRowsFoundFilter
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo, &p.Distance, &p.Page,
 		&p.Size, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {

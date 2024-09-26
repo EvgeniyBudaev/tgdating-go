@@ -3,7 +3,6 @@ package psql
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
@@ -13,10 +12,6 @@ import (
 
 const (
 	errorFilePathTelegram = "internal/repository/psql/telegramRepository.go"
-)
-
-var (
-	ErrNotRowsFoundTelegram = errors.New("no rows found")
 )
 
 type TelegramRepository struct {
@@ -38,11 +33,6 @@ func (r *TelegramRepository) AddTelegram(
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName,
 		&p.LanguageCode, &p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
-	if row == nil {
-		errorMessage := r.getErrorMessage("AddTelegram", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundTelegram))
-		return nil, ErrNotRowsFoundTelegram
-	}
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -103,11 +93,6 @@ func (r *TelegramRepository) FindTelegramById(ctx context.Context, id uint64) (*
 		" FROM profile_telegrams" +
 		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindTelegramById", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundTelegram))
-		return nil, ErrNotRowsFoundTelegram
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
 		&p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
@@ -126,12 +111,6 @@ func (r *TelegramRepository) FindTelegramBySessionId(
 		" FROM profile_telegrams" +
 		" WHERE session_id = $1"
 	row := r.db.QueryRowContext(ctx, query, sessionID)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindTelegramBySessionId",
-			"QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundTelegram))
-		return nil, ErrNotRowsFoundTelegram
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
 		&p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {

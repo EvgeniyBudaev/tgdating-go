@@ -15,10 +15,6 @@ const (
 	errorFilePathILike = "internal/repository/psql/likeRepository.go"
 )
 
-var (
-	ErrNotRowsFoundLike = errors.New("no rows found")
-)
-
 type LikeRepository struct {
 	logger logger.Logger
 	db     *sql.DB
@@ -38,11 +34,6 @@ func (r *LikeRepository) AddLike(
 		" RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.LikedSessionId, &p.IsLiked, &p.IsDeleted, &p.CreatedAt,
 		&p.UpdatedAt)
-	if row == nil {
-		errorMessage := r.getErrorMessage("AddLike", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundLike))
-		return nil, ErrNotRowsFoundLike
-	}
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -59,16 +50,14 @@ func (r *LikeRepository) FindLikeById(ctx context.Context, id uint64) (*entity.L
 		" FROM profile_likes" +
 		" WHERE id=$1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindLikeById", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundLike))
-		return nil, ErrNotRowsFoundLike
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.LikedSessionId, &p.IsLiked, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		errorMessage := r.getErrorMessage("FindLikeById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
+		return nil, nil
 	}
 	return p, nil
 }

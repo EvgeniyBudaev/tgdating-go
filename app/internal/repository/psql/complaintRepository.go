@@ -3,7 +3,6 @@ package psql
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
@@ -13,10 +12,6 @@ import (
 
 const (
 	errorFilePathComplaint = "internal/repository/psql/complaintRepository.go"
-)
-
-var (
-	ErrNotRowsFoundComplaint = errors.New("no rows found")
 )
 
 type ComplaintRepository struct {
@@ -38,11 +33,6 @@ func (r *ComplaintRepository) AddComplaint(
 		" RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.CriminalSessionId, &p.Reason, &p.IsDeleted, &p.IsDeleted,
 		&p.CreatedAt, &p.UpdatedAt)
-	if row == nil {
-		errorMessage := r.getErrorMessage("AddComplaint", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundComplaint))
-		return nil, ErrNotRowsFoundComplaint
-	}
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -59,11 +49,6 @@ func (r *ComplaintRepository) FindComplaintById(ctx context.Context, id uint64) 
 		" FROM profile_complaints" +
 		" WHERE id=$1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindComplaintById", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundComplaint))
-		return nil, ErrNotRowsFoundComplaint
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.CriminalSessionId, &p.Reason, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindComplaintById", "Scan")

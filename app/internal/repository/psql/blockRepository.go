@@ -15,10 +15,6 @@ const (
 	errorFilePathBlock = "internal/repository/psql/blockRepository.go"
 )
 
-var (
-	ErrNotRowsFoundBlock = errors.New("no rows found")
-)
-
 type BlockRepository struct {
 	logger logger.Logger
 	db     *sql.DB
@@ -38,14 +34,14 @@ func (r *BlockRepository) AddBlock(
 		" RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.BlockedUserSessionId, &p.IsBlocked, &p.CreatedAt,
 		&p.UpdatedAt)
-	if row == nil {
-		errorMessage := r.getErrorMessage("AddBlock", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundBlock))
-		return nil, ErrNotRowsFoundBlock
-	}
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			errorMessage := r.getErrorMessage("AddBlock", "sql.ErrNoRows")
+			r.logger.Debug(errorMessage, zap.Error(err))
+			return nil, err
+		}
 		errorMessage := r.getErrorMessage("AddBlock", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -59,11 +55,6 @@ func (r *BlockRepository) FindBlockById(ctx context.Context, id uint64) (*entity
 		" FROM profile_blocks" +
 		" WHERE id=$1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindBlockById", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundBlock))
-		return nil, ErrNotRowsFoundBlock
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.BlockedUserSessionId, &p.IsBlocked, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindBlockById", "Scan")

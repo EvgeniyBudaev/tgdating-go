@@ -225,7 +225,7 @@ func (r *ProfileRepository) getNumberEntities(
 	err := r.db.QueryRowContext(ctx, query, sessionId, searchGender, ageFrom, ageTo).Scan(&numberEntities)
 	if err != nil {
 		errorMessage := r.getErrorMessage("getNumberEntities", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
+		r.logger.Debug(errorMessage, zap.Error(err))
 		return 0, err
 	}
 	return numberEntities, nil

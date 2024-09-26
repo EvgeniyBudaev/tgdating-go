@@ -104,7 +104,7 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 		return nil, err
 	}
 	filterMapper := &mapper.FilterMapper{}
-	filterRequest := filterMapper.MapToUpdateRequest(pr)
+	filterRequest := filterMapper.MapProfileToUpdateRequest(pr)
 	filterEntity, err := s.filterRepository.UpdateFilter(ctx, filterRequest)
 	if err != nil {
 		return nil, err
@@ -403,7 +403,7 @@ func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) 
 	}
 	if len(imageList) > 0 {
 		for _, image := range imageList {
-			_, err := s.DeleteImage(ctx, image)
+			_, err := s.deleteImageById(ctx, image.Id)
 			if err != nil {
 				return err
 			}
@@ -412,7 +412,11 @@ func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) 
 	return nil
 }
 
-func (s *ProfileService) DeleteImage(ctx context.Context, image *entity.ImageEntity) (*entity.ImageEntity, error) {
+func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entity.ImageEntity, error) {
+	image, err := s.imageRepository.FindImageById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
 	filePath := image.Url
 	if err := os.Remove(filePath); err != nil {
 		errorMessage := s.getErrorMessage("DeleteImage", "Remove")
@@ -422,6 +426,60 @@ func (s *ProfileService) DeleteImage(ctx context.Context, image *entity.ImageEnt
 	imageMapper := &mapper.ImageMapper{}
 	imageRequest := imageMapper.MapToDeleteRequest(image.Id)
 	return s.imageRepository.DeleteImage(ctx, imageRequest)
+}
+
+func (s *ProfileService) DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error) {
+	_, err := s.deleteImageById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	responseDto := &response.ResponseDto{
+		Success: true,
+	}
+	return responseDto, err
+}
+
+func (s *ProfileService) GetFilterBySessionId(
+	ctx context.Context, sessionId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error) {
+	err := s.updateLastOnline(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	if fr.Longitude != 0 && fr.Latitude != 0 {
+		_, err = s.updateNavigator(ctx, sessionId, fr.Longitude, fr.Latitude)
+		if err != nil {
+			return nil, err
+		}
+	}
+	filterEntity, err := s.filterRepository.FindFilterBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	filterMapper := &mapper.FilterMapper{}
+	filterResponse := filterMapper.MapToResponse(filterEntity)
+	return filterResponse, nil
+}
+func (s *ProfileService) UpdateFilter(
+	ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error) {
+	sessionId := fr.SessionId
+	err := s.updateLastOnline(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	if fr.Longitude != 0 && fr.Latitude != 0 {
+		_, err = s.updateNavigator(ctx, sessionId, fr.Longitude, fr.Latitude)
+		if err != nil {
+			return nil, err
+		}
+	}
+	filterMapper := &mapper.FilterMapper{}
+	filterRequest := filterMapper.MapToUpdateRequest(fr)
+	filterEntity, err := s.filterRepository.UpdateFilter(ctx, filterRequest)
+	if err != nil {
+		return nil, err
+	}
+	filterResponse := filterMapper.MapToResponse(filterEntity)
+	return filterResponse, nil
 }
 
 func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber.Ctx, file *multipart.FileHeader,
@@ -442,8 +500,6 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber
 	}
 	newFileName, newFilePath, newFileSize, err := s.convertImage(directoryPath, filePath, file.Filename)
 	if err != nil {
-		errorMessage := s.getErrorMessage("uploadImageToFileSystem", "convertImage")
-		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	imageConverted := &request.ImageAddRequestRepositoryDto{
@@ -569,8 +625,6 @@ func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string)
 	updateLastOnlineRequest := updateLastOnlineMapper.MapToAddRequest(sessionId)
 	err := s.profileRepository.UpdateLastOnline(ctx, updateLastOnlineRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("updateLastOnline", "UpdateLastOnline")
-		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
 	return nil
@@ -583,8 +637,6 @@ func (s *ProfileService) updateNavigator(
 	navigatorRequest := navigatorMapper.MapToUpdateRequest(sessionId, longitude, latitude)
 	navigatorUpdated, err := s.navigatorRepository.UpdateNavigator(ctx, navigatorRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("updateNavigator", "UpdateNavigator")
-		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	navigatorResponse := navigatorMapper.MapToResponse(sessionId, navigatorUpdated.Location.Longitude,

@@ -3,7 +3,6 @@ package psql
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
@@ -13,10 +12,6 @@ import (
 
 const (
 	errorFilePathImage = "internal/repository/psql/imageRepository.go"
-)
-
-var (
-	ErrNotRowsFoundImage = errors.New("no rows found")
 )
 
 type ImageRepository struct {
@@ -37,11 +32,6 @@ func (r *ImageRepository) AddImage(
 		" is_private, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked,
 		&p.IsPrimary, &p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
-	if row == nil {
-		errorMessage := r.getErrorMessage("AddImage", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
-		return nil, ErrNotRowsFoundImage
-	}
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -101,11 +91,6 @@ func (r *ImageRepository) FindImageById(ctx context.Context, imageId uint64) (*e
 		" FROM profile_images" +
 		" WHERE id=$1"
 	row := r.db.QueryRowContext(ctx, query, imageId)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindImageById", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
-		return nil, ErrNotRowsFoundImage
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
 		&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
@@ -125,12 +110,6 @@ func (r *ImageRepository) FindLastImageBySessionId(ctx context.Context, sessionI
 		" ORDER BY id DESC" +
 		" LIMIT 1"
 	row := r.db.QueryRowContext(ctx, query, sessionId)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindLastImageBySessionId",
-			"QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
-		return nil, ErrNotRowsFoundImage
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
 		&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
@@ -151,7 +130,7 @@ func (r *ImageRepository) SelectImageListPublicBySessionId(
 	if err != nil {
 		errorMessage := r.getErrorMessage("SelectImageListPublicBySessionId",
 			"QueryContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
+		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	defer rows.Close()
@@ -163,7 +142,7 @@ func (r *ImageRepository) SelectImageListPublicBySessionId(
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectImageListPublicBySessionId",
 				"Scan")
-			r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
+			r.logger.Debug(errorMessage, zap.Error(err))
 			continue
 		}
 		list = append(list, &p)
@@ -181,7 +160,7 @@ func (r *ImageRepository) SelectImageListBySessionId(
 	if err != nil {
 		errorMessage := r.getErrorMessage("SelectImageListBySessionId",
 			"QueryContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
+		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	defer rows.Close()
@@ -192,7 +171,7 @@ func (r *ImageRepository) SelectImageListBySessionId(
 			&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectImageListBySessionId", "Scan")
-			r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundImage))
+			r.logger.Debug(errorMessage, zap.Error(err))
 			continue
 		}
 		list = append(list, &p)

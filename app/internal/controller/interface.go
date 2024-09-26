@@ -21,6 +21,10 @@ type ProfileService interface {
 	GetProfileShortInfo(ctx context.Context, sessionId string,
 		pr *request.ProfileGetShortInfoRequestDto) (*response.ProfileShortInfoResponseDto, error)
 	GetProfileList(ctx context.Context, pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error)
+	DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error)
+	GetFilterBySessionId(
+		ctx context.Context, sessionId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error)
+	UpdateFilter(ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error)
 	AddBlock(ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error)
 	AddLike(ctx context.Context, pr *request.LikeAddRequestDto) (*response.LikeResponseDto, error)
 	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error)

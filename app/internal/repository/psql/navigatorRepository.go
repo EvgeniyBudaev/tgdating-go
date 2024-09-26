@@ -3,7 +3,6 @@ package psql
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
@@ -14,10 +13,6 @@ import (
 
 const (
 	errorFilePathNavigator = "internal/repository/psql/navigatorRepository.go"
-)
-
-var (
-	ErrNotRowsFoundNavigator = errors.New("no rows found")
 )
 
 type NavigatorRepository struct {
@@ -38,11 +33,6 @@ func (r *NavigatorRepository) AddNavigator(
 		" VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3),  4326), $4, $5, $6) RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.Location.Longitude, &p.Location.Latitude, &p.IsDeleted,
 		&p.CreatedAt, &p.UpdatedAt)
-	if row == nil {
-		errorMessage := r.getErrorMessage("AddNavigator", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundNavigator))
-		return nil, ErrNotRowsFoundNavigator
-	}
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -104,11 +94,6 @@ func (r *NavigatorRepository) FindNavigatorById(
 		" FROM profile_navigators" +
 		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindNavigatorById", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundNavigator))
-		return nil, ErrNotRowsFoundNavigator
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindNavigatorById", "Scan")
@@ -135,12 +120,6 @@ func (r *NavigatorRepository) FindNavigatorBySessionId(
 		" FROM profile_navigators" +
 		" WHERE session_id = $1"
 	row := r.db.QueryRowContext(ctx, query, sessionId)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindNavigatorBySessionId",
-			"QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundNavigator))
-		return nil, ErrNotRowsFoundNavigator
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindNavigatorBySessionId", "Scan")
@@ -175,11 +154,6 @@ func (r *NavigatorRepository) FindDistance(ctx context.Context, pe *entity.Navig
 		" WHERE session_id = $1"
 	row := r.db.QueryRowContext(ctx, query, sessionId, longitudeSession, latitudeSession, longitudeViewed,
 		latitudeViewed)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindDistance", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFoundNavigator))
-		return nil, ErrNotRowsFoundNavigator
-	}
 	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt, &p.Distance)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindDistance", "Scan")
