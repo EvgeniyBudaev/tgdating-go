@@ -20,8 +20,10 @@ type ProfileRepository interface {
 
 type NavigatorRepository interface {
 	AddNavigator(ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*entity.NavigatorEntity, error)
-	UpdateNavigator(ctx context.Context, p *request.NavigatorUpdateRequestDto) (*entity.NavigatorEntity, error)
-	DeleteNavigator(ctx context.Context, p *request.NavigatorDeleteRequestDto) (*entity.NavigatorEntity, error)
+	UpdateNavigator(
+		ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error)
+	DeleteNavigator(
+		ctx context.Context, p *request.NavigatorDeleteRequestRepositoryDto) (*entity.NavigatorEntity, error)
 	FindNavigatorById(ctx context.Context, id uint64) (*entity.NavigatorEntity, error)
 	FindNavigatorBySessionId(ctx context.Context, sessionId string) (*entity.NavigatorEntity, error)
 	FindDistance(ctx context.Context, pe *entity.NavigatorEntity,

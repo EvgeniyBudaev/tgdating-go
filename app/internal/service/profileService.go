@@ -620,6 +620,14 @@ func (s *ProfileService) AddComplaint(
 	return s.complaintRepository.AddComplaint(ctx, complaintRequest)
 }
 
+func (s *ProfileService) UpdateCoordinates(
+	ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error) {
+	sessionId := pr.SessionId
+	longitude := pr.Longitude
+	latitude := pr.Latitude
+	return s.updateNavigator(ctx, sessionId, longitude, latitude)
+}
+
 func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string) error {
 	updateLastOnlineMapper := &mapper.ProfileUpdateLastOnlineMapper{}
 	updateLastOnlineRequest := updateLastOnlineMapper.MapToAddRequest(sessionId)

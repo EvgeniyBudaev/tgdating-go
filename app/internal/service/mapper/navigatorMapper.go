@@ -46,8 +46,8 @@ func (pm *NavigatorMapper) MapToAddRequest(
 }
 
 func (pm *NavigatorMapper) MapToUpdateRequest(
-	sessionId string, longitude float64, latitude float64) *request.NavigatorUpdateRequestDto {
-	return &request.NavigatorUpdateRequestDto{
+	sessionId string, longitude float64, latitude float64) *request.NavigatorUpdateRequestRepositoryDto {
+	return &request.NavigatorUpdateRequestRepositoryDto{
 		SessionId: sessionId,
 		Longitude: longitude,
 		Latitude:  latitude,
@@ -55,8 +55,8 @@ func (pm *NavigatorMapper) MapToUpdateRequest(
 	}
 }
 
-func (pm *NavigatorMapper) MapToDeleteRequest(sessionId string) *request.NavigatorDeleteRequestDto {
-	return &request.NavigatorDeleteRequestDto{
+func (pm *NavigatorMapper) MapToDeleteRequest(sessionId string) *request.NavigatorDeleteRequestRepositoryDto {
+	return &request.NavigatorDeleteRequestRepositoryDto{
 		SessionId: sessionId,
 		IsDeleted: true,
 		UpdatedAt: time.Now().UTC(),

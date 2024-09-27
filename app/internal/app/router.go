@@ -19,6 +19,7 @@ func InitPublicRoutes(router fiber.Router, profileController *controller.Profile
 	router.Post("/profiles/blocks", profileController.AddBlock())
 	router.Post("/profiles/likes", profileController.AddLike())
 	router.Post("/profiles/complaints", profileController.AddComplaint())
+	router.Put("/profiles/navigators", profileController.UpdateCoordinates())
 }
 
 func InitProtectedRoutes(router fiber.Router, profileController *controller.ProfileController) {}

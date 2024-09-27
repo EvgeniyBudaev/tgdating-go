@@ -2,7 +2,7 @@ package request
 
 import "time"
 
-type NavigatorDeleteRequestDto struct {
+type NavigatorDeleteRequestRepositoryDto struct {
 	SessionId string    `json:"sessionId"`
 	IsDeleted bool      `json:"isDeleted"`
 	UpdatedAt time.Time `json:"updatedAt"`

@@ -28,4 +28,6 @@ type ProfileService interface {
 	AddBlock(ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error)
 	AddLike(ctx context.Context, pr *request.LikeAddRequestDto) (*response.LikeResponseDto, error)
 	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error)
+	UpdateCoordinates(
+		ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error)
 }

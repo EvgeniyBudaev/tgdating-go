@@ -44,7 +44,7 @@ func (r *NavigatorRepository) AddNavigator(
 }
 
 func (r *NavigatorRepository) UpdateNavigator(
-	ctx context.Context, p *request.NavigatorUpdateRequestDto) (*entity.NavigatorEntity, error) {
+	ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		errorMessage := r.getErrorMessage("UpdateNavigator", "Begin")
@@ -65,7 +65,7 @@ func (r *NavigatorRepository) UpdateNavigator(
 }
 
 func (r *NavigatorRepository) DeleteNavigator(
-	ctx context.Context, p *request.NavigatorDeleteRequestDto) (*entity.NavigatorEntity, error) {
+	ctx context.Context, p *request.NavigatorDeleteRequestRepositoryDto) (*entity.NavigatorEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		errorMessage := r.getErrorMessage("DeleteNavigator", "Begin")

@@ -282,6 +282,25 @@ func (pc *ProfileController) AddComplaint() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) UpdateCoordinates() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("PUT /api/v1/profiles/navigators")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		req := &request.NavigatorUpdateRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("UpdateCoordinates", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileResponse, err := pc.service.UpdateCoordinates(ctx, req)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
 func (pc *ProfileController) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
 		errorFilePath)
