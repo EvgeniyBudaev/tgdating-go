@@ -59,12 +59,14 @@ go get -u github.com/h2non/bimg
 
 Миграции
 https://github.com/golang-migrate/migrate/blob/master/cmd/migrate/README.md
+https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md
 https://www.appsloveworld.com/go/83/golang-migrate-installation-failing-on-ubuntu-22-04-with-the-following-gpg-error
 ```
 curl -L https://packagecloud.io/golang-migrate/migrate/gpgkey | apt-key add -
 sudo sh -c 'echo "deb https://packagecloud.io/golang-migrate/migrate/ubuntu/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/migrate.list'
 sudo apt-get update
 sudo apt-get install -y golang-migrate
+go get -u github.com/golang-migrate/migrate
 ```
 
 Если ошибка E: Указаны конфликтующие значения параметра Signed-By из источника

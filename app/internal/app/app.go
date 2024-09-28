@@ -7,7 +7,11 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"go.uber.org/zap"
+	"os"
 	"sync"
 )
 
@@ -55,6 +59,29 @@ func New() *App {
 		errorMessage := getErrorMessage("New", "Ping")
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
+
+	// Auto migrate
+	driver, err := postgres.WithInstance(database.psql, &postgres.Config{})
+	if err != nil {
+		errorMessage := getErrorMessage("New", "WithInstance")
+		defaultLogger.Fatal(errorMessage, zap.Error(err))
+	}
+	dir, err := os.Getwd()
+	if err != nil {
+		errorMessage := getErrorMessage("New", "os.Getwd")
+		defaultLogger.Fatal(errorMessage, zap.Error(err))
+	}
+	migrationsPath := fmt.Sprintf("file://%s/migrations", dir)
+	m, err := migrate.NewWithDatabaseInstance(
+
+		migrationsPath,
+		"postgres", driver)
+	if err != nil {
+		errorMessage := getErrorMessage("New", "NewWithDatabaseInstance")
+		defaultLogger.Fatal(errorMessage, zap.Error(err))
+	}
+	m.Up()
+
 	// Fiber
 	f := fiber.New(fiber.Config{
 		ReadBufferSize: 4 << 12,
