@@ -14,7 +14,7 @@ const (
 	errorFilePathHttp = "internal/app/http.go"
 )
 
-var prefix = "/api/v1"
+var prefix = "/gateway/api/v1"
 
 func (app *App) StartHTTPServer(ctx context.Context) error {
 	app.fiber.Static("/static", "./static")
