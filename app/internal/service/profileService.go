@@ -22,7 +22,7 @@ import (
 
 const (
 	errorFilePath = "internal/service/profileService.go"
-	MIN_DISTANCE  = 100
+	minDistance   = 100
 )
 
 type ProfileService struct {
@@ -249,8 +249,8 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, sessionId string,
 		return nil, err
 	}
 	distance := navigatorDistanceResponse.Distance
-	if distance < MIN_DISTANCE {
-		distance = MIN_DISTANCE
+	if distance < minDistance {
+		distance = minDistance
 	}
 	navigatorResponse := navigatorMapper.MapToDetailResponse(distance)
 	err = s.updateLastOnline(ctx, sessionId)
@@ -311,7 +311,7 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 	if err != nil {
 		return nil, err
 	}
-	profileResponse := profileMapper.MapToShortInfoResponse(profileEntity, lastImage.Url)
+	profileResponse := profileMapper.MapToShortInfoResponse(profileEntity, lastImage.Name)
 	return profileResponse, err
 }
 
@@ -426,6 +426,22 @@ func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entit
 	imageMapper := &mapper.ImageMapper{}
 	imageRequest := imageMapper.MapToDeleteRequest(image.Id)
 	return s.imageRepository.DeleteImage(ctx, imageRequest)
+}
+
+func (s *ProfileService) GetImageBySessionId(ctx context.Context, sessionId, fileName string) ([]byte, error) {
+	filePath := fmt.Sprintf("static/profiles/%s/images/%s", sessionId, fileName)
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		errorMessage := s.getErrorMessage("GetImageBySessionId", "IsNotExist")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetImageBySessionId", "ReadFile")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return data, nil
 }
 
 func (s *ProfileService) DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error) {

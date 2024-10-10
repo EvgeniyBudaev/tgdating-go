@@ -168,6 +168,22 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) GetImageBySessionId() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/images/:fileName")
+		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		defer cancel()
+		sessionId := ctf.Params("sessionId")
+		fileName := ctf.Params("fileName")
+		response, err := pc.service.GetImageBySessionId(ctx, sessionId, fileName)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		ctf.Set("Content-Type", "image/jpeg")
+		return v1.ResponseImage(ctf, response)
+	}
+}
+
 func (pc *ProfileController) DeleteImage() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("DELETE /gateway/api/v1/profiles/images/:id")

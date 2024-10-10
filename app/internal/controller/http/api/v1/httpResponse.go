@@ -15,3 +15,7 @@ func ResponseOk(ctf *fiber.Ctx, data interface{}) error {
 func ResponseCreated(ctf *fiber.Ctx, data interface{}) error {
 	return ctf.Status(fiber.StatusCreated).JSON(data)
 }
+
+func ResponseImage(ctf *fiber.Ctx, data []byte) error {
+	return ctf.Status(fiber.StatusOK).Send(data)
+}

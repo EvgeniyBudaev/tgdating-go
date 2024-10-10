@@ -13,6 +13,7 @@ func InitPublicRoutes(router fiber.Router, profileController *controller.Profile
 	router.Get("/profiles/detail/:sessionId", profileController.GetProfileDetail())
 	router.Get("/profiles/short/:sessionId", profileController.GetProfileShortInfo())
 	router.Get("/profiles/list", profileController.GetProfileList())
+	router.Get("/profiles/:sessionId/images/:fileName", profileController.GetImageBySessionId())
 	router.Delete("/profiles/images/:id", profileController.DeleteImage())
 	router.Get("/profiles/filter/:sessionId", profileController.GetFilterBySessionId())
 	router.Put("/profiles/filters", profileController.UpdateFilter())
