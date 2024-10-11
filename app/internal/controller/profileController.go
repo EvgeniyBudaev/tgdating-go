@@ -6,6 +6,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/controller/http/api/v1"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/repository/psql"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -103,6 +104,9 @@ func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 		sessionId := ctf.Params("sessionId")
 		profileResponse, err := pc.service.GetProfileBySessionId(ctx, sessionId, req)
 		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseOk(ctf, profileResponse)
@@ -123,6 +127,9 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 		sessionId := ctf.Params("sessionId")
 		profileResponse, err := pc.service.GetProfileDetail(ctx, sessionId, req)
 		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseOk(ctf, profileResponse)
@@ -143,6 +150,9 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 		sessionId := ctf.Params("sessionId")
 		profileResponse, err := pc.service.GetProfileShortInfo(ctx, sessionId, req)
 		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseOk(ctf, profileResponse)
@@ -151,7 +161,7 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 
 func (pc *ProfileController) GetProfileList() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /gateway/api/v1/profiles/list")
+		pc.logger.Info("GET /gateway/api/v1/profiles")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetListRequestDto{}
@@ -162,6 +172,9 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 		}
 		profileListResponse, err := pc.service.GetProfileList(ctx, req)
 		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseOk(ctf, profileListResponse)
@@ -204,7 +217,7 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 
 func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /gateway/api/v1/profiles/filter/:sessionId")
+		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/filter")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		sessionId := ctf.Params("sessionId")
@@ -216,6 +229,9 @@ func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
 		}
 		profileListResponse, err := pc.service.GetFilterBySessionId(ctx, sessionId, req)
 		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseOk(ctf, profileListResponse)

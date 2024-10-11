@@ -318,6 +318,9 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 func (s *ProfileService) GetProfileList(ctx context.Context,
 	pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error) {
 	sessionId := pr.SessionId
+	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		return nil, err
+	}
 	err := s.updateLastOnline(ctx, sessionId)
 	if err != nil {
 		return nil, err
@@ -341,7 +344,7 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 			if err != nil {
 				return nil, err
 			}
-			url := lastImage.Url
+			url := lastImage.Name
 			lastOnline := profileEntity.LastOnline
 			isOnline := s.checkIsOnline(lastOnline)
 			distance := profileEntity.Distance
@@ -457,6 +460,9 @@ func (s *ProfileService) DeleteImage(ctx context.Context, id uint64) (*response.
 
 func (s *ProfileService) GetFilterBySessionId(
 	ctx context.Context, sessionId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error) {
+	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		return nil, err
+	}
 	err := s.updateLastOnline(ctx, sessionId)
 	if err != nil {
 		return nil, err
