@@ -12,7 +12,6 @@ import (
 	"github.com/h2non/bimg"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"image/jpeg"
 	"mime/multipart"
 	"os"
 	"path/filepath"
@@ -231,7 +230,7 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, sessionId string,
 		}
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileEntity, err := s.profileRepository.FindProfileBySessionId(ctx, sessionId)
+	profileEntity, err := s.profileRepository.FindProfileBySessionId(ctx, viewedSessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -253,10 +252,6 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, sessionId string,
 		distance = minDistance
 	}
 	navigatorResponse := navigatorMapper.MapToDetailResponse(distance)
-	err = s.updateLastOnline(ctx, sessionId)
-	if err != nil {
-		return nil, err
-	}
 	if pr.Longitude != 0 && pr.Latitude != 0 {
 		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
 		if err != nil {
@@ -265,20 +260,18 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, sessionId string,
 	}
 	likeEntity, err := s.likeRepository.FindLikeBySessionId(ctx, sessionId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileDetail", "FindLikeBySessionId")
-		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeResponse := likeMapper.MapToResponse(likeEntity)
-	telegramEntity, err := s.telegramRepository.FindTelegramBySessionId(ctx, sessionId)
+	telegramEntity, err := s.telegramRepository.FindTelegramBySessionId(ctx, viewedSessionId)
 	if err != nil {
 		return nil, err
 	}
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
-	imageEntityList, err := s.imageRepository.SelectImageListBySessionId(ctx, sessionId)
+	imageEntityList, err := s.imageRepository.SelectImageListBySessionId(ctx, viewedSessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -504,6 +497,10 @@ func (s *ProfileService) UpdateFilter(
 	return filterResponse, nil
 }
 
+func (s *ProfileService) removeStrSpaces(str string) string {
+	return strings.ReplaceAll(str, " ", "")
+}
+
 func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber.Ctx, file *multipart.FileHeader,
 	sessionId string) (*request.ImageAddRequestRepositoryDto, error) {
 	directoryPath := fmt.Sprintf("static/profiles/%s/images", sessionId)
@@ -514,13 +511,14 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber
 			return nil, err
 		}
 	}
-	filePath := fmt.Sprintf("%s/%s", directoryPath, file.Filename)
+	filenameWithoutSpaces := s.removeStrSpaces(file.Filename)
+	filePath := fmt.Sprintf("%s/%s", directoryPath, filenameWithoutSpaces)
 	if err := ctf.SaveFile(file, filePath); err != nil {
 		errorMessage := s.getErrorMessage("uploadImageToFileSystem", "SaveFile")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	newFileName, newFilePath, newFileSize, err := s.convertImage(directoryPath, filePath, file.Filename)
+	newFileName, newFilePath, newFileSize, err := s.convertImage(directoryPath, filePath, filenameWithoutSpaces)
 	if err != nil {
 		return nil, err
 	}
@@ -540,20 +538,6 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber
 }
 
 func (s *ProfileService) convertImage(directoryPath, filePath, fileName string) (string, string, int64, error) {
-	fileImage, err := os.Open(filePath)
-	if err != nil {
-		errorMessage := s.getErrorMessage("convertImage", "Open")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return "", "", 0, err
-	}
-	// The Decode function is used to read images from a file or other source and convert them into an image.
-	// Image structure
-	_, err = jpeg.Decode(fileImage)
-	if err != nil {
-		errorMessage := s.getErrorMessage("convertImage", "Decode")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return "", "", 0, err
-	}
 	newFileName := s.replaceExtension(fileName)
 	newFilePath := fmt.Sprintf("%s/%s", directoryPath, newFileName)
 	output, err := os.Create(directoryPath + "/" + newFileName)
@@ -700,8 +684,6 @@ func (s *ProfileService) getErrorMessage(repositoryMethodName string, callMethod
 func (s *ProfileService) checkUserExists(ctx context.Context, sessionId string) error {
 	p, err := s.profileRepository.FindProfileBySessionId(ctx, sessionId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("checkUserExists", "FindProfileBySessionId")
-		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
 	isDeleted := p.IsDeleted

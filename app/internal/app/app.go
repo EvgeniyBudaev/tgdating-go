@@ -84,7 +84,8 @@ func New() *App {
 
 	// Fiber
 	f := fiber.New(fiber.Config{
-		ReadBufferSize: 4 << 12,
+		ReadBufferSize: 256 << 8,
+		BodyLimit:      50 * 1024 * 1024, // 50 MB
 	})
 	// CORS
 	f.Use(cors.New(cors.Config{

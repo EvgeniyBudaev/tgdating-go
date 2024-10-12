@@ -46,14 +46,14 @@ func (r *ProfileRepository) AddProfile(
 		&p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if row == nil {
 		errorMessage := r.getErrorMessage("AddProfile", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowFound))
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("AddProfile", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowFound))
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	if err != nil {
@@ -116,7 +116,7 @@ func (r *ProfileRepository) FindProfileById(ctx context.Context, id uint64) (*en
 	row := r.db.QueryRowContext(ctx, query, id)
 	if row == nil {
 		errorMessage := r.getErrorMessage("FindProfileById", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowFound))
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
@@ -124,7 +124,7 @@ func (r *ProfileRepository) FindProfileById(ctx context.Context, id uint64) (*en
 		&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("FindProfileById", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowFound))
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	if err != nil {
@@ -145,7 +145,7 @@ func (r *ProfileRepository) FindProfileBySessionId(
 	row := r.db.QueryRowContext(ctx, query, sessionId)
 	if row == nil {
 		errorMessage := r.getErrorMessage("FindProfileBySessionId", "QueryRowContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowFound))
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
@@ -153,7 +153,7 @@ func (r *ProfileRepository) FindProfileBySessionId(
 		&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("FindProfileBySessionId", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowFound))
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	if err != nil {
@@ -201,7 +201,7 @@ func (r *ProfileRepository) SelectProfileListBySessionId(ctx context.Context,
 	if err != nil {
 		errorMessage := r.getErrorMessage("SelectProfileListBySessionId",
 			"QueryContext")
-		r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowsFound))
 		return nil, err
 	}
 	defer rows.Close()
@@ -213,7 +213,7 @@ func (r *ProfileRepository) SelectProfileListBySessionId(ctx context.Context,
 			&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline, &p.Age, &p.Distance)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectProfileListBySessionId", "Scan")
-			r.logger.Debug(errorMessage, zap.Error(ErrNotRowsFound))
+			r.logger.Info(errorMessage, zap.Error(ErrNotRowsFound))
 			continue
 		}
 		profileEntityList = append(profileEntityList, &p)

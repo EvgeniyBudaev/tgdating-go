@@ -92,7 +92,7 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 
 func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /gateway/api/v1/profiles/session/:sessionId")
+		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/session")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetBySessionIdRequestDto{}
@@ -138,7 +138,7 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 
 func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /gateway/api/v1/profiles/short/:sessionId")
+		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/short")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetShortInfoRequestDto{}
