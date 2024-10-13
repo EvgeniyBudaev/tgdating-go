@@ -40,8 +40,8 @@ func (pm *ProfileMapper) MapToResponse(
 }
 
 func (pm *ProfileMapper) MapToDetailResponse(
-	pe *entity.ProfileEntity, nr *response.NavigatorDetailResponseDto, lr *response.LikeResponseDto,
-	tr *response.TelegramResponseDto, il []*entity.ImageEntity, isOnline bool,
+	pe *entity.ProfileEntity, nr *response.NavigatorDetailResponseDto, br *response.BlockResponseDto,
+	lr *response.LikeResponseDto, tr *response.TelegramResponseDto, il []*entity.ImageEntity, isOnline bool,
 ) *response.ProfileDetailResponseDto {
 	return &response.ProfileDetailResponseDto{
 		SessionId:      pe.SessionId,
@@ -62,6 +62,7 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		UpdatedAt:      pe.UpdatedAt,
 		LastOnline:     pe.LastOnline,
 		Navigator:      nr,
+		Block:          br,
 		Like:           lr,
 		Telegram:       tr,
 		Images:         il,

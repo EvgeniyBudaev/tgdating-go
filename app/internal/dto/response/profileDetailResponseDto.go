@@ -25,6 +25,7 @@ type ProfileDetailResponseDto struct {
 	LastOnline     time.Time                   `json:"lastOnline"`
 	Navigator      *NavigatorDetailResponseDto `json:"navigator"`
 	Telegram       *TelegramResponseDto        `json:"telegram"`
+	Block          *BlockResponseDto           `json:"block"`
 	Like           *LikeResponseDto            `json:"like"`
 	Images         []*entity.ImageEntity       `json:"images"`
 }

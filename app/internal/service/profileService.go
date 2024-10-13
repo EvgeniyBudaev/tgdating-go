@@ -213,9 +213,9 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	return profileResponse, err
 }
 
-func (s *ProfileService) GetProfileDetail(ctx context.Context, sessionId string,
+func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId string,
 	pr *request.ProfileGetDetailRequestDto) (*response.ProfileDetailResponseDto, error) {
-	viewedSessionId := pr.ViewedSessionId
+	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		return nil, err
 	}
@@ -258,6 +258,13 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, sessionId string,
 			return nil, err
 		}
 	}
+	blockEntity, err := s.blockRepository.FindBlock(ctx, sessionId, viewedSessionId)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("blockEntity: ", blockEntity)
+	blockMapper := mapper.BlockMapper{}
+	blockResponse := blockMapper.MapToResponse(blockEntity)
 	likeEntity, err := s.likeRepository.FindLikeBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
@@ -276,7 +283,7 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, sessionId string,
 		return nil, err
 	}
 	profileResponse := profileMapper.MapToDetailResponse(
-		profileEntity, navigatorResponse, likeResponse, telegramResponse, imageEntityList, isOnline)
+		profileEntity, navigatorResponse, blockResponse, likeResponse, telegramResponse, imageEntityList, isOnline)
 	return profileResponse, err
 }
 
@@ -603,6 +610,15 @@ func (s *ProfileService) AddTelegram(
 func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error) {
 	blockMapper := &mapper.BlockMapper{}
 	blockRequest := blockMapper.MapToAddRequest(pr)
+	prForTwoUser := &request.BlockRequestDto{
+		SessionId:            pr.BlockedUserSessionId,
+		BlockedUserSessionId: pr.SessionId,
+	}
+	blockForTwoUserRequest := blockMapper.MapToAddRequest(prForTwoUser)
+	_, err := s.blockRepository.AddBlock(ctx, blockForTwoUserRequest)
+	if err != nil {
+		return nil, err
+	}
 	return s.blockRepository.AddBlock(ctx, blockRequest)
 }
 

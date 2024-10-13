@@ -92,7 +92,7 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 
 func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/session")
+		pc.logger.Info("GET /gateway/api/v1/profiles/session/:sessionId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetBySessionIdRequestDto{}
@@ -124,8 +124,8 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		sessionId := ctf.Params("sessionId")
-		profileResponse, err := pc.service.GetProfileDetail(ctx, sessionId, req)
+		viewedSessionId := ctf.Params("viewedSessionId")
+		profileResponse, err := pc.service.GetProfileDetail(ctx, viewedSessionId, req)
 		if err != nil {
 			if errors.Is(err, psql.ErrNotRowFound) {
 				return v1.ResponseError(ctf, err, http.StatusNotFound)
@@ -138,7 +138,7 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 
 func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/short")
+		pc.logger.Info("GET /gateway/api/v1/profiles/short/:sessionId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetShortInfoRequestDto{}
@@ -161,7 +161,7 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 
 func (pc *ProfileController) GetProfileList() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /gateway/api/v1/profiles")
+		pc.logger.Info("GET /gateway/api/v1/profiles/list")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetListRequestDto{}
@@ -217,7 +217,7 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 
 func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/filter")
+		pc.logger.Info("GET /gateway/api/v1/profiles/filter/:sessionId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		sessionId := ctf.Params("sessionId")

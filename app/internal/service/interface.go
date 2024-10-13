@@ -63,6 +63,7 @@ type LikeRepository interface {
 
 type BlockRepository interface {
 	AddBlock(ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*entity.BlockEntity, error)
+	FindBlock(ctx context.Context, sessionId, blockedUserSessionId string) (*entity.BlockEntity, error)
 	FindBlockById(ctx context.Context, id uint64) (*entity.BlockEntity, error)
 }
 

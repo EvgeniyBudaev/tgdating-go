@@ -2,6 +2,8 @@ package mapper
 
 import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"time"
 )
 
@@ -16,5 +18,14 @@ func (pm *BlockMapper) MapToAddRequest(
 		IsBlocked:            true,
 		CreatedAt:            time.Now(),
 		UpdatedAt:            time.Now(),
+	}
+}
+
+func (pm *BlockMapper) MapToResponse(be *entity.BlockEntity) *response.BlockResponseDto {
+	if be == nil {
+		return nil
+	}
+	return &response.BlockResponseDto{
+		IsBlocked: be.IsBlocked,
 	}
 }
