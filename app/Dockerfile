@@ -1,6 +1,6 @@
 # https://docs.docker.com/language/golang/build-images/
 # base go image
-FROM golang:1.22.1-alpine as builder
+FROM golang:1.23.1-alpine as builder
 
 WORKDIR /app
 

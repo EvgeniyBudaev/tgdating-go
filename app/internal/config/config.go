@@ -9,7 +9,7 @@ import (
 type Config struct {
 	Port             string `envconfig:"AGGREGATION_PORT"`
 	LoggerLevel      string `envconfig:"AGGREGATION_LOGGER_LEVEL"`
-	Host             string `envconfig:"HOST"`
+	DBHost           string `envconfig:"POSTGRES_HOST"`
 	DBPort           string `envconfig:"POSTGRES_PORT"`
 	DBUser           string `envconfig:"POSTGRES_USER"`
 	DBPassword       string `envconfig:"POSTGRES_PASSWORD"`

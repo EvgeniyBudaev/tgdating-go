@@ -1,0 +1,33 @@
+variables:
+  DOCKER_DRIVER: overlay2
+
+stages:
+  - login_to_docker_registry
+  - build
+  - deploy
+
+login_to_gitlab:
+  stage: login_to_docker_registry
+  script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+  tags:
+    - dev-shell
+
+build_backend:
+  stage: build
+  script:
+    - cp $env .env
+    - cat .env
+    - docker build -t ${CI_REGISTRY_IMAGE}:${IMAGE_TAG} .
+    - docker push ${CI_REGISTRY_IMAGE}:${IMAGE_TAG}
+  tags:
+    - dev-shell
+
+deploy to dev:
+  stage: deploy
+  script:
+    - docker pull ${CI_REGISTRY_IMAGE}:${IMAGE_TAG}
+    - docker rm -f backend || echo "no backend container to remove"
+    - docker run --name backend -d -p 9000:9000 ${CI_REGISTRY_IMAGE}:${IMAGE_TAG}
+  tags:
+    - dev-shell

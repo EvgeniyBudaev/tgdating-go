@@ -1,3 +1,12 @@
+Stop process
+```
+sudo lsof -i :15672
+sudo lsof -i :5432
+sudo lsof -i :3000
+sudo lsof -i :80
+sudo kill PID_number
+```
+
 Инициализация зависимостей
 ```
 go mod init github.com/EvgeniyBudaev/tgdating-go/app
@@ -35,6 +44,15 @@ go get -u github.com/pkg/errors
 Драйвер для Postgres
 ```
 go get -u github.com/lib/pq
+```
+
+PostGIS
+```
+pg_config --version // PostgreSQL 14.10 (Ubuntu 14.10-0ubuntu0.22.04.1)
+sudo apt-get update
+sudo apt install postgis postgresql-14-postgis-3
+sudo -u postgres psql -c "CREATE EXTENSION postgis;" tgbot
+sudo systemctl restart postgresql
 ```
 
 Fiber
@@ -104,4 +122,12 @@ https://www.webhi.com/how-to/generate-lets-encrypt-wildcard-certificates-nginx/
 Keycloak
 ```
 ./kc.sh start-dev --http-port=8181
+```
+
+Make
+```
+sudo apt update
+sudo apt-get install build-essential
+make --version
+make build_server
 ```

@@ -24,7 +24,7 @@ func NewDatabase(logger logger.Logger, psql *sql.DB) *Database {
 func newPostgresConnection(cfg *config.Config) (*sql.DB, error) {
 	databaseURL := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		cfg.Host,
+		cfg.DBHost,
 		cfg.DBPort,
 		cfg.DBUser,
 		cfg.DBPassword,
