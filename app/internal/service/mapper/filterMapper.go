@@ -46,12 +46,8 @@ func (pm *FilterMapper) MapToUpdateRequest(
 	return &request.FilterUpdateRequestRepositoryDto{
 		SessionId:    fr.SessionId,
 		SearchGender: fr.SearchGender,
-		LookingFor:   fr.LookingFor,
 		AgeFrom:      fr.AgeFrom,
 		AgeTo:        fr.AgeTo,
-		Distance:     fr.Distance,
-		Page:         fr.Page,
-		Size:         fr.Size,
 		UpdatedAt:    time.Now(),
 	}
 }
@@ -61,12 +57,8 @@ func (pm *FilterMapper) MapProfileToUpdateRequest(
 	return &request.FilterUpdateRequestRepositoryDto{
 		SessionId:    pr.SessionId,
 		SearchGender: pr.SearchGender,
-		LookingFor:   pr.LookingFor,
 		AgeFrom:      pr.AgeFrom,
 		AgeTo:        pr.AgeTo,
-		Distance:     pr.Distance,
-		Page:         pr.Page,
-		Size:         pr.Size,
 		UpdatedAt:    time.Now(),
 	}
 }

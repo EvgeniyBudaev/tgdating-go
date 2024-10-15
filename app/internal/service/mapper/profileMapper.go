@@ -132,7 +132,7 @@ func (pm *ProfileMapper) MapToDeleteRequest(sessionId string) *request.ProfileDe
 }
 
 func (pm *ProfileMapper) MapToListRequest(
-	pr *request.ProfileGetListRequestDto) *request.ProfileGetListRequestRepositoryDto {
+	pr *entity.FilterEntity) *request.ProfileGetListRequestRepositoryDto {
 	return &request.ProfileGetListRequestRepositoryDto{
 		SessionId:    pr.SessionId,
 		SearchGender: pr.SearchGender,

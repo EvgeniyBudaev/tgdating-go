@@ -1,4 +1,4 @@
-SERVER_BINARY=aggregationApp
+SERVER_BINARY=app
 
 ## build_server: builds the server binary as a linux executable
 build_server:

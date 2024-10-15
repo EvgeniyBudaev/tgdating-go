@@ -3,11 +3,16 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/config"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/service/mapper"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gofiber/fiber/v2"
 	"github.com/h2non/bimg"
 	"github.com/pkg/errors"
@@ -26,6 +31,7 @@ const (
 
 type ProfileService struct {
 	logger              logger.Logger
+	config              *config.Config
 	profileRepository   ProfileRepository
 	navigatorRepository NavigatorRepository
 	filterRepository    FilterRepository
@@ -38,6 +44,7 @@ type ProfileService struct {
 
 func NewProfileService(
 	l logger.Logger,
+	cfg *config.Config,
 	pr ProfileRepository,
 	nr NavigatorRepository,
 	fr FilterRepository,
@@ -45,6 +52,7 @@ func NewProfileService(
 	ir ImageRepository, lr LikeRepository, br BlockRepository, cr ComplaintRepository) *ProfileService {
 	return &ProfileService{
 		logger:              l,
+		config:              cfg,
 		profileRepository:   pr,
 		navigatorRepository: nr,
 		telegramRepository:  tr,
@@ -262,7 +270,6 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("blockEntity: ", blockEntity)
 	blockMapper := mapper.BlockMapper{}
 	blockResponse := blockMapper.MapToResponse(blockEntity)
 	likeEntity, err := s.likeRepository.FindLikeBySessionId(ctx, sessionId)
@@ -311,7 +318,7 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 	if err != nil {
 		return nil, err
 	}
-	profileResponse := profileMapper.MapToShortInfoResponse(profileEntity, lastImage.Name)
+	profileResponse := profileMapper.MapToShortInfoResponse(profileEntity, lastImage.Url)
 	return profileResponse, err
 }
 
@@ -331,8 +338,12 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 			return nil, err
 		}
 	}
+	filterEntity, err := s.filterRepository.FindFilterBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileRequest := profileMapper.MapToListRequest(pr)
+	profileRequest := profileMapper.MapToListRequest(filterEntity)
 	paginationProfileEntityList, err := s.profileRepository.SelectProfileListBySessionId(ctx, profileRequest)
 	if err != nil {
 		return nil, err
@@ -344,7 +355,7 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 			if err != nil {
 				return nil, err
 			}
-			url := lastImage.Name
+			url := lastImage.Url
 			lastOnline := profileEntity.LastOnline
 			isOnline := s.checkIsOnline(lastOnline)
 			distance := profileEntity.Distance
@@ -488,12 +499,6 @@ func (s *ProfileService) UpdateFilter(
 	if err != nil {
 		return nil, err
 	}
-	if fr.Longitude != 0 && fr.Latitude != 0 {
-		_, err = s.updateNavigator(ctx, sessionId, fr.Longitude, fr.Latitude)
-		if err != nil {
-			return nil, err
-		}
-	}
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapToUpdateRequest(fr)
 	filterEntity, err := s.filterRepository.UpdateFilter(ctx, filterRequest)
@@ -525,7 +530,7 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	newFileName, newFilePath, newFileSize, err := s.convertImage(directoryPath, filePath, filenameWithoutSpaces)
+	newFileName, newFilePath, newFileSize, err := s.convertImage(sessionId, directoryPath, filePath, filenameWithoutSpaces)
 	if err != nil {
 		return nil, err
 	}
@@ -544,9 +549,9 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber
 	return imageConverted, nil
 }
 
-func (s *ProfileService) convertImage(directoryPath, filePath, fileName string) (string, string, int64, error) {
+func (s *ProfileService) convertImage(sessionId, directoryPath, filePath, fileName string) (string, string, int64, error) {
 	newFileName := s.replaceExtension(fileName)
-	newFilePath := fmt.Sprintf("%s/%s", directoryPath, newFileName)
+	newFilePathLocal := fmt.Sprintf("%s/%s", directoryPath, newFileName)
 	output, err := os.Create(directoryPath + "/" + newFileName)
 	if err != nil {
 		errorMessage := s.getErrorMessage("convertImage", "Create")
@@ -566,19 +571,58 @@ func (s *ProfileService) convertImage(directoryPath, filePath, fileName string) 
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return "", "", 0, err
 	}
-	bimg.Write(newFilePath, newFile)
-	if err := s.deleteFile(filePath); err != nil {
-		errorMessage := s.getErrorMessage("convertImage", "deleteFile")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return "", "", 0, err
-	}
-	newFileInfo, err := os.Stat(newFilePath)
+	bimg.Write(newFilePathLocal, newFile)
+	newFileInfo, err := os.Stat(newFilePathLocal)
 	if err != nil {
 		errorMessage := s.getErrorMessage("convertImage", "Stat")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return "", "", 0, err
 	}
 	newFileSize := newFileInfo.Size()
+
+	//
+	c := &aws.Config{
+		Endpoint: &s.config.S3EndpointUrl,
+		Credentials: credentials.NewStaticCredentials(
+			s.config.S3AccessKey,
+			s.config.S3SecretKey,
+			s.config.S3AccessKey,
+		),
+		Region: aws.String("ru-1"),
+	}
+	sess := session.Must(session.NewSession(c))
+	uploader := s3manager.NewUploader(sess)
+	f, err := os.Open(newFilePathLocal)
+	if err != nil {
+		errorMessage := s.getErrorMessage("convertImage", "os.Open")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return "", "", 0, err
+	}
+	pathToS3 := fmt.Sprintf("/profiles/%s/images/%s", sessionId, newFileName)
+	result, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(s.config.S3BucketName),
+		Key:    aws.String(pathToS3),
+		Body:   f,
+	})
+	if err != nil {
+		errorMessage := s.getErrorMessage("convertImage", "uploader.Upload")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return "", "", 0, err
+	}
+	s.logger.Info(fmt.Sprintf("file uploaded to, %s", aws.StringValue(&result.Location)))
+	newFilePath := fmt.Sprintf("%s%s", s.config.S3BucketPublicDomain, pathToS3)
+	//
+	if err := s.deleteFile(filePath); err != nil {
+		errorMessage := s.getErrorMessage("convertImage", "deleteFile")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return "", "", 0, err
+	}
+	if err := os.RemoveAll("static/profiles"); err != nil {
+		errorMessage := s.getErrorMessage("convertImage", "os.RemoveAll")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return "", "", 0, err
+	}
+
 	return newFileName, newFilePath, newFileSize, nil
 }
 

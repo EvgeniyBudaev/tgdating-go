@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   postgres:
@@ -46,20 +46,27 @@ services:
       - POSTGRES_NAME=tgbot
       - POSTGRES_SSLMODE=disable
       - TELEGRAM_BOT_TOKEN=my_secret_bot_token
+      - S3_ACCESS_KEY=my_access_key
+      - S3_SECRET_KEY=my_secret_key
+      - S3_ENDPOINT_URL=https://s3.myUrlAddress.com
+      - S3_BUCKET_NAME=my_bucket_name
+      - S3_BUCKET_PUBLIC_DOMAIN=https://s3.myPublicUrlAddress.com
+    volumes:
+      - ./app/migrations:/app/migrations
     depends_on:
       - postgres
 
-#  nginx_backend:
-#    container_name: nginx_backend
-#    image: nginx:1.19.3
-#    networks:
-#      - web-network
-#    ports:
-#      - "8082:80"
-#    volumes:
-#      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-#      - /etc/letsencrypt:/etc/letsencrypt
-#    restart: always
+  nginx_backend:
+    container_name: nginx_backend
+    image: nginx:1.19.3
+    networks:
+      - web-network
+    ports:
+      - "8082:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt:/etc/letsencrypt
+    restart: always
 
 networks:
   web-network:

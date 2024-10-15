@@ -12,7 +12,7 @@ RUN go mod download
 
 # build
 COPY . .
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/aggregationApp ./cmd
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/app ./cmd
 
 FROM alpine:latest
 
@@ -21,5 +21,5 @@ WORKDIR /app
 RUN apk --no-cache add vips
 
 COPY --from=builder /app/.env .env
-COPY --from=builder /app/bin/aggregationApp .
-CMD ["./aggregationApp"]
+COPY --from=builder /app/bin/app .
+CMD ["./app"]

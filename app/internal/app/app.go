@@ -35,18 +35,21 @@ func New() *App {
 		errorMessage := getErrorMessage("New", "logger.New")
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
+
 	// Config
 	cfg, err := config.Load(defaultLogger)
 	if err != nil {
 		errorMessage := getErrorMessage("New", "config.Load")
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
+
 	// Logger level
 	loggerLevel, err := logger.New(cfg.LoggerLevel)
 	if err != nil {
 		errorMessage := getErrorMessage("New", "logger.New")
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
+
 	// Database connection
 	postgresConnection, err := newPostgresConnection(cfg)
 	if err != nil {
@@ -73,7 +76,6 @@ func New() *App {
 	}
 	migrationsPath := fmt.Sprintf("file://%s/migrations", dir)
 	m, err := migrate.NewWithDatabaseInstance(
-
 		migrationsPath,
 		"postgres", driver)
 	if err != nil {
@@ -87,12 +89,18 @@ func New() *App {
 		ReadBufferSize: 256 << 8,
 		BodyLimit:      50 * 1024 * 1024, // 50 MB
 	})
+
 	// CORS
 	f.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "Content-Type, X-Requested-With, Authorization",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
+
+	// S3 Bucket
+	//sess := session.Must(session.NewSession())
+	//svc := s3.New(sess)
+
 	return &App{
 		config: cfg,
 		db:     database,

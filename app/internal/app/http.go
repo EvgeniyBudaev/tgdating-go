@@ -27,7 +27,7 @@ func (app *App) StartHTTPServer(ctx context.Context) error {
 	blockRepository := psql.NewBlockRepository(app.Logger, app.db.psql)
 	complaintRepository := psql.NewComplaintRepository(app.Logger, app.db.psql)
 	profileRepository := psql.NewProfileRepository(app.Logger, app.db.psql)
-	profileService := service.NewProfileService(app.Logger, profileRepository, navigatorRepository, filterRepository,
+	profileService := service.NewProfileService(app.Logger, app.config, profileRepository, navigatorRepository, filterRepository,
 		telegramRepository, imageRepository, likeRepository, blockRepository, complaintRepository)
 	profileController := controller.NewProfileController(app.Logger, profileService)
 	router := app.fiber.Group(prefix)
