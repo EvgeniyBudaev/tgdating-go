@@ -30,9 +30,14 @@ go get -u github.com/kelseyhightower/envconfig
 
 Логирование
 https://pkg.go.dev/go.uber.org/zap
-
 ```
 go get -u go.uber.org/zap
+```
+
+Валидатор
+https://github.com/go-playground/validator
+```
+go get github.com/go-playground/validator/v10
 ```
 
 Errors
@@ -130,4 +135,11 @@ sudo apt update
 sudo apt-get install build-essential
 make --version
 make build_server
+```
+
+S3
+https://github.com/aws/aws-sdk-go
+https://pkg.go.dev/github.com/aws/aws-sdk-go/service/s3#hdr-Using_the_Client
+```
+go get -u github.com/aws/aws-sdk-go
 ```

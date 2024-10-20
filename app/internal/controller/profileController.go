@@ -7,6 +7,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/repository/psql"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/validation"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -38,17 +39,27 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 		pc.logger.Info("POST /gateway/api/v1/profiles")
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
+		acceptLanguage := ctf.Get("Accept-Language")
+		fmt.Println("acceptLanguage: ", acceptLanguage)
+		if acceptLanguage == "" {
+			acceptLanguage = "en"
+		}
 		req := &request.ProfileAddRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
 			errorMessage := pc.getErrorMessage("AddProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		validateErr := validation.ValidateProfileAddOrEditRequestDto(req, acceptLanguage)
+		if validateErr != nil {
+			return v1.ResponseFieldsError(ctf, validateErr)
+		}
 		profileResponse, err := pc.service.AddProfile(ctx, ctf, req)
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, profileResponse)
+		//return nil
 	}
 }
 
