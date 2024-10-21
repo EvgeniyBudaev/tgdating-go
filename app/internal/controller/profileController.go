@@ -40,9 +40,8 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
 		defer cancel()
 		acceptLanguage := ctf.Get("Accept-Language")
-		fmt.Println("acceptLanguage: ", acceptLanguage)
 		if acceptLanguage == "" {
-			acceptLanguage = "en"
+			acceptLanguage = "ru"
 		}
 		req := &request.ProfileAddRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
@@ -50,7 +49,7 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		validateErr := validation.ValidateProfileAddOrEditRequestDto(req, acceptLanguage)
+		validateErr := validation.ValidateProfileAddOrEditRequestDto(ctf, req, acceptLanguage)
 		if validateErr != nil {
 			return v1.ResponseFieldsError(ctf, validateErr)
 		}
@@ -59,7 +58,6 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, profileResponse)
-		//return nil
 	}
 }
 
