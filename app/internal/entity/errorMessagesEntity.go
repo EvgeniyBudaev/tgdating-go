@@ -42,12 +42,34 @@ func (e *ErrorMessagesEntity) GetMaxSymbols(locale string, max uint64) string {
 	}
 }
 
-func (e *ErrorMessagesEntity) GetMoreOrEqualMinNumber(locale string, max uint64) string {
+func (e *ErrorMessagesEntity) GetFileMaxAmount(locale string, max int) string {
 	switch locale {
 	case "ru":
-		return fmt.Sprintf("Должно быть больше или равно %d", max)
+		return fmt.Sprintf("Максимальное кол-во файлов %d", max)
 	case "en":
-		return fmt.Sprintf("Must be more or equal to %d", max)
+		return fmt.Sprintf("Maximum number of files %d", max)
+	default:
+		return fmt.Sprintf("Unsupported language: %s", locale)
+	}
+}
+
+func (e *ErrorMessagesEntity) GetFileMaxSize(locale string, max int) string {
+	switch locale {
+	case "ru":
+		return fmt.Sprintf("Максимальный размер файла %dМб", max)
+	case "en":
+		return fmt.Sprintf("Maximum size file %dMb", max)
+	default:
+		return fmt.Sprintf("Unsupported language: %s", locale)
+	}
+}
+
+func (e *ErrorMessagesEntity) GetMoreOrEqualMinNumber(locale string, min uint64) string {
+	switch locale {
+	case "ru":
+		return fmt.Sprintf("Должно быть больше или равно %d", min)
+	case "en":
+		return fmt.Sprintf("Must be more or equal to %d", min)
 	default:
 		return fmt.Sprintf("Unsupported language: %s", locale)
 	}
