@@ -28,5 +28,6 @@ type ProfileUpdateRequestDto struct {
 	Distance                float64   `json:"distance"`
 	Page                    uint64    `json:"page"`
 	Size                    uint64    `json:"size"`
+	IsImages                bool      `json:"IsImages"`
 	Image                   []byte    `json:"image"`
 }

@@ -8,12 +8,18 @@ import (
 )
 
 var (
-	fileMaxSizeMb    = 10
+	fileMaxSizeMb    = 50
 	fileMaxSizeBytes = int64(fileMaxSizeMb * 1024 * 1024)
 	fileMaxAmount    = 3
+	maxHeight        = float64(250)
+	maxWeight        = float64(650)
+	minAge           = byte(18)
+	maxAge           = byte(100)
+	maxCharacters    = 1000
+	maxDistance      = float64(1000)
 )
 
-func ValidateProfileAddOrEditRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequestDto,
+func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequestDto,
 	locale string) *entity.ValidationErrorEntity {
 	errorMessages := entity.NewErrorMessagesEntity()
 	message := errorMessages.GetBadRequest(locale)
@@ -69,9 +75,9 @@ func ValidateProfileAddOrEditRequestDto(ctf *fiber.Ctx, req *request.ProfileAddR
 			errorMessages.GetBadRequest(locale))
 	}
 
-	if len(req.Description) > 1000 {
+	if len(req.Description) > int(maxCharacters) {
 		fieldErrorsLanguages["description"] = append(fieldErrorsLanguages["description"],
-			errorMessages.GetMaxSymbols(locale, 1000))
+			errorMessages.GetMaxSymbols(locale, maxCharacters))
 	}
 
 	if req.Height < 0 {
@@ -79,9 +85,9 @@ func ValidateProfileAddOrEditRequestDto(ctf *fiber.Ctx, req *request.ProfileAddR
 			errorMessages.GetNonNegativeNumber(locale))
 	}
 
-	if req.Height > 250 {
+	if req.Height > maxHeight {
 		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
-			errorMessages.GetLessOrEqualMaxNumber(locale, 250))
+			errorMessages.GetLessOrEqualMaxNumber(locale, maxHeight))
 	}
 
 	if req.Weight < 0 {
@@ -89,9 +95,9 @@ func ValidateProfileAddOrEditRequestDto(ctf *fiber.Ctx, req *request.ProfileAddR
 			errorMessages.GetNonNegativeNumber(locale))
 	}
 
-	if req.Weight > 650 {
+	if req.Weight > maxWeight {
 		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
-			errorMessages.GetLessOrEqualMaxNumber(locale, 650))
+			errorMessages.GetLessOrEqualMaxNumber(locale, maxWeight))
 	}
 
 	if req.TelegramUserId == 0 {
@@ -104,19 +110,24 @@ func ValidateProfileAddOrEditRequestDto(ctf *fiber.Ctx, req *request.ProfileAddR
 			errorMessages.GetNotEmpty(locale))
 	}
 
-	if req.AgeFrom < 18 {
+	if req.AgeFrom < minAge {
 		fieldErrorsLanguages["ageFrom"] = append(fieldErrorsLanguages["ageFrom"],
-			errorMessages.GetMoreOrEqualMinNumber(locale, 18))
+			errorMessages.GetMoreOrEqualMinNumber(locale, minAge))
 	}
 
-	if req.AgeTo > 100 {
+	if req.AgeTo > maxAge {
 		fieldErrorsLanguages["ageTo"] = append(fieldErrorsLanguages["ageTo"],
-			errorMessages.GetLessOrEqualMaxNumber(locale, 100))
+			errorMessages.GetLessOrEqualMaxByteNumber(locale, maxAge))
 	}
 
 	if req.Distance < 0 {
 		fieldErrorsLanguages["distance"] = append(fieldErrorsLanguages["distance"],
 			errorMessages.GetNonNegativeNumber(locale))
+	}
+
+	if req.Distance > maxDistance {
+		fieldErrorsLanguages["distance"] = append(fieldErrorsLanguages["distance"],
+			errorMessages.GetLessOrEqualMaxNumber(locale, maxDistance))
 	}
 
 	if req.Page < 0 {

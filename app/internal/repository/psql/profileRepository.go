@@ -186,9 +186,9 @@ func (r *ProfileRepository) SelectProfileListBySessionId(ctx context.Context,
 		" )), 4326)::geography) AS distance" +
 		" FROM profiles p" +
 		" JOIN profile_navigators pn ON p.session_id = pn.session_id" +
-		" WHERE p.is_deleted = false AND  p.is_blocked = false AND" +
+		" WHERE p.is_deleted = false AND p.is_blocked = false AND" +
 		" (EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) BETWEEN $3 AND $4) AND" +
-		" ($2 = 'all' OR gender = $2) AND  p.session_id <> $1 AND" +
+		" ($2 = 'all' OR gender = $2) AND p.session_id <> $1 AND" +
 		" NOT EXISTS (SELECT 1 FROM profile_blocks WHERE session_id = $1 AND" +
 		" blocked_user_session_id = p.session_id) AND" +
 		" ST_Distance((SELECT location FROM profile_navigators WHERE session_id = p.session_id)::geography," +

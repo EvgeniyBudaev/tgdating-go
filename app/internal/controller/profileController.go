@@ -17,15 +17,15 @@ import (
 )
 
 const (
-	errorFilePath = "internal/controller/profileController.go"
+	defaultLocale   = "ru"
+	errorFilePath   = "internal/controller/profileController.go"
+	timeoutDuration = 30 * time.Second
 )
 
 type ProfileController struct {
 	logger  logger.Logger
 	service ProfileService
 }
-
-const TimeoutDuration = 30 * time.Second
 
 func NewProfileController(l logger.Logger, ps ProfileService) *ProfileController {
 	return &ProfileController{
@@ -37,11 +37,11 @@ func NewProfileController(l logger.Logger, ps ProfileService) *ProfileController
 func (pc *ProfileController) AddProfile() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("POST /gateway/api/v1/profiles")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		acceptLanguage := ctf.Get("Accept-Language")
 		if acceptLanguage == "" {
-			acceptLanguage = "ru"
+			acceptLanguage = defaultLocale
 		}
 		req := &request.ProfileAddRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
@@ -49,7 +49,7 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		validateErr := validation.ValidateProfileAddOrEditRequestDto(ctf, req, acceptLanguage)
+		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, acceptLanguage)
 		if validateErr != nil {
 			return v1.ResponseFieldsError(ctf, validateErr)
 		}
@@ -64,13 +64,21 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 func (pc *ProfileController) UpdateProfile() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("PUT /gateway/api/v1/profiles")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
+		acceptLanguage := ctf.Get("Accept-Language")
+		if acceptLanguage == "" {
+			acceptLanguage = defaultLocale
+		}
 		req := &request.ProfileUpdateRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
 			errorMessage := pc.getErrorMessage("UpdateProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		validateErr := validation.ValidateProfileEditRequestDto(ctf, req, acceptLanguage)
+		if validateErr != nil {
+			return v1.ResponseFieldsError(ctf, validateErr)
 		}
 		profileResponse, err := pc.service.UpdateProfile(ctx, ctf, req)
 		if err != nil {
@@ -83,7 +91,7 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 func (pc *ProfileController) DeleteProfile() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("DELETE /gateway/api/v1/profiles")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.ProfileDeleteRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
@@ -102,7 +110,7 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("GET /gateway/api/v1/profiles/session/:sessionId")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetBySessionIdRequestDto{}
 		if err := ctf.QueryParser(req); err != nil {
@@ -125,7 +133,7 @@ func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("GET /gateway/api/v1/profiles/detail/:sessionId")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetDetailRequestDto{}
 		if err := ctf.QueryParser(req); err != nil {
@@ -148,7 +156,7 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("GET /gateway/api/v1/profiles/short/:sessionId")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetShortInfoRequestDto{}
 		if err := ctf.QueryParser(req); err != nil {
@@ -171,7 +179,7 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 func (pc *ProfileController) GetProfileList() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("GET /gateway/api/v1/profiles/list")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetListRequestDto{}
 		if err := ctf.QueryParser(req); err != nil {
@@ -193,7 +201,7 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 func (pc *ProfileController) GetImageBySessionId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/images/:fileName")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		sessionId := ctf.Params("sessionId")
 		fileName := ctf.Params("fileName")
@@ -209,7 +217,7 @@ func (pc *ProfileController) GetImageBySessionId() fiber.Handler {
 func (pc *ProfileController) DeleteImage() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("DELETE /gateway/api/v1/profiles/images/:id")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		id := ctf.Params("id")
 		idUint64, err := pc.convertToUint64("id", id)
@@ -227,7 +235,7 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("GET /gateway/api/v1/profiles/filter/:sessionId")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		sessionId := ctf.Params("sessionId")
 		req := &request.FilterGetRequestDto{}
@@ -250,7 +258,7 @@ func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
 func (pc *ProfileController) UpdateFilter() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("PUT /gateway/api/v1/profiles/filters")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.FilterUpdateRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
@@ -269,7 +277,7 @@ func (pc *ProfileController) UpdateFilter() fiber.Handler {
 func (pc *ProfileController) AddBlock() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("POST /gateway/api/v1/profiles/blocks")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.BlockRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
@@ -288,7 +296,7 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 func (pc *ProfileController) AddLike() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("POST /gateway/api/v1/profiles/likes")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.LikeAddRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
@@ -307,7 +315,7 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 func (pc *ProfileController) AddComplaint() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("POST /gateway/api/v1/profiles/complaints")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.ComplaintAddRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
@@ -326,7 +334,7 @@ func (pc *ProfileController) AddComplaint() fiber.Handler {
 func (pc *ProfileController) UpdateCoordinates() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("PUT /gateway/api/v1/profiles/navigators")
-		ctx, cancel := context.WithTimeout(ctf.Context(), TimeoutDuration)
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.NavigatorUpdateRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {

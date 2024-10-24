@@ -106,9 +106,12 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 	if err := s.UpdateImageList(ctx, ctf, profileEntity.SessionId); err != nil {
 		return nil, err
 	}
-	navigatorResponse, err := s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
-	if err != nil {
-		return nil, err
+	var navigatorResponse *response.NavigatorResponseDto
+	if pr.Longitude != 0 && pr.Latitude != 0 {
+		navigatorResponse, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+		if err != nil {
+			return nil, err
+		}
 	}
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapProfileToUpdateRequest(pr)
@@ -579,8 +582,7 @@ func (s *ProfileService) convertImage(sessionId, directoryPath, filePath, fileNa
 		return "", "", 0, err
 	}
 	newFileSize := newFileInfo.Size()
-
-	//
+	// S3 storage
 	c := &aws.Config{
 		Endpoint: &s.config.S3EndpointUrl,
 		Credentials: credentials.NewStaticCredentials(
@@ -622,7 +624,6 @@ func (s *ProfileService) convertImage(sessionId, directoryPath, filePath, fileNa
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return "", "", 0, err
 	}
-
 	return newFileName, newFilePath, newFileSize, nil
 }
 

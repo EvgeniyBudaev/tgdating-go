@@ -20,7 +20,18 @@ func (e *ErrorMessagesEntity) GetBadRequest(locale string) string {
 	}
 }
 
-func (e *ErrorMessagesEntity) GetLessOrEqualMaxNumber(locale string, max uint64) string {
+func (e *ErrorMessagesEntity) GetLessOrEqualMaxNumber(locale string, max float64) string {
+	switch locale {
+	case "ru":
+		return fmt.Sprintf("Должно быть меньше или равно %.2f", max)
+	case "en":
+		return fmt.Sprintf("Must be less or equal to %.2f", max)
+	default:
+		return fmt.Sprintf("Unsupported language: %s", locale)
+	}
+}
+
+func (e *ErrorMessagesEntity) GetLessOrEqualMaxByteNumber(locale string, max byte) string {
 	switch locale {
 	case "ru":
 		return fmt.Sprintf("Должно быть меньше или равно %d", max)
@@ -31,7 +42,7 @@ func (e *ErrorMessagesEntity) GetLessOrEqualMaxNumber(locale string, max uint64)
 	}
 }
 
-func (e *ErrorMessagesEntity) GetMaxSymbols(locale string, max uint64) string {
+func (e *ErrorMessagesEntity) GetMaxSymbols(locale string, max int) string {
 	switch locale {
 	case "ru":
 		return fmt.Sprintf("Должно быть не более %d символов", max)
@@ -64,7 +75,7 @@ func (e *ErrorMessagesEntity) GetFileMaxSize(locale string, max int) string {
 	}
 }
 
-func (e *ErrorMessagesEntity) GetMoreOrEqualMinNumber(locale string, min uint64) string {
+func (e *ErrorMessagesEntity) GetMoreOrEqualMinNumber(locale string, min byte) string {
 	switch locale {
 	case "ru":
 		return fmt.Sprintf("Должно быть больше или равно %d", min)
