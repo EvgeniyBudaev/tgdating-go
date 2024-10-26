@@ -49,6 +49,7 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		fmt.Println("AddProfile req.Latitude:", req.Latitude)
 		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, acceptLanguage)
 		if validateErr != nil {
 			return v1.ResponseFieldsError(ctf, validateErr)
@@ -187,6 +188,7 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		fmt.Println("GetProfileList req.Latitude", req.Latitude)
 		profileListResponse, err := pc.service.GetProfileList(ctx, req)
 		if err != nil {
 			if errors.Is(err, psql.ErrNotRowFound) {
@@ -244,6 +246,7 @@ func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		fmt.Println("GetFilterBySessionId req.Latitude", req.Latitude)
 		profileListResponse, err := pc.service.GetFilterBySessionId(ctx, sessionId, req)
 		if err != nil {
 			if errors.Is(err, psql.ErrNotRowFound) {

@@ -10,9 +10,6 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/service/mapper"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gofiber/fiber/v2"
 	"github.com/h2non/bimg"
 	"github.com/pkg/errors"
@@ -32,6 +29,7 @@ const (
 type ProfileService struct {
 	logger              logger.Logger
 	config              *config.Config
+	s3                  *config.S3
 	profileRepository   ProfileRepository
 	navigatorRepository NavigatorRepository
 	filterRepository    FilterRepository
@@ -45,6 +43,7 @@ type ProfileService struct {
 func NewProfileService(
 	l logger.Logger,
 	cfg *config.Config,
+	s3 *config.S3,
 	pr ProfileRepository,
 	nr NavigatorRepository,
 	fr FilterRepository,
@@ -53,6 +52,7 @@ func NewProfileService(
 	return &ProfileService{
 		logger:              l,
 		config:              cfg,
+		s3:                  s3,
 		profileRepository:   pr,
 		navigatorRepository: nr,
 		telegramRepository:  tr,
@@ -336,6 +336,7 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 		return nil, err
 	}
 	if pr.Longitude != 0 && pr.Latitude != 0 {
+		fmt.Println("GetProfileList pr.Longitude", pr.Longitude)
 		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
 		if err != nil {
 			return nil, err
@@ -429,22 +430,6 @@ func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) 
 	return nil
 }
 
-func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entity.ImageEntity, error) {
-	image, err := s.imageRepository.FindImageById(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	filePath := image.Url
-	if err := os.Remove(filePath); err != nil {
-		errorMessage := s.getErrorMessage("DeleteImage", "Remove")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	imageMapper := &mapper.ImageMapper{}
-	imageRequest := imageMapper.MapToDeleteRequest(image.Id)
-	return s.imageRepository.DeleteImage(ctx, imageRequest)
-}
-
 func (s *ProfileService) GetImageBySessionId(ctx context.Context, sessionId, fileName string) ([]byte, error) {
 	filePath := fmt.Sprintf("static/profiles/%s/images/%s", sessionId, fileName)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -459,6 +444,30 @@ func (s *ProfileService) GetImageBySessionId(ctx context.Context, sessionId, fil
 		return nil, err
 	}
 	return data, nil
+}
+
+func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entity.ImageEntity, error) {
+	image, err := s.imageRepository.FindImageById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	// Удаление из файловой системы
+	//filePath := image.Url
+	//if err := os.Remove(filePath); err != nil {
+	//	errorMessage := s.getErrorMessage("DeleteImage", "Remove")
+	//	s.logger.Debug(errorMessage, zap.Error(err))
+	//	return nil, err
+	//}
+	// Удаление из S3 хранилища
+	pathToS3 := fmt.Sprintf("/profiles/%s/images/%s", image.SessionId, image.Name)
+	if err := s.s3.Delete(pathToS3); err != nil {
+		errorMessage := s.getErrorMessage("deleteImageById", "s.s3.Delete")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	imageMapper := &mapper.ImageMapper{}
+	imageRequest := imageMapper.MapToDeleteRequest(image.Id)
+	return s.imageRepository.DeleteImage(ctx, imageRequest)
 }
 
 func (s *ProfileService) DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error) {
@@ -482,6 +491,7 @@ func (s *ProfileService) GetFilterBySessionId(
 		return nil, err
 	}
 	if fr.Longitude != 0 && fr.Latitude != 0 {
+		fmt.Println("GetFilterBySessionId fr.Longitude", fr.Longitude)
 		_, err = s.updateNavigator(ctx, sessionId, fr.Longitude, fr.Latitude)
 		if err != nil {
 			return nil, err
@@ -553,7 +563,7 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber
 }
 
 func (s *ProfileService) convertImage(sessionId, directoryPath, filePath, fileName string) (string, string, int64, error) {
-	newFileName := s.replaceExtension(fileName)
+	newFileName := s.replaceFileName(fileName)
 	newFilePathLocal := fmt.Sprintf("%s/%s", directoryPath, newFileName)
 	output, err := os.Create(directoryPath + "/" + newFileName)
 	if err != nil {
@@ -583,17 +593,6 @@ func (s *ProfileService) convertImage(sessionId, directoryPath, filePath, fileNa
 	}
 	newFileSize := newFileInfo.Size()
 	// S3 storage
-	c := &aws.Config{
-		Endpoint: &s.config.S3EndpointUrl,
-		Credentials: credentials.NewStaticCredentials(
-			s.config.S3AccessKey,
-			s.config.S3SecretKey,
-			s.config.S3AccessKey,
-		),
-		Region: aws.String("ru-1"),
-	}
-	sess := session.Must(session.NewSession(c))
-	uploader := s3manager.NewUploader(sess)
 	f, err := os.Open(newFilePathLocal)
 	if err != nil {
 		errorMessage := s.getErrorMessage("convertImage", "os.Open")
@@ -601,13 +600,9 @@ func (s *ProfileService) convertImage(sessionId, directoryPath, filePath, fileNa
 		return "", "", 0, err
 	}
 	pathToS3 := fmt.Sprintf("/profiles/%s/images/%s", sessionId, newFileName)
-	result, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(s.config.S3BucketName),
-		Key:    aws.String(pathToS3),
-		Body:   f,
-	})
+	result, err := s.s3.Upload(pathToS3, f)
 	if err != nil {
-		errorMessage := s.getErrorMessage("convertImage", "uploader.Upload")
+		errorMessage := s.getErrorMessage("convertImage", "s.s3.Upload")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return "", "", 0, err
 	}
@@ -708,6 +703,7 @@ func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string)
 func (s *ProfileService) updateNavigator(
 	ctx context.Context,
 	sessionId string, longitude float64, latitude float64) (*response.NavigatorResponseDto, error) {
+	fmt.Println("updateNavigator latitude", latitude)
 	navigatorMapper := &mapper.NavigatorMapper{}
 	navigatorRequest := navigatorMapper.MapToUpdateRequest(sessionId, longitude, latitude)
 	navigatorUpdated, err := s.navigatorRepository.UpdateNavigator(ctx, navigatorRequest)
@@ -730,11 +726,27 @@ func (s *ProfileService) checkIsOnline(lastOnline time.Time) bool {
 	return minutes < 5
 }
 
+func (s *ProfileService) replaceFileName(filename string) string {
+	// Получаем текущее время
+	now := time.Now().UTC()
+	// Форматируем дату и время
+	formattedTime := fmt.Sprintf("IMG_%04d%02d%02d_%02d%02d%02d_%03d", now.Year(), now.Month(), now.Day(),
+		now.Hour(), now.Minute(), now.Second(), now.Nanosecond()/1000000)
+	// Добавляем расширение
+	newFilename := formattedTime + filepath.Ext(filename)
+	// Заменяем расширение, если необходимо
+	return s.replaceExtension(newFilename)
+}
+
 func (s *ProfileService) replaceExtension(filename string) string {
+	webpExtension := ".webp"
+	if filepath.Ext(filename) == webpExtension {
+		return filename
+	}
 	// Удаляем текущее расширение
 	filename = strings.TrimSuffix(filename, filepath.Ext(filename))
 	// Добавляем новое расширение .webp
-	return filename + ".webp"
+	return filename + webpExtension
 }
 
 func (s *ProfileService) getErrorMessage(repositoryMethodName string, callMethodName string) string {
