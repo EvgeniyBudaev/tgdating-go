@@ -27,7 +27,7 @@ func NewBlockRepository(l logger.Logger, db *sql.DB) *BlockRepository {
 	}
 }
 
-func (r *BlockRepository) AddBlock(
+func (r *BlockRepository) Add(
 	ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*entity.BlockEntity, error) {
 	query := "INSERT INTO profile_blocks (session_id, blocked_user_session_id, is_blocked, created_at, updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5)" +
@@ -38,18 +38,18 @@ func (r *BlockRepository) AddBlock(
 	err := row.Scan(&id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			errorMessage := r.getErrorMessage("AddBlock", "sql.ErrNoRows")
+			errorMessage := r.getErrorMessage("Add", "sql.ErrNoRows")
 			r.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
-		errorMessage := r.getErrorMessage("AddBlock", "Scan")
+		errorMessage := r.getErrorMessage("Add", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindBlockById(ctx, id)
+	return r.FindById(ctx, id)
 }
 
-func (r *BlockRepository) FindBlock(ctx context.Context, sessionId, blockedUserSessionId string) (*entity.BlockEntity, error) {
+func (r *BlockRepository) Find(ctx context.Context, sessionId, blockedUserSessionId string) (*entity.BlockEntity, error) {
 	p := &entity.BlockEntity{}
 	query := "SELECT id, session_id, blocked_user_session_id, is_blocked, created_at, updated_at " +
 		" FROM profile_blocks" +
@@ -60,14 +60,14 @@ func (r *BlockRepository) FindBlock(ctx context.Context, sessionId, blockedUserS
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		errorMessage := r.getErrorMessage("FindBlock", "Scan")
+		errorMessage := r.getErrorMessage("Find", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	return p, nil
 }
 
-func (r *BlockRepository) FindBlockById(ctx context.Context, id uint64) (*entity.BlockEntity, error) {
+func (r *BlockRepository) FindById(ctx context.Context, id uint64) (*entity.BlockEntity, error) {
 	p := &entity.BlockEntity{}
 	query := "SELECT id, session_id, blocked_user_session_id, is_blocked, created_at, updated_at " +
 		" FROM profile_blocks" +
@@ -78,7 +78,7 @@ func (r *BlockRepository) FindBlockById(ctx context.Context, id uint64) (*entity
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		errorMessage := r.getErrorMessage("FindBlockById", "Scan")
+		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}

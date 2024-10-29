@@ -97,10 +97,6 @@ func New() *App {
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
 
-	// S3 Bucket
-	//sess := session.Must(session.NewSession())
-	//svc := s3.New(sess)
-
 	return &App{
 		config: cfg,
 		db:     database,

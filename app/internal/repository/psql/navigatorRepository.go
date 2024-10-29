@@ -27,7 +27,7 @@ func NewNavigatorRepository(l logger.Logger, db *sql.DB) *NavigatorRepository {
 	}
 }
 
-func (r *NavigatorRepository) AddNavigator(
+func (r *NavigatorRepository) Add(
 	ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*entity.NavigatorEntity, error) {
 	query := "INSERT INTO profile_navigators (session_id, location, is_deleted, created_at, updated_at)" +
 		" VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3),  4326), $4, $5, $6) RETURNING id"
@@ -36,18 +36,18 @@ func (r *NavigatorRepository) AddNavigator(
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
-		errorMessage := r.getErrorMessage("AddNavigator", "Scan")
+		errorMessage := r.getErrorMessage("Add", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindNavigatorById(ctx, id)
+	return r.FindById(ctx, id)
 }
 
-func (r *NavigatorRepository) UpdateNavigator(
+func (r *NavigatorRepository) Update(
 	ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateNavigator", "Begin")
+		errorMessage := r.getErrorMessage("Update", "Begin")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -56,19 +56,19 @@ func (r *NavigatorRepository) UpdateNavigator(
 		" WHERE session_id=$4"
 	_, err = r.db.ExecContext(ctx, query, &p.Longitude, &p.Latitude, &p.UpdatedAt, &p.SessionId)
 	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateNavigator", "ExecContext")
+		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	tx.Commit()
-	return r.FindNavigatorBySessionId(ctx, p.SessionId)
+	return r.FindBySessionId(ctx, p.SessionId)
 }
 
-func (r *NavigatorRepository) DeleteNavigator(
+func (r *NavigatorRepository) Delete(
 	ctx context.Context, p *request.NavigatorDeleteRequestRepositoryDto) (*entity.NavigatorEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteNavigator", "Begin")
+		errorMessage := r.getErrorMessage("Delete", "Begin")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -76,15 +76,15 @@ func (r *NavigatorRepository) DeleteNavigator(
 	query := "UPDATE profile_navigators SET is_deleted=$1, updated_at=$2 WHERE session_id=$3"
 	_, err = r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.SessionId)
 	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteNavigator", "ExecContext")
+		errorMessage := r.getErrorMessage("Delete", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	tx.Commit()
-	return r.FindNavigatorBySessionId(ctx, p.SessionId)
+	return r.FindBySessionId(ctx, p.SessionId)
 }
 
-func (r *NavigatorRepository) FindNavigatorById(
+func (r *NavigatorRepository) FindById(
 	ctx context.Context, id uint64) (*entity.NavigatorEntity, error) {
 	p := &entity.NavigatorEntity{}
 	var longitude sql.NullFloat64
@@ -96,7 +96,7 @@ func (r *NavigatorRepository) FindNavigatorById(
 	row := r.db.QueryRowContext(ctx, query, id)
 	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindNavigatorById", "Scan")
+		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (r *NavigatorRepository) FindNavigatorById(
 	return p, nil
 }
 
-func (r *NavigatorRepository) FindNavigatorBySessionId(
+func (r *NavigatorRepository) FindBySessionId(
 	ctx context.Context, sessionId string) (*entity.NavigatorEntity, error) {
 	p := &entity.NavigatorEntity{}
 	var longitude sql.NullFloat64
@@ -122,7 +122,7 @@ func (r *NavigatorRepository) FindNavigatorBySessionId(
 	row := r.db.QueryRowContext(ctx, query, sessionId)
 	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindNavigatorBySessionId", "Scan")
+		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}

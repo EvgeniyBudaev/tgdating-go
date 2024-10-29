@@ -3,6 +3,7 @@ module github.com/EvgeniyBudaev/tgdating-go/app
 go 1.23.1
 
 require (
+	github.com/aws/aws-sdk-go v1.55.5
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/h2non/bimg v1.1.9
@@ -14,7 +15,6 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/aws/aws-sdk-go v1.55.5 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect

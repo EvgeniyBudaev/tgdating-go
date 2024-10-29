@@ -26,7 +26,7 @@ func NewImageRepository(l logger.Logger, db *sql.DB) *ImageRepository {
 	}
 }
 
-func (r *ImageRepository) AddImage(
+func (r *ImageRepository) Add(
 	ctx context.Context, p *request.ImageAddRequestRepositoryDto) (*entity.ImageEntity, error) {
 	query := "INSERT INTO profile_images (session_id, name, url, size, is_deleted, is_blocked, is_primary," +
 		" is_private, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id"
@@ -35,18 +35,18 @@ func (r *ImageRepository) AddImage(
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
-		errorMessage := r.getErrorMessage("AddImage", "Scan")
+		errorMessage := r.getErrorMessage("Add", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindImageById(ctx, id)
+	return r.FindById(ctx, id)
 }
 
-func (r *ImageRepository) UpdateImage(
+func (r *ImageRepository) Update(
 	ctx context.Context, p *request.ImageUpdateRequestRepositoryDto) (*entity.ImageEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateImage", "Begin")
+		errorMessage := r.getErrorMessage("Update", "Begin")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -56,19 +56,19 @@ func (r *ImageRepository) UpdateImage(
 	_, err = r.db.ExecContext(ctx, query, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked,
 		&p.IsPrimary, &p.IsPrivate, &p.UpdatedAt, &p.Id)
 	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateImage", "ExecContext")
+		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	tx.Commit()
-	return r.FindImageById(ctx, p.Id)
+	return r.FindById(ctx, p.Id)
 }
 
-func (r *ImageRepository) DeleteImage(
+func (r *ImageRepository) Delete(
 	ctx context.Context, p *request.ImageDeleteRequestRepositoryDto) (*entity.ImageEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteImage", "Begin")
+		errorMessage := r.getErrorMessage("Delete", "Begin")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -76,15 +76,15 @@ func (r *ImageRepository) DeleteImage(
 	query := "UPDATE profile_images SET is_deleted=$1, updated_at=$2 WHERE id=$3"
 	_, err = r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.Id)
 	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteImage", "ExecContext")
+		errorMessage := r.getErrorMessage("Delete", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	tx.Commit()
-	return r.FindImageById(ctx, p.Id)
+	return r.FindById(ctx, p.Id)
 }
 
-func (r *ImageRepository) FindImageById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error) {
+func (r *ImageRepository) FindById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error) {
 	p := &entity.ImageEntity{}
 	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
 		" is_private, created_at, updated_at" +
@@ -94,14 +94,14 @@ func (r *ImageRepository) FindImageById(ctx context.Context, imageId uint64) (*e
 	err := row.Scan(&p.Id, &p.SessionId, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
 		&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindImageById", "Scan")
+		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	return p, nil
 }
 
-func (r *ImageRepository) FindLastImageBySessionId(ctx context.Context, sessionId string) (*entity.ImageEntity, error) {
+func (r *ImageRepository) FindLastBySessionId(ctx context.Context, sessionId string) (*entity.ImageEntity, error) {
 	p := &entity.ImageEntity{}
 	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
 		" is_private, created_at, updated_at" +
@@ -113,14 +113,14 @@ func (r *ImageRepository) FindLastImageBySessionId(ctx context.Context, sessionI
 	err := row.Scan(&p.Id, &p.SessionId, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
 		&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindLastImageBySessionId", "Scan")
+		errorMessage := r.getErrorMessage("FindLastBySessionId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	return p, nil
 }
 
-func (r *ImageRepository) SelectImageListPublicBySessionId(
+func (r *ImageRepository) SelectListPublicBySessionId(
 	ctx context.Context, sessionId string) ([]*entity.ImageEntity, error) {
 	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
 		" is_private, created_at, updated_at" +
@@ -128,7 +128,7 @@ func (r *ImageRepository) SelectImageListPublicBySessionId(
 		" WHERE session_id=$1 AND is_deleted=false AND is_blocked=false AND is_private=false"
 	rows, err := r.db.QueryContext(ctx, query, sessionId)
 	if err != nil {
-		errorMessage := r.getErrorMessage("SelectImageListPublicBySessionId",
+		errorMessage := r.getErrorMessage("SelectListPublicBySessionId",
 			"QueryContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -140,8 +140,7 @@ func (r *ImageRepository) SelectImageListPublicBySessionId(
 		err := rows.Scan(&p.Id, &p.SessionId, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
 			&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
-			errorMessage := r.getErrorMessage("SelectImageListPublicBySessionId",
-				"Scan")
+			errorMessage := r.getErrorMessage("SelectListPublicBySessionId", "Scan")
 			r.logger.Debug(errorMessage, zap.Error(err))
 			continue
 		}
@@ -150,7 +149,7 @@ func (r *ImageRepository) SelectImageListPublicBySessionId(
 	return list, nil
 }
 
-func (r *ImageRepository) SelectImageListBySessionId(
+func (r *ImageRepository) SelectListBySessionId(
 	ctx context.Context, sessionId string) ([]*entity.ImageEntity, error) {
 	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
 		" is_private, created_at, updated_at" +
@@ -158,7 +157,7 @@ func (r *ImageRepository) SelectImageListBySessionId(
 		" WHERE session_id=$1 AND is_deleted=false AND is_blocked=false"
 	rows, err := r.db.QueryContext(ctx, query, sessionId)
 	if err != nil {
-		errorMessage := r.getErrorMessage("SelectImageListBySessionId",
+		errorMessage := r.getErrorMessage("SelectListBySessionId",
 			"QueryContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -170,7 +169,7 @@ func (r *ImageRepository) SelectImageListBySessionId(
 		err := rows.Scan(&p.Id, &p.SessionId, &p.Name, &p.Url, &p.Size, &p.IsDeleted, &p.IsBlocked, &p.IsPrimary,
 			&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
-			errorMessage := r.getErrorMessage("SelectImageListBySessionId", "Scan")
+			errorMessage := r.getErrorMessage("SelectListBySessionId", "Scan")
 			r.logger.Debug(errorMessage, zap.Error(err))
 			continue
 		}

@@ -27,7 +27,7 @@ func NewLikeRepository(l logger.Logger, db *sql.DB) *LikeRepository {
 	}
 }
 
-func (r *LikeRepository) AddLike(
+func (r *LikeRepository) Add(
 	ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*entity.LikeEntity, error) {
 	query := "INSERT INTO profile_likes (session_id, liked_session_id, is_liked, is_deleted, created_at, updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5, $6)" +
@@ -37,14 +37,14 @@ func (r *LikeRepository) AddLike(
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
-		errorMessage := r.getErrorMessage("AddLike", "Scan")
+		errorMessage := r.getErrorMessage("Add", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindLikeById(ctx, id)
+	return r.FindById(ctx, id)
 }
 
-func (r *LikeRepository) FindLikeById(ctx context.Context, id uint64) (*entity.LikeEntity, error) {
+func (r *LikeRepository) FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error) {
 	p := &entity.LikeEntity{}
 	query := "SELECT id, session_id, liked_session_id, is_liked, is_deleted, created_at, updated_at " +
 		" FROM profile_likes" +
@@ -55,14 +55,14 @@ func (r *LikeRepository) FindLikeById(ctx context.Context, id uint64) (*entity.L
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		errorMessage := r.getErrorMessage("FindLikeById", "Scan")
+		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, nil
 	}
 	return p, nil
 }
 
-func (r *LikeRepository) FindLikeBySessionId(ctx context.Context, sessionId string) (*entity.LikeEntity, error) {
+func (r *LikeRepository) FindBySessionId(ctx context.Context, sessionId string) (*entity.LikeEntity, error) {
 	p := &entity.LikeEntity{}
 	query := "SELECT id, session_id, liked_session_id, is_liked, is_deleted, created_at, updated_at " +
 		" FROM profile_likes" +
@@ -73,7 +73,7 @@ func (r *LikeRepository) FindLikeBySessionId(ctx context.Context, sessionId stri
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		errorMessage := r.getErrorMessage("FindLikeBySessionId", "Scan")
+		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, nil
 	}

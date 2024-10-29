@@ -33,7 +33,7 @@ func NewProfileRepository(l logger.Logger, db *sql.DB) *ProfileRepository {
 	}
 }
 
-func (r *ProfileRepository) AddProfile(
+func (r *ProfileRepository) Add(
 	ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*entity.ProfileEntity, error) {
 	birthday := p.Birthday.Format("2006-01-02")
 	query := "INSERT INTO profiles (session_id, display_name, birthday, gender, location, description," +
@@ -45,30 +45,30 @@ func (r *ProfileRepository) AddProfile(
 		&p.Description, &p.Height, &p.Weight, p.IsDeleted, &p.IsBlocked, &p.IsPremium, &p.IsShowDistance,
 		&p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if row == nil {
-		errorMessage := r.getErrorMessage("AddProfile", "QueryRowContext")
+		errorMessage := r.getErrorMessage("Add", "QueryRowContext")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		errorMessage := r.getErrorMessage("AddProfile", "Scan")
+		errorMessage := r.getErrorMessage("Add", "Scan")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	if err != nil {
-		errorMessage := r.getErrorMessage("AddProfile", "Scan")
+		errorMessage := r.getErrorMessage("Add", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindProfileById(ctx, id)
+	return r.FindById(ctx, id)
 }
 
-func (r *ProfileRepository) UpdateProfile(
+func (r *ProfileRepository) Update(
 	ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*entity.ProfileEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateProfile", "Begin")
+		errorMessage := r.getErrorMessage("Update", "Begin")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -79,19 +79,19 @@ func (r *ProfileRepository) UpdateProfile(
 	_, err = r.db.ExecContext(ctx, query, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
 		&p.Description, &p.Height, &p.Weight, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
 	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateProfile", "ExecContext")
+		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	tx.Commit()
-	return r.FindProfileBySessionId(ctx, p.SessionId)
+	return r.FindBySessionId(ctx, p.SessionId)
 }
 
-func (r *ProfileRepository) DeleteProfile(
+func (r *ProfileRepository) Delete(
 	ctx context.Context, p *request.ProfileDeleteRequestRepositoryDto) (*entity.ProfileEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteProfile", "Begin")
+		errorMessage := r.getErrorMessage("Delete", "Begin")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -99,15 +99,15 @@ func (r *ProfileRepository) DeleteProfile(
 	query := "UPDATE profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
 	_, err = r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
 	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteProfile", "ExecContext")
+		errorMessage := r.getErrorMessage("Delete", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	tx.Commit()
-	return r.FindProfileBySessionId(ctx, p.SessionId)
+	return r.FindBySessionId(ctx, p.SessionId)
 }
 
-func (r *ProfileRepository) FindProfileById(ctx context.Context, id uint64) (*entity.ProfileEntity, error) {
+func (r *ProfileRepository) FindById(ctx context.Context, id uint64) (*entity.ProfileEntity, error) {
 	p := &entity.ProfileEntity{}
 	query := "SELECT id, session_id, display_name, birthday, gender, location, description, height, weight," +
 		" is_deleted, is_blocked, is_premium, is_show_distance, is_invisible, created_at, updated_at, last_online" +
@@ -115,7 +115,7 @@ func (r *ProfileRepository) FindProfileById(ctx context.Context, id uint64) (*en
 		" WHERE id=$1"
 	row := r.db.QueryRowContext(ctx, query, id)
 	if row == nil {
-		errorMessage := r.getErrorMessage("FindProfileById", "QueryRowContext")
+		errorMessage := r.getErrorMessage("FindById", "QueryRowContext")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
@@ -123,19 +123,19 @@ func (r *ProfileRepository) FindProfileById(ctx context.Context, id uint64) (*en
 		&p.Description, &p.Height, &p.Weight, &p.IsDeleted, &p.IsBlocked, &p.IsPremium,
 		&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		errorMessage := r.getErrorMessage("FindProfileById", "Scan")
+		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindProfileById", "Scan")
+		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	return p, nil
 }
 
-func (r *ProfileRepository) FindProfileBySessionId(
+func (r *ProfileRepository) FindBySessionId(
 	ctx context.Context, sessionId string) (*entity.ProfileEntity, error) {
 	p := &entity.ProfileEntity{}
 	query := "SELECT id, session_id, display_name, birthday, gender, location, description, height, weight," +
@@ -144,7 +144,7 @@ func (r *ProfileRepository) FindProfileBySessionId(
 		" WHERE session_id=$1"
 	row := r.db.QueryRowContext(ctx, query, sessionId)
 	if row == nil {
-		errorMessage := r.getErrorMessage("FindProfileBySessionId", "QueryRowContext")
+		errorMessage := r.getErrorMessage("FindBySessionId", "QueryRowContext")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
@@ -152,19 +152,19 @@ func (r *ProfileRepository) FindProfileBySessionId(
 		&p.Description, &p.Height, &p.Weight, &p.IsDeleted, &p.IsBlocked, &p.IsPremium,
 		&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		errorMessage := r.getErrorMessage("FindProfileBySessionId", "Scan")
+		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindProfileBySessionId", "Scan")
+		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	return p, nil
 }
 
-func (r *ProfileRepository) SelectProfileListBySessionId(ctx context.Context,
+func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 	pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error) {
 	sessionId := pr.SessionId
 	searchGender := pr.SearchGender
@@ -199,7 +199,7 @@ func (r *ProfileRepository) SelectProfileListBySessionId(ctx context.Context,
 		" LIMIT $6 OFFSET $7"
 	rows, err := r.db.QueryContext(ctx, query, sessionId, searchGender, ageFrom, ageTo, distance, size, offset)
 	if err != nil {
-		errorMessage := r.getErrorMessage("SelectProfileListBySessionId",
+		errorMessage := r.getErrorMessage("SelectListBySessionId",
 			"QueryContext")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowsFound))
 		return nil, err
@@ -212,7 +212,7 @@ func (r *ProfileRepository) SelectProfileListBySessionId(ctx context.Context,
 			&p.Description, &p.Height, &p.Weight, &p.IsDeleted, &p.IsBlocked, &p.IsPremium,
 			&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline, &p.Age, &p.Distance)
 		if err != nil {
-			errorMessage := r.getErrorMessage("SelectProfileListBySessionId", "Scan")
+			errorMessage := r.getErrorMessage("SelectListBySessionId", "Scan")
 			r.logger.Info(errorMessage, zap.Error(ErrNotRowsFound))
 			continue
 		}

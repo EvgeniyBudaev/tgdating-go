@@ -68,7 +68,7 @@ func (s *ProfileService) AddProfile(
 	ctx context.Context, ctf *fiber.Ctx, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error) {
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToAddRequest(pr)
-	profileCreated, err := s.profileRepository.AddProfile(ctx, profileRequest)
+	profileCreated, err := s.profileRepository.Add(ctx, profileRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToUpdateRequest(pr)
-	profileEntity, err := s.profileRepository.UpdateProfile(ctx, profileRequest)
+	profileEntity, err := s.profileRepository.Update(ctx, profileRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -115,19 +115,19 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 	}
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapProfileToUpdateRequest(pr)
-	filterEntity, err := s.filterRepository.UpdateFilter(ctx, filterRequest)
+	filterEntity, err := s.filterRepository.Update(ctx, filterRequest)
 	if err != nil {
 		return nil, err
 	}
 	filterResponse := filterMapper.MapToResponse(filterEntity)
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramRequest := telegramMapper.MapToUpdateRequest(pr)
-	telegramEntity, err := s.telegramRepository.UpdateTelegram(ctx, telegramRequest)
+	telegramEntity, err := s.telegramRepository.Update(ctx, telegramRequest)
 	if err != nil {
 		return nil, err
 	}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
-	imageEntityList, err := s.imageRepository.SelectImageListBySessionId(ctx, sessionId)
+	imageEntityList, err := s.imageRepository.SelectListBySessionId(ctx, sessionId)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
 	profileResponse := profileMapper.MapToResponse(profileEntity, navigatorResponse, filterResponse, telegramResponse,
 		imageEntityList, isOnline)
@@ -142,13 +142,13 @@ func (s *ProfileService) DeleteProfile(
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToDeleteRequest(sessionId)
-	_, err := s.profileRepository.DeleteProfile(ctx, profileRequest)
+	_, err := s.profileRepository.Delete(ctx, profileRequest)
 	if err != nil {
 		return nil, err
 	}
 	navigatorMapper := &mapper.NavigatorMapper{}
 	navigatorRequest := navigatorMapper.MapToDeleteRequest(sessionId)
-	_, err = s.navigatorRepository.DeleteNavigator(ctx, navigatorRequest)
+	_, err = s.navigatorRepository.Delete(ctx, navigatorRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -158,13 +158,13 @@ func (s *ProfileService) DeleteProfile(
 	}
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapToDeleteRequest(sessionId)
-	_, err = s.filterRepository.DeleteFilter(ctx, filterRequest)
+	_, err = s.filterRepository.Delete(ctx, filterRequest)
 	if err != nil {
 		return nil, err
 	}
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramRequest := telegramMapper.MapToDeleteRequest(sessionId)
-	_, err = s.telegramRepository.DeleteTelegram(ctx, telegramRequest)
+	_, err = s.telegramRepository.Delete(ctx, telegramRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -190,12 +190,12 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 		}
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileEntity, err := s.profileRepository.FindProfileBySessionId(ctx, sessionId)
+	profileEntity, err := s.profileRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
 	navigatorMapper := &mapper.NavigatorMapper{}
-	navigatorEntity, err := s.navigatorRepository.FindNavigatorBySessionId(ctx, sessionId)
+	navigatorEntity, err := s.navigatorRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -203,19 +203,19 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	latitude := navigatorEntity.Location.Latitude
 	navigatorResponse := navigatorMapper.MapToResponse(sessionId, longitude, latitude)
 	filterMapper := &mapper.FilterMapper{}
-	filterEntity, err := s.filterRepository.FindFilterBySessionId(ctx, sessionId)
+	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
 	filterResponse := filterMapper.MapToResponse(filterEntity)
-	telegramEntity, err := s.telegramRepository.FindTelegramBySessionId(ctx, sessionId)
+	telegramEntity, err := s.telegramRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
-	imageEntityList, err := s.imageRepository.SelectImageListBySessionId(ctx, sessionId)
+	imageEntityList, err := s.imageRepository.SelectListBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -241,16 +241,16 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 		}
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileEntity, err := s.profileRepository.FindProfileBySessionId(ctx, viewedSessionId)
+	profileEntity, err := s.profileRepository.FindBySessionId(ctx, viewedSessionId)
 	if err != nil {
 		return nil, err
 	}
 	navigatorMapper := &mapper.NavigatorMapper{}
-	navigatorEntity, err := s.navigatorRepository.FindNavigatorBySessionId(ctx, sessionId)
+	navigatorEntity, err := s.navigatorRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
-	navigatorViewedEntity, err := s.navigatorRepository.FindNavigatorBySessionId(ctx, viewedSessionId)
+	navigatorViewedEntity, err := s.navigatorRepository.FindBySessionId(ctx, viewedSessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -269,26 +269,26 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 			return nil, err
 		}
 	}
-	blockEntity, err := s.blockRepository.FindBlock(ctx, sessionId, viewedSessionId)
+	blockEntity, err := s.blockRepository.Find(ctx, sessionId, viewedSessionId)
 	if err != nil {
 		return nil, err
 	}
 	blockMapper := mapper.BlockMapper{}
 	blockResponse := blockMapper.MapToResponse(blockEntity)
-	likeEntity, err := s.likeRepository.FindLikeBySessionId(ctx, sessionId)
+	likeEntity, err := s.likeRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeResponse := likeMapper.MapToResponse(likeEntity)
-	telegramEntity, err := s.telegramRepository.FindTelegramBySessionId(ctx, viewedSessionId)
+	telegramEntity, err := s.telegramRepository.FindBySessionId(ctx, viewedSessionId)
 	if err != nil {
 		return nil, err
 	}
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
-	imageEntityList, err := s.imageRepository.SelectImageListBySessionId(ctx, viewedSessionId)
+	imageEntityList, err := s.imageRepository.SelectListBySessionId(ctx, viewedSessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -313,11 +313,11 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 		}
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileEntity, err := s.profileRepository.FindProfileBySessionId(ctx, sessionId)
+	profileEntity, err := s.profileRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
-	lastImage, err := s.imageRepository.FindLastImageBySessionId(ctx, sessionId)
+	lastImage, err := s.imageRepository.FindLastBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -342,20 +342,20 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 			return nil, err
 		}
 	}
-	filterEntity, err := s.filterRepository.FindFilterBySessionId(ctx, sessionId)
+	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToListRequest(filterEntity)
-	paginationProfileEntityList, err := s.profileRepository.SelectProfileListBySessionId(ctx, profileRequest)
+	paginationProfileEntityList, err := s.profileRepository.SelectListBySessionId(ctx, profileRequest)
 	if err != nil {
 		return nil, err
 	}
 	profileContentResponse := make([]*response.ProfileListItemResponseDto, 0)
 	if len(paginationProfileEntityList.Content) > 0 {
 		for _, profileEntity := range paginationProfileEntityList.Content {
-			lastImage, err := s.imageRepository.FindLastImageBySessionId(ctx, profileEntity.SessionId)
+			lastImage, err := s.imageRepository.FindLastBySessionId(ctx, profileEntity.SessionId)
 			if err != nil {
 				return nil, err
 			}
@@ -407,7 +407,7 @@ func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return s.imageRepository.AddImage(ctx, imageConverted)
+	return s.imageRepository.Add(ctx, imageConverted)
 }
 
 func (s *ProfileService) UpdateImageList(ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
@@ -415,7 +415,7 @@ func (s *ProfileService) UpdateImageList(ctx context.Context, ctf *fiber.Ctx, se
 }
 
 func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) error {
-	imageList, err := s.imageRepository.SelectImageListBySessionId(ctx, sessionId)
+	imageList, err := s.imageRepository.SelectListBySessionId(ctx, sessionId)
 	if err != nil {
 		return err
 	}
@@ -447,7 +447,7 @@ func (s *ProfileService) GetImageBySessionId(ctx context.Context, sessionId, fil
 }
 
 func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entity.ImageEntity, error) {
-	image, err := s.imageRepository.FindImageById(ctx, id)
+	image, err := s.imageRepository.FindById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -467,7 +467,7 @@ func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entit
 	}
 	imageMapper := &mapper.ImageMapper{}
 	imageRequest := imageMapper.MapToDeleteRequest(image.Id)
-	return s.imageRepository.DeleteImage(ctx, imageRequest)
+	return s.imageRepository.Delete(ctx, imageRequest)
 }
 
 func (s *ProfileService) DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error) {
@@ -497,7 +497,7 @@ func (s *ProfileService) GetFilterBySessionId(
 			return nil, err
 		}
 	}
-	filterEntity, err := s.filterRepository.FindFilterBySessionId(ctx, sessionId)
+	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -514,7 +514,7 @@ func (s *ProfileService) UpdateFilter(
 	}
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapToUpdateRequest(fr)
-	filterEntity, err := s.filterRepository.UpdateFilter(ctx, filterRequest)
+	filterEntity, err := s.filterRepository.Update(ctx, filterRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -599,6 +599,7 @@ func (s *ProfileService) convertImage(sessionId, directoryPath, filePath, fileNa
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return "", "", 0, err
 	}
+	defer f.Close()
 	pathToS3 := fmt.Sprintf("/profiles/%s/images/%s", sessionId, newFileName)
 	result, err := s.s3.Upload(pathToS3, f)
 	if err != nil {
@@ -630,21 +631,21 @@ func (s *ProfileService) AddNavigator(
 	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.NavigatorEntity, error) {
 	navigatorMapper := &mapper.NavigatorMapper{}
 	navigatorRequest := navigatorMapper.MapToAddRequest(pr)
-	return s.navigatorRepository.AddNavigator(ctx, navigatorRequest)
+	return s.navigatorRepository.Add(ctx, navigatorRequest)
 }
 
 func (s *ProfileService) AddFilter(
 	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.FilterEntity, error) {
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapToAddRequest(pr)
-	return s.filterRepository.AddFilter(ctx, filterRequest)
+	return s.filterRepository.Add(ctx, filterRequest)
 }
 
 func (s *ProfileService) AddTelegram(
 	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.TelegramEntity, error) {
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramRequest := telegramMapper.MapToAddRequest(pr)
-	return s.telegramRepository.AddTelegram(ctx, telegramRequest)
+	return s.telegramRepository.Add(ctx, telegramRequest)
 }
 
 func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error) {
@@ -655,18 +656,18 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockRequestD
 		BlockedUserSessionId: pr.SessionId,
 	}
 	blockForTwoUserRequest := blockMapper.MapToAddRequest(prForTwoUser)
-	_, err := s.blockRepository.AddBlock(ctx, blockForTwoUserRequest)
+	_, err := s.blockRepository.Add(ctx, blockForTwoUserRequest)
 	if err != nil {
 		return nil, err
 	}
-	return s.blockRepository.AddBlock(ctx, blockRequest)
+	return s.blockRepository.Add(ctx, blockRequest)
 }
 
 func (s *ProfileService) AddLike(
 	ctx context.Context, pr *request.LikeAddRequestDto) (*response.LikeResponseDto, error) {
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToAddRequest(pr)
-	likeAdded, err := s.likeRepository.AddLike(ctx, likeRequest)
+	likeAdded, err := s.likeRepository.Add(ctx, likeRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddLike", "AddLike")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -679,7 +680,7 @@ func (s *ProfileService) AddComplaint(
 	ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error) {
 	complaintMapper := &mapper.ComplaintMapper{}
 	complaintRequest := complaintMapper.MapToAddRequest(pr)
-	return s.complaintRepository.AddComplaint(ctx, complaintRequest)
+	return s.complaintRepository.Add(ctx, complaintRequest)
 }
 
 func (s *ProfileService) UpdateCoordinates(
@@ -706,7 +707,7 @@ func (s *ProfileService) updateNavigator(
 	fmt.Println("updateNavigator latitude", latitude)
 	navigatorMapper := &mapper.NavigatorMapper{}
 	navigatorRequest := navigatorMapper.MapToUpdateRequest(sessionId, longitude, latitude)
-	navigatorUpdated, err := s.navigatorRepository.UpdateNavigator(ctx, navigatorRequest)
+	navigatorUpdated, err := s.navigatorRepository.Update(ctx, navigatorRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -755,7 +756,7 @@ func (s *ProfileService) getErrorMessage(repositoryMethodName string, callMethod
 }
 
 func (s *ProfileService) checkUserExists(ctx context.Context, sessionId string) error {
-	p, err := s.profileRepository.FindProfileBySessionId(ctx, sessionId)
+	p, err := s.profileRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return err
 	}

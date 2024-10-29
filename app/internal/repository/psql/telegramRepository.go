@@ -26,7 +26,7 @@ func NewTelegramRepository(l logger.Logger, db *sql.DB) *TelegramRepository {
 	}
 }
 
-func (r *TelegramRepository) AddTelegram(
+func (r *TelegramRepository) Add(
 	ctx context.Context, p *request.TelegramAddRequestRepositoryDto) (*entity.TelegramEntity, error) {
 	query := "INSERT INTO profile_telegrams (session_id, user_id, username, first_name, last_name, language_code," +
 		" allows_write_to_pm, query_id, chat_id, is_deleted, created_at, updated_at)" +
@@ -36,14 +36,14 @@ func (r *TelegramRepository) AddTelegram(
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
-		errorMessage := r.getErrorMessage("AddTelegram", "Scan")
+		errorMessage := r.getErrorMessage("Add", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindTelegramById(ctx, id)
+	return r.FindById(ctx, id)
 }
 
-func (r *TelegramRepository) UpdateTelegram(
+func (r *TelegramRepository) Update(
 	ctx context.Context, p *request.TelegramUpdateRequestRepositoryDto) (*entity.TelegramEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
@@ -58,19 +58,19 @@ func (r *TelegramRepository) UpdateTelegram(
 	_, err = r.db.ExecContext(ctx, query, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
 		&p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.UpdatedAt, &p.SessionId)
 	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateTelegram", "ExecContext")
+		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	tx.Commit()
-	return r.FindTelegramBySessionId(ctx, p.SessionId)
+	return r.FindBySessionId(ctx, p.SessionId)
 }
 
-func (r *TelegramRepository) DeleteTelegram(
+func (r *TelegramRepository) Delete(
 	ctx context.Context, p *request.TelegramDeleteRequestRepositoryDto) (*entity.TelegramEntity, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteTelegram", "Begin")
+		errorMessage := r.getErrorMessage("Delete", "Begin")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -78,15 +78,15 @@ func (r *TelegramRepository) DeleteTelegram(
 	query := "UPDATE profile_telegrams SET is_deleted=$1, updated_at=$2 WHERE session_id=$3"
 	_, err = r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.SessionId)
 	if err != nil {
-		errorMessage := r.getErrorMessage("DeleteTelegram", "ExecContext")
+		errorMessage := r.getErrorMessage("Delete", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	tx.Commit()
-	return r.FindTelegramBySessionId(ctx, p.SessionId)
+	return r.FindBySessionId(ctx, p.SessionId)
 }
 
-func (r *TelegramRepository) FindTelegramById(ctx context.Context, id uint64) (*entity.TelegramEntity, error) {
+func (r *TelegramRepository) FindById(ctx context.Context, id uint64) (*entity.TelegramEntity, error) {
 	p := &entity.TelegramEntity{}
 	query := "SELECT id, session_id, user_id, username, first_name, last_name, language_code, allows_write_to_pm," +
 		" query_id, chat_id, is_deleted, created_at, updated_at" +
@@ -96,14 +96,14 @@ func (r *TelegramRepository) FindTelegramById(ctx context.Context, id uint64) (*
 	err := row.Scan(&p.Id, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
 		&p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindTelegramById", "Scan")
+		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	return p, nil
 }
 
-func (r *TelegramRepository) FindTelegramBySessionId(
+func (r *TelegramRepository) FindBySessionId(
 	ctx context.Context, sessionID string) (*entity.TelegramEntity, error) {
 	p := &entity.TelegramEntity{}
 	query := "SELECT id, session_id, user_id, username, first_name, last_name, language_code, allows_write_to_pm," +
@@ -114,7 +114,7 @@ func (r *TelegramRepository) FindTelegramBySessionId(
 	err := row.Scan(&p.Id, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
 		&p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindTelegramBySessionId", "Scan")
+		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
