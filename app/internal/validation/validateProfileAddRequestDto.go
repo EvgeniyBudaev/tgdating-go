@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/gofiber/fiber/v2"
@@ -11,12 +12,14 @@ var (
 	fileMaxSizeMb    = 50
 	fileMaxSizeBytes = int64(fileMaxSizeMb * 1024 * 1024)
 	fileMaxAmount    = 3
-	maxHeight        = float64(250)
-	maxWeight        = float64(650)
+	minHeight        = 50
+	maxHeight        = 250
+	minWeight        = 40
+	maxWeight        = 650
 	minAge           = byte(18)
 	maxAge           = byte(100)
 	maxCharacters    = 1000
-	maxDistance      = float64(1000)
+	maxDistance      = 1000
 )
 
 func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequestDto,
@@ -75,17 +78,22 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 			errorMessages.GetBadRequest(locale))
 	}
 
-	if len(req.Description) > int(maxCharacters) {
+	if len(req.Description) > maxCharacters {
 		fieldErrorsLanguages["description"] = append(fieldErrorsLanguages["description"],
 			errorMessages.GetMaxSymbols(locale, maxCharacters))
 	}
-
+	fmt.Println("req.Height: ", req.Height)
 	if req.Height < 0 {
 		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
 			errorMessages.GetNonNegativeNumber(locale))
 	}
 
-	if req.Height > maxHeight {
+	if req.Height > 0 && int(req.Height) < minHeight {
+		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
+			errorMessages.GetMoreOrEqualMinNumber(locale, minHeight))
+	}
+
+	if int(req.Height) > maxHeight {
 		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
 			errorMessages.GetLessOrEqualMaxNumber(locale, maxHeight))
 	}
@@ -95,7 +103,12 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 			errorMessages.GetNonNegativeNumber(locale))
 	}
 
-	if req.Weight > maxWeight {
+	if req.Weight > 0 && int(req.Weight) < minWeight {
+		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
+			errorMessages.GetMoreOrEqualMinNumber(locale, minWeight))
+	}
+
+	if int(req.Weight) > maxWeight {
 		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
 			errorMessages.GetLessOrEqualMaxNumber(locale, maxWeight))
 	}
@@ -112,7 +125,7 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 
 	if req.AgeFrom < minAge {
 		fieldErrorsLanguages["ageFrom"] = append(fieldErrorsLanguages["ageFrom"],
-			errorMessages.GetMoreOrEqualMinNumber(locale, minAge))
+			errorMessages.GetMoreOrEqualMinByteNumber(locale, minAge))
 	}
 
 	if req.AgeTo > maxAge {
@@ -125,7 +138,7 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 			errorMessages.GetNonNegativeNumber(locale))
 	}
 
-	if req.Distance > maxDistance {
+	if int(req.Distance) > maxDistance {
 		fieldErrorsLanguages["distance"] = append(fieldErrorsLanguages["distance"],
 			errorMessages.GetLessOrEqualMaxNumber(locale, maxDistance))
 	}

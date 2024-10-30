@@ -39,9 +39,9 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 		pc.logger.Info("POST /gateway/api/v1/profiles")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
-		acceptLanguage := ctf.Get("Accept-Language")
-		if acceptLanguage == "" {
-			acceptLanguage = defaultLocale
+		locale := ctf.Get("Accept-Language")
+		if locale == "" {
+			locale = defaultLocale
 		}
 		req := &request.ProfileAddRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
@@ -49,8 +49,7 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("AddProfile req.Latitude:", req.Latitude)
-		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, acceptLanguage)
+		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, locale)
 		if validateErr != nil {
 			return v1.ResponseFieldsError(ctf, validateErr)
 		}
@@ -307,7 +306,30 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		profileResponse, err := pc.service.AddLike(ctx, req)
+		locale := ctf.Get("Accept-Language")
+		if locale == "" {
+			locale = defaultLocale
+		}
+		profileResponse, err := pc.service.AddLike(ctx, req, locale)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) UpdateLike() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("PUT /gateway/api/v1/profiles/likes")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.LikeUpdateRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("UpdateLike", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileResponse, err := pc.service.UpdateLike(ctx, req)
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}

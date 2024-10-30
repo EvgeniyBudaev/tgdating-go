@@ -44,6 +44,27 @@ func (r *LikeRepository) Add(
 	return r.FindById(ctx, id)
 }
 
+func (r *LikeRepository) Update(
+	ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*entity.LikeEntity, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		errorMessage := r.getErrorMessage("Update", "Begin")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
+	query := "UPDATE profile_likes SET is_liked=$1, updated_at=$2" +
+		" WHERE id=$3"
+	_, err = r.db.ExecContext(ctx, query, &p.IsLiked, &p.UpdatedAt, &p.Id)
+	if err != nil {
+		errorMessage := r.getErrorMessage("Update", "ExecContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	tx.Commit()
+	return r.FindById(ctx, p.Id)
+}
+
 func (r *LikeRepository) FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error) {
 	p := &entity.LikeEntity{}
 	query := "SELECT id, session_id, liked_session_id, is_liked, is_deleted, created_at, updated_at " +

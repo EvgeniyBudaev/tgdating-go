@@ -143,3 +143,8 @@ https://pkg.go.dev/github.com/aws/aws-sdk-go/service/s3#hdr-Using_the_Client
 ```
 go get -u github.com/aws/aws-sdk-go
 ```
+
+Telegram Bot API
+```
+go get -u github.com/go-telegram-bot-api/telegram-bot-api/v5
+```

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/config"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -32,46 +33,47 @@ func New() *App {
 	// Default logger
 	defaultLogger, err := logger.New(logger.GetDefaultLevel())
 	if err != nil {
-		errorMessage := getErrorMessage("New", "logger.New")
+		errorMessage := getErrorMessage("New", "logger.New", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
 
 	// Config
 	cfg, err := config.Load(defaultLogger)
 	if err != nil {
-		errorMessage := getErrorMessage("New", "config.Load")
+		errorMessage := getErrorMessage("New", "config.Load", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
 
 	// Logger level
 	loggerLevel, err := logger.New(cfg.LoggerLevel)
 	if err != nil {
-		errorMessage := getErrorMessage("New", "logger.New")
+		errorMessage := getErrorMessage("New", "logger.New", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
 
 	// Database connection
 	postgresConnection, err := newPostgresConnection(cfg)
 	if err != nil {
-		errorMessage := getErrorMessage("New", "newPostgresConnection")
+		errorMessage := getErrorMessage("New", "newPostgresConnection",
+			errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
 	database := NewDatabase(loggerLevel, postgresConnection)
 	err = postgresConnection.Ping()
 	if err != nil {
-		errorMessage := getErrorMessage("New", "Ping")
+		errorMessage := getErrorMessage("New", "Ping", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
 
 	// Auto migrate
 	driver, err := postgres.WithInstance(database.psql, &postgres.Config{})
 	if err != nil {
-		errorMessage := getErrorMessage("New", "WithInstance")
+		errorMessage := getErrorMessage("New", "WithInstance", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
 	dir, err := os.Getwd()
 	if err != nil {
-		errorMessage := getErrorMessage("New", "os.Getwd")
+		errorMessage := getErrorMessage("New", "os.Getwd", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
 	migrationsPath := fmt.Sprintf("file://%s/migrations", dir)
@@ -79,7 +81,8 @@ func New() *App {
 		migrationsPath,
 		"postgres", driver)
 	if err != nil {
-		errorMessage := getErrorMessage("New", "NewWithDatabaseInstance")
+		errorMessage := getErrorMessage("New", "NewWithDatabaseInstance",
+			errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
 	m.Up()
@@ -107,19 +110,47 @@ func New() *App {
 
 // Run launches the application
 func (app *App) Run(ctx context.Context) {
+	// Hub for telegram bot
+	hub := entity.NewHub()
+
+	msgChan := make(chan *entity.HubContent, 1) // msgChan - канал для передачи сообщений
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		if err := app.StartHTTPServer(ctx); err != nil {
-			errorMessage := getErrorMessage("Run", "StartHTTPServer")
+		if err := app.StartHTTPServer(ctx, hub); err != nil {
+			errorMessage := getErrorMessage("Run", "StartHTTPServer",
+				errorFilePathApp)
 			app.Logger.Fatal(errorMessage, zap.Error(err))
 		}
 		wg.Done()
 	}()
+	wg.Add(1)
+	go func() {
+		if err := app.StartBot(ctx, msgChan); err != nil {
+			errorMessage := getErrorMessage("Run", "StartBot", errorFilePathApp)
+			app.Logger.Fatal(errorMessage, zap.Error(err))
+		}
+		wg.Done()
+	}()
+	wg.Add(1)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				wg.Done()
+				return
+			case c, ok := <-hub.Broadcast:
+				if !ok {
+					return
+				}
+				msgChan <- c
+			}
+		}
+	}()
 	wg.Wait()
 }
 
-func getErrorMessage(repositoryMethodName, callMethodName string) string {
+func getErrorMessage(repositoryMethodName, callMethodName, errorFilePath string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
-		errorFilePathApp)
+		errorFilePath)
 }

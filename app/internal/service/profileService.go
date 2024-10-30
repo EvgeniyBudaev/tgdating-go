@@ -29,6 +29,7 @@ const (
 type ProfileService struct {
 	logger              logger.Logger
 	config              *config.Config
+	hub                 *entity.Hub
 	s3                  *config.S3
 	profileRepository   ProfileRepository
 	navigatorRepository NavigatorRepository
@@ -43,6 +44,7 @@ type ProfileService struct {
 func NewProfileService(
 	l logger.Logger,
 	cfg *config.Config,
+	h *entity.Hub,
 	s3 *config.S3,
 	pr ProfileRepository,
 	nr NavigatorRepository,
@@ -52,6 +54,7 @@ func NewProfileService(
 	return &ProfileService{
 		logger:              l,
 		config:              cfg,
+		hub:                 h,
 		s3:                  s3,
 		profileRepository:   pr,
 		navigatorRepository: nr,
@@ -336,7 +339,6 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 		return nil, err
 	}
 	if pr.Longitude != 0 && pr.Latitude != 0 {
-		fmt.Println("GetProfileList pr.Longitude", pr.Longitude)
 		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
 		if err != nil {
 			return nil, err
@@ -491,7 +493,6 @@ func (s *ProfileService) GetFilterBySessionId(
 		return nil, err
 	}
 	if fr.Longitude != 0 && fr.Latitude != 0 {
-		fmt.Println("GetFilterBySessionId fr.Longitude", fr.Longitude)
 		_, err = s.updateNavigator(ctx, sessionId, fr.Longitude, fr.Latitude)
 		if err != nil {
 			return nil, err
@@ -664,18 +665,58 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockRequestD
 }
 
 func (s *ProfileService) AddLike(
-	ctx context.Context, pr *request.LikeAddRequestDto) (*response.LikeResponseDto, error) {
+	ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error) {
+	sessionId := pr.SessionId
+	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		return nil, err
+	}
+	telegramProfile, err := s.telegramRepository.FindBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	lastImageProfile, err := s.imageRepository.FindLastBySessionId(ctx, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	likedTelegramProfile, err := s.telegramRepository.FindBySessionId(ctx, pr.LikedSessionId)
+	if err != nil {
+		return nil, err
+	}
+	go func() {
+		s.hub.Broadcast <- &entity.HubContent{
+			Type:         "like",
+			Message:      s.GetMessageLike(locale),
+			UserId:       likedTelegramProfile.UserId,
+			UserImageUrl: lastImageProfile.Url,
+			Username:     telegramProfile.UserName,
+		}
+	}()
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToAddRequest(pr)
 	likeAdded, err := s.likeRepository.Add(ctx, likeRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("AddLike", "AddLike")
-		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likeResponse := likeMapper.MapToResponse(likeAdded)
 	return likeResponse, nil
 }
+
+func (s *ProfileService) UpdateLike(
+	ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.LikeResponseDto, error) {
+	sessionId := pr.SessionId
+	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		return nil, err
+	}
+	likeMapper := &mapper.LikeMapper{}
+	likeRequest := likeMapper.MapToUpdateRequest(pr)
+	likeUpdated, err := s.likeRepository.Update(ctx, likeRequest)
+	if err != nil {
+		return nil, err
+	}
+	likeResponse := likeMapper.MapToResponse(likeUpdated)
+	return likeResponse, nil
+}
+
 func (s *ProfileService) AddComplaint(
 	ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error) {
 	complaintMapper := &mapper.ComplaintMapper{}
@@ -753,6 +794,17 @@ func (s *ProfileService) replaceExtension(filename string) string {
 func (s *ProfileService) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
 		errorFilePath)
+}
+
+func (s *ProfileService) GetMessageLike(locale string) string {
+	switch locale {
+	case "ru":
+		return "Есть симпатия! Начинай общаться"
+	case "en":
+		return "There is sympathy! Start communicating"
+	default:
+		return fmt.Sprintf("Unsupported language: %s", locale)
+	}
 }
 
 func (s *ProfileService) checkUserExists(ctx context.Context, sessionId string) error {

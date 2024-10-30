@@ -55,6 +55,7 @@ type ImageRepository interface {
 
 type LikeRepository interface {
 	Add(ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*entity.LikeEntity, error)
+	Update(ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*entity.LikeEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error)
 	FindBySessionId(ctx context.Context, sessionId string) (*entity.LikeEntity, error)
 }

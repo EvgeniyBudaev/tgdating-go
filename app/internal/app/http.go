@@ -2,9 +2,9 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/config"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/controller"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/middlewares"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/repository/psql"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/service"
@@ -17,7 +17,7 @@ const (
 
 var prefix = "/gateway/api/v1"
 
-func (app *App) StartHTTPServer(ctx context.Context) error {
+func (app *App) StartHTTPServer(ctx context.Context, hub *entity.Hub) error {
 	app.fiber.Static("/static", "./static")
 	done := make(chan struct{})
 	s3Client := config.NewS3(app.config)
@@ -29,7 +29,7 @@ func (app *App) StartHTTPServer(ctx context.Context) error {
 	blockRepository := psql.NewBlockRepository(app.Logger, app.db.psql)
 	complaintRepository := psql.NewComplaintRepository(app.Logger, app.db.psql)
 	profileRepository := psql.NewProfileRepository(app.Logger, app.db.psql)
-	profileService := service.NewProfileService(app.Logger, app.config, s3Client, profileRepository, navigatorRepository, filterRepository,
+	profileService := service.NewProfileService(app.Logger, app.config, hub, s3Client, profileRepository, navigatorRepository, filterRepository,
 		telegramRepository, imageRepository, likeRepository, blockRepository, complaintRepository)
 	profileController := controller.NewProfileController(app.Logger, profileService)
 	router := app.fiber.Group(prefix)
@@ -38,7 +38,8 @@ func (app *App) StartHTTPServer(ctx context.Context) error {
 	go func() {
 		port := ":" + app.config.Port
 		if err := app.fiber.Listen(port); err != nil {
-			errorMessage := app.getErrorMessage("StartHTTPServer", "Listen")
+			errorMessage := getErrorMessage("StartHTTPServer", "Listen",
+				errorFilePathHttp)
 			app.Logger.Error(errorMessage, zap.Error(err))
 		}
 		close(done)
@@ -46,16 +47,12 @@ func (app *App) StartHTTPServer(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		if err := app.fiber.Shutdown(); err != nil {
-			errorMessage := app.getErrorMessage("StartHTTPServer", "Shutdown")
+			errorMessage := getErrorMessage("StartHTTPServer", "Shutdown",
+				errorFilePathHttp)
 			app.Logger.Error(errorMessage, zap.Error(err))
 		}
 	case <-done:
 		app.Logger.Info("server finished successfully")
 	}
 	return nil
-}
-
-func (app *App) getErrorMessage(repositoryMethodName, callMethodName string) string {
-	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
-		errorFilePathHttp)
 }

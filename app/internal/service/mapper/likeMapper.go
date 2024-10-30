@@ -36,3 +36,12 @@ func (pm *LikeMapper) MapToAddRequest(
 		UpdatedAt:      time.Now(),
 	}
 }
+
+func (pm *LikeMapper) MapToUpdateRequest(
+	pr *request.LikeUpdateRequestDto) *request.LikeUpdateRequestRepositoryDto {
+	return &request.LikeUpdateRequestRepositoryDto{
+		Id:        pr.Id,
+		IsLiked:   pr.IsLiked,
+		UpdatedAt: time.Now(),
+	}
+}
