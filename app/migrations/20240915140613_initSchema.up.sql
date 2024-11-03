@@ -76,7 +76,6 @@ CREATE TABLE IF NOT EXISTS profile_telegrams
     language_code      VARCHAR,
     allows_write_to_pm BOOL,
     query_id           TEXT,
-    chat_id            BIGINT       NOT NULL,
     is_deleted         BOOL         NOT NULL DEFAULT false,
     created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at         TIMESTAMP    NULL,

@@ -29,10 +29,10 @@ func NewTelegramRepository(l logger.Logger, db *sql.DB) *TelegramRepository {
 func (r *TelegramRepository) Add(
 	ctx context.Context, p *request.TelegramAddRequestRepositoryDto) (*entity.TelegramEntity, error) {
 	query := "INSERT INTO profile_telegrams (session_id, user_id, username, first_name, last_name, language_code," +
-		" allows_write_to_pm, query_id, chat_id, is_deleted, created_at, updated_at)" +
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id"
+		" allows_write_to_pm, query_id, is_deleted, created_at, updated_at)" +
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName,
-		&p.LanguageCode, &p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
+		&p.LanguageCode, &p.AllowsWriteToPm, &p.QueryId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -53,10 +53,10 @@ func (r *TelegramRepository) Update(
 	}
 	defer tx.Rollback()
 	query := "UPDATE profile_telegrams SET user_id=$1, username=$2, first_name=$3, last_name=$4, language_code=$5," +
-		" allows_write_to_pm=$6, query_id=$7, chat_id=$8, updated_at=$9" +
+		" allows_write_to_pm=$6, query_id=$7, updated_at=$8" +
 		" WHERE session_id=$10"
 	_, err = r.db.ExecContext(ctx, query, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
-		&p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.UpdatedAt, &p.SessionId)
+		&p.AllowsWriteToPm, &p.QueryId, &p.UpdatedAt, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -89,12 +89,12 @@ func (r *TelegramRepository) Delete(
 func (r *TelegramRepository) FindById(ctx context.Context, id uint64) (*entity.TelegramEntity, error) {
 	p := &entity.TelegramEntity{}
 	query := "SELECT id, session_id, user_id, username, first_name, last_name, language_code, allows_write_to_pm," +
-		" query_id, chat_id, is_deleted, created_at, updated_at" +
+		" query_id, is_deleted, created_at, updated_at" +
 		" FROM profile_telegrams" +
 		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
 	err := row.Scan(&p.Id, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
-		&p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
+		&p.AllowsWriteToPm, &p.QueryId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -107,12 +107,12 @@ func (r *TelegramRepository) FindBySessionId(
 	ctx context.Context, sessionID string) (*entity.TelegramEntity, error) {
 	p := &entity.TelegramEntity{}
 	query := "SELECT id, session_id, user_id, username, first_name, last_name, language_code, allows_write_to_pm," +
-		" query_id, chat_id, is_deleted, created_at, updated_at" +
+		" query_id, is_deleted, created_at, updated_at" +
 		" FROM profile_telegrams" +
 		" WHERE session_id = $1"
 	row := r.db.QueryRowContext(ctx, query, sessionID)
 	err := row.Scan(&p.Id, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
-		&p.AllowsWriteToPm, &p.QueryId, &p.ChatId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
+		&p.AllowsWriteToPm, &p.QueryId, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))

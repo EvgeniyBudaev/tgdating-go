@@ -9,5 +9,4 @@ type TelegramResponseDto struct {
 	LanguageCode    string `json:"languageCode"`
 	AllowsWriteToPm bool   `json:"allowsWriteToPm"`
 	QueryId         string `json:"queryId"`
-	ChatId          uint64 `json:"chatId"`
 }

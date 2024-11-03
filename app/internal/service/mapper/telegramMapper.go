@@ -21,7 +21,6 @@ func (pm *TelegramMapper) MapToResponse(
 		LanguageCode:    pe.LanguageCode,
 		AllowsWriteToPm: pe.AllowsWriteToPm,
 		QueryId:         pe.QueryId,
-		ChatId:          pe.ChatId,
 	}
 }
 
@@ -36,7 +35,6 @@ func (pm *TelegramMapper) MapToAddRequest(
 		LanguageCode:    pr.TelegramLanguageCode,
 		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
 		QueryId:         pr.TelegramQueryId,
-		ChatId:          pr.TelegramChatId,
 		IsDeleted:       false,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
@@ -54,7 +52,6 @@ func (pm *TelegramMapper) MapToUpdateRequest(
 		LanguageCode:    pr.TelegramLanguageCode,
 		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
 		QueryId:         pr.TelegramQueryId,
-		ChatId:          pr.TelegramChatId,
 		UpdatedAt:       time.Now(),
 	}
 }

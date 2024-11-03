@@ -37,8 +37,8 @@ func NewProfileController(l logger.Logger, ps ProfileService) *ProfileController
 func (pc *ProfileController) AddProfile() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("POST /gateway/api/v1/profiles")
-		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-		defer cancel()
+		//ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		//defer cancel()
 		locale := ctf.Get("Accept-Language")
 		if locale == "" {
 			locale = defaultLocale
@@ -53,11 +53,12 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 		if validateErr != nil {
 			return v1.ResponseFieldsError(ctf, validateErr)
 		}
-		profileResponse, err := pc.service.AddProfile(ctx, ctf, req)
-		if err != nil {
-			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-		}
-		return v1.ResponseCreated(ctf, profileResponse)
+		//profileResponse, err := pc.service.AddProfile(ctx, ctf, req)
+		//if err != nil {
+		//	return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		//}
+		//return v1.ResponseCreated(ctf, profileResponse)
+		return v1.ResponseCreated(ctf, "OK")
 	}
 }
 
