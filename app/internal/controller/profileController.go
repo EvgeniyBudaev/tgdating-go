@@ -7,9 +7,11 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/logger"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/repository/psql"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/shared/enums"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/validation"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
+	initdata "github.com/telegram-mini-apps/init-data-golang"
 	"go.uber.org/zap"
 	"net/http"
 	"strconv"
@@ -37,8 +39,15 @@ func NewProfileController(l logger.Logger, ps ProfileService) *ProfileController
 func (pc *ProfileController) AddProfile() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("POST /gateway/api/v1/profiles")
-		//ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-		//defer cancel()
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		// Retrieve the telegramInitData from the context
+		telegramInitData, ok := ctf.UserContext().Value(enums.ContextKeyTelegram).(initdata.InitData)
+		if !ok {
+			err := errors.New("missing telegram data in context")
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
+		fmt.Println("AddProfile User.ID: ", telegramInitData.User.ID)
 		locale := ctf.Get("Accept-Language")
 		if locale == "" {
 			locale = defaultLocale
@@ -49,16 +58,22 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		fmt.Println("AddProfile Latitude: ", req.Latitude)
+		fmt.Println("AddProfile Longitude: ", req.Longitude)
+		if req.SessionId != strconv.FormatInt(telegramInitData.User.ID, 10) {
+			err := errors.New("unauthorized")
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, locale)
 		if validateErr != nil {
 			return v1.ResponseFieldsError(ctf, validateErr)
 		}
-		//profileResponse, err := pc.service.AddProfile(ctx, ctf, req)
-		//if err != nil {
-		//	return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-		//}
-		//return v1.ResponseCreated(ctf, profileResponse)
-		return v1.ResponseCreated(ctf, "OK")
+		profileResponse, err := pc.service.AddProfile(ctx, ctf, req)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+		//return v1.ResponseCreated(ctf, "OK")
 	}
 }
 
@@ -67,6 +82,13 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 		pc.logger.Info("PUT /gateway/api/v1/profiles")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
+		// Retrieve the telegramInitData from the context
+		telegramInitData, ok := ctf.UserContext().Value(enums.ContextKeyTelegram).(initdata.InitData)
+		if !ok {
+			err := errors.New("missing telegram data in context")
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
+		fmt.Println("UpdateProfile User.ID: ", telegramInitData.User.ID)
 		acceptLanguage := ctf.Get("Accept-Language")
 		if acceptLanguage == "" {
 			acceptLanguage = defaultLocale
@@ -77,7 +99,12 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		if req.SessionId != strconv.FormatInt(telegramInitData.User.ID, 10) {
+			err := errors.New("unauthorized")
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		validateErr := validation.ValidateProfileEditRequestDto(ctf, req, acceptLanguage)
+		fmt.Println("UpdateProfile validateErr: ", validateErr)
 		if validateErr != nil {
 			return v1.ResponseFieldsError(ctf, validateErr)
 		}
@@ -85,6 +112,7 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
+		fmt.Println("UpdateProfile profileResponse: ", profileResponse)
 		return v1.ResponseCreated(ctf, profileResponse)
 	}
 }
@@ -188,7 +216,6 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("GetProfileList req.Latitude", req.Latitude)
 		profileListResponse, err := pc.service.GetProfileList(ctx, req)
 		if err != nil {
 			if errors.Is(err, psql.ErrNotRowFound) {
@@ -246,7 +273,6 @@ func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("GetFilterBySessionId req.Latitude", req.Latitude)
 		profileListResponse, err := pc.service.GetFilterBySessionId(ctx, sessionId, req)
 		if err != nil {
 			if errors.Is(err, psql.ErrNotRowFound) {

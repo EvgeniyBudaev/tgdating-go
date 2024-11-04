@@ -5,9 +5,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func InitPublicRoutes(router fiber.Router, profileController *controller.ProfileController) {
-	router.Post("/profiles", profileController.AddProfile())
-	router.Put("/profiles", profileController.UpdateProfile())
+var prefix = "/gateway/api/v1"
+
+func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileController) {
+	router := app.Group(prefix)
 	router.Delete("/profiles", profileController.DeleteProfile())
 	router.Get("/profiles/session/:sessionId", profileController.GetProfileBySessionId())
 	router.Get("/profiles/detail/:viewedSessionId", profileController.GetProfileDetail())
@@ -24,4 +25,8 @@ func InitPublicRoutes(router fiber.Router, profileController *controller.Profile
 	router.Put("/profiles/navigators", profileController.UpdateCoordinates())
 }
 
-func InitProtectedRoutes(router fiber.Router, profileController *controller.ProfileController) {}
+func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileController) {
+	router := app.Group(prefix)
+	router.Post("/profiles", profileController.AddProfile())
+	router.Put("/profiles", profileController.UpdateProfile())
+}

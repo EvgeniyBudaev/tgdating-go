@@ -54,7 +54,7 @@ func (r *TelegramRepository) Update(
 	defer tx.Rollback()
 	query := "UPDATE profile_telegrams SET user_id=$1, username=$2, first_name=$3, last_name=$4, language_code=$5," +
 		" allows_write_to_pm=$6, query_id=$7, updated_at=$8" +
-		" WHERE session_id=$10"
+		" WHERE session_id=$9"
 	_, err = r.db.ExecContext(ctx, query, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
 		&p.AllowsWriteToPm, &p.QueryId, &p.UpdatedAt, &p.SessionId)
 	if err != nil {

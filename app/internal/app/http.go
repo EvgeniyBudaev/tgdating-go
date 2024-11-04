@@ -15,8 +15,6 @@ const (
 	errorFilePathHttp = "internal/app/http.go"
 )
 
-var prefix = "/gateway/api/v1"
-
 func (app *App) StartHTTPServer(ctx context.Context, hub *entity.Hub) error {
 	app.fiber.Static("/static", "./static")
 	done := make(chan struct{})
@@ -32,9 +30,8 @@ func (app *App) StartHTTPServer(ctx context.Context, hub *entity.Hub) error {
 	profileService := service.NewProfileService(app.Logger, app.config, hub, s3Client, profileRepository, navigatorRepository, filterRepository,
 		telegramRepository, imageRepository, likeRepository, blockRepository, complaintRepository)
 	profileController := controller.NewProfileController(app.Logger, profileService)
-	router := app.fiber.Group(prefix)
 	middlewares.InitFiberMiddlewares(
-		app.fiber, app.config, app.Logger, router, profileController, InitPublicRoutes, InitProtectedRoutes)
+		app.fiber, app.config, app.Logger, profileController, InitPublicRoutes, InitProtectedRoutes)
 	go func() {
 		port := ":" + app.config.Port
 		if err := app.fiber.Listen(port); err != nil {

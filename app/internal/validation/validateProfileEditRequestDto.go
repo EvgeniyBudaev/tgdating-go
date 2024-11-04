@@ -63,7 +63,7 @@ func ValidateProfileEditRequestDto(ctf *fiber.Ctx, req *request.ProfileUpdateReq
 			errorMessages.GetBadRequest(locale))
 	}
 
-	if len(req.Description) > int(maxCharacters) {
+	if len(req.Description) > maxCharacters {
 		fieldErrorsLanguages["description"] = append(fieldErrorsLanguages["description"],
 			errorMessages.GetMaxSymbols(locale, maxCharacters))
 	}
@@ -73,7 +73,7 @@ func ValidateProfileEditRequestDto(ctf *fiber.Ctx, req *request.ProfileUpdateReq
 			errorMessages.GetNonNegativeNumber(locale))
 	}
 
-	if int(req.Height) < minHeight {
+	if req.Height > 0 && int(req.Height) < minHeight {
 		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
 			errorMessages.GetMoreOrEqualMinNumber(locale, minHeight))
 	}
@@ -88,7 +88,7 @@ func ValidateProfileEditRequestDto(ctf *fiber.Ctx, req *request.ProfileUpdateReq
 			errorMessages.GetNonNegativeNumber(locale))
 	}
 
-	if int(req.Weight) < minWeight {
+	if req.Weight > 0 && int(req.Weight) < minWeight {
 		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
 			errorMessages.GetMoreOrEqualMinNumber(locale, minWeight))
 	}

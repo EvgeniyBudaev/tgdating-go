@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/entity"
 	"github.com/gofiber/fiber/v2"
@@ -82,7 +81,7 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 		fieldErrorsLanguages["description"] = append(fieldErrorsLanguages["description"],
 			errorMessages.GetMaxSymbols(locale, maxCharacters))
 	}
-	fmt.Println("req.Height: ", req.Height)
+
 	if req.Height < 0 {
 		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
 			errorMessages.GetNonNegativeNumber(locale))
