@@ -149,6 +149,12 @@ Telegram Bot API
 go get -u github.com/go-telegram-bot-api/telegram-bot-api/v5
 ```
 
+Telegram Init data
+https://github.com/telegram-mini-apps/init-data-golang
+```
+go get github.com/telegram-mini-apps/init-data-golang
+```
+
 Crypto
 https://github.com/Luzifer/go-openssl
 ```
@@ -162,3 +168,35 @@ sudo apt install -y protobuf-compiler
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ```
+
+После этого установите утилиты, которые отвечают за кодогенерацию go-файлов:
+```
+go get -u google.golang.org/grpc
+go get -u google.golang.org/protobuf
+```
+Разработка gRPC-сервера
+После того как были реализованы все необходимые интерфейсы, можно приступать к созданию функции main.
+Она запустит gRPC-сервер.
+Вот алгоритм по шагам:
+1. При вызове net.Listen указать порт, который будет прослушивать сервер.
+2. Создать экземпляр gRPC-сервера функцией grpc.NewServer().
+3. Зарегистрировать созданный сервис ProfileService на сервере gRPC.
+4. Вызвать Serve() для начала работы сервера. Он будет слушать указанный порт, пока процесс не прекратит работу.
+
+Разработка gRPC-клиента
+Соединение с сервером устанавливается при вызове функции grpc.Dial(). В первом параметре указывается адрес сервера,
+далее перечисляются опциональные параметры.
+Функция pb.NewProfileClient(conn) возвращает переменную интерфейсного типа UsersClient, для которого сгенерированы
+методы с соответствующими запросами из proto-файла.
+
+Вызовите утилиту protoc для генерации соответствующих go-файлов. Для этого выполните команду:
+```
+protoc --go_out=. --go_opt=paths=source_relative \
+  --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+  protobuf/profile.proto
+```
+В --go-out запишется файл с кодом для Protobuf-сериализации.
+В --go-grpc_out сохранится файл с gRPC-интерфейсами и методами.
+Так как вы указали параметр paths=source_relative, сгенерированные файлы создадутся в поддиректории ./proto.
+Если бы указали параметр paths=import, то сгенерированные файлы создались бы в директории,
+указанной в директиве go_package, то есть ./demo/proto.

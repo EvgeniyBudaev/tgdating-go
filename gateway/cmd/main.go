@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/app"
+	"github.com/EvgeniyBudaev/tgdating-go/gateway/internal/app"
 	"os"
 	"os/signal"
 	"syscall"
