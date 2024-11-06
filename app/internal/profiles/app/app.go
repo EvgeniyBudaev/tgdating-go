@@ -171,7 +171,6 @@ func (app *App) Run(ctx context.Context) {
 	//}()
 	//wg.Wait()
 	port := ":" + app.config.ProfilesPort
-	fmt.Println("consumer port: ", port)
 	//if err := app.fiber.Listen(port); err != nil {
 	//	errorMessage := getErrorMessage("StartProfileServer", "Listen",
 	//		errorFilePathHttp)

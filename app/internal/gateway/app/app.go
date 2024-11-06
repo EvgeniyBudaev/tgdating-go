@@ -23,7 +23,6 @@ type App struct {
 	Logger logger.Logger
 	config *config.Config
 	fiber  *fiber.App
-	proto  pb.ProfileClient
 }
 
 // New - create new application
@@ -49,22 +48,6 @@ func New() *App {
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
 
-	// gRPC
-	port := ":" + cfg.ProfilesPort
-	fmt.Println("producer port: ", port)
-	conn, err := grpc.Dial(port, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		errorMessage := getErrorMessage("New", "grpc.Dial", errorFilePathApp)
-		defaultLogger.Fatal(errorMessage, zap.Error(err))
-	}
-	fmt.Println("producer conn: ", conn)
-	defer conn.Close()
-	c := pb.NewProfileClient(conn)
-	//resp, err := c.Add(context.Background(), &pb.ProfileAddRequest{
-	//	SessionId: "test",
-	//})
-	//fmt.Println("gateway resp: ", resp)
-
 	// Fiber
 	f := fiber.New(fiber.Config{
 		ReadBufferSize: 256 << 8,
@@ -82,16 +65,24 @@ func New() *App {
 		config: cfg,
 		Logger: loggerLevel,
 		fiber:  f,
-		proto:  c,
 	}
 }
 
 // Run launches the application
 func (app *App) Run(ctx context.Context) {
+	addr := fmt.Sprintf("%s:%s", "localhost", app.config.ProfilesPort)
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		errorMessage := getErrorMessage("New", "grpc.Dial", errorFilePathApp)
+		app.Logger.Fatal(errorMessage, zap.Error(err))
+	}
+	defer conn.Close()
+	c := pb.NewProfileClient(conn)
+
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		if err := app.StartHTTPServer(ctx); err != nil {
+		if err := app.StartHTTPServer(ctx, c); err != nil {
 			errorMessage := getErrorMessage("Run", "StartHTTPServer",
 				errorFilePathApp)
 			app.Logger.Fatal(errorMessage, zap.Error(err))
