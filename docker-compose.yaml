@@ -48,10 +48,10 @@ services:
       - TELEGRAM_BOT_TOKEN=my_secret_bot_token
       - S3_ACCESS_KEY=my_access_key
       - S3_SECRET_KEY=my_secret_key
-      - S3_ENDPOINT_URL=https://s3.myUrlAddress.com
+      - S3_ENDPOINT_URL=my_s3_url
       - S3_BUCKET_NAME=my_bucket_name
-      - S3_BUCKET_PUBLIC_DOMAIN=https://s3.myPublicUrlAddress.com
-      - CRYPTO_SECRET_KEY=Z+sE4e41PixbihRODVgCV5r7T+si1C7PteX3t1FPPfM=
+      - S3_BUCKET_PUBLIC_DOMAIN=my_s3_public_url
+      - CRYPTO_SECRET_KEY=my_crypto_secret_key
     volumes:
       - ./app/migrations:/app/migrations
     depends_on:
