@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package protobuf;
+
+option go_package = "github.com/EvgeniyBudaev/tgdating-go/app/proto";
+
+message ProfileAddRequest {
+  string sessionId = 1;
+}
+
+message ProfileAddResponse {
+  string sessionId = 1;
+}
+
+/*
+* Описание сервиса Profile
+*/
+service Profile {
+  rpc Add(ProfileAddRequest) returns (ProfileAddResponse);
+}

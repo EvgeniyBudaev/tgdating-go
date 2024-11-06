@@ -193,7 +193,7 @@ go get -u google.golang.org/protobuf
 ```
 protoc --go_out=. --go_opt=paths=source_relative \
   --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-  protobuf/profile.proto
+  contracts/proto/profiles/profile.proto
 ```
 В --go-out запишется файл с кодом для Protobuf-сериализации.
 В --go-grpc_out сохранится файл с gRPC-интерфейсами и методами.
