@@ -51,6 +51,7 @@ services:
       - S3_ENDPOINT_URL=https://s3.myUrlAddress.com
       - S3_BUCKET_NAME=my_bucket_name
       - S3_BUCKET_PUBLIC_DOMAIN=https://s3.myPublicUrlAddress.com
+      - CRYPTO_SECRET_KEY=Z+sE4e41PixbihRODVgCV5r7T+si1C7PteX3t1FPPfM=
     volumes:
       - ./app/migrations:/app/migrations
     depends_on:

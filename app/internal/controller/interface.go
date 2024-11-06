@@ -22,6 +22,7 @@ type ProfileService interface {
 		pr *request.ProfileGetShortInfoRequestDto) (*response.ProfileShortInfoResponseDto, error)
 	GetProfileList(ctx context.Context, pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error)
 	GetImageBySessionId(ctx context.Context, sessionId, fileName string) ([]byte, error)
+	GetImageById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error)
 	DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error)
 	GetFilterBySessionId(
 		ctx context.Context, sessionId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error)

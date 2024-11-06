@@ -41,13 +41,6 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 		pc.logger.Info("POST /gateway/api/v1/profiles")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
-		// Retrieve the telegramInitData from the context
-		telegramInitData, ok := ctf.UserContext().Value(enums.ContextKeyTelegram).(initdata.InitData)
-		if !ok {
-			err := errors.New("missing telegram data in context")
-			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		}
-		fmt.Println("AddProfile User.ID: ", telegramInitData.User.ID)
 		locale := ctf.Get("Accept-Language")
 		if locale == "" {
 			locale = defaultLocale
@@ -58,10 +51,7 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("AddProfile Latitude: ", req.Latitude)
-		fmt.Println("AddProfile Longitude: ", req.Longitude)
-		if req.SessionId != strconv.FormatInt(telegramInitData.User.ID, 10) {
-			err := errors.New("unauthorized")
+		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, locale)
@@ -82,13 +72,6 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 		pc.logger.Info("PUT /gateway/api/v1/profiles")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
-		// Retrieve the telegramInitData from the context
-		telegramInitData, ok := ctf.UserContext().Value(enums.ContextKeyTelegram).(initdata.InitData)
-		if !ok {
-			err := errors.New("missing telegram data in context")
-			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		}
-		fmt.Println("UpdateProfile User.ID: ", telegramInitData.User.ID)
 		acceptLanguage := ctf.Get("Accept-Language")
 		if acceptLanguage == "" {
 			acceptLanguage = defaultLocale
@@ -99,8 +82,7 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if req.SessionId != strconv.FormatInt(telegramInitData.User.ID, 10) {
-			err := errors.New("unauthorized")
+		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		validateErr := validation.ValidateProfileEditRequestDto(ctf, req, acceptLanguage)
@@ -253,6 +235,14 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
+		image, err := pc.service.GetImageById(ctx, idUint64)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		sessionId := image.SessionId
+		if err := pc.validateAuthUser(ctf, sessionId); err != nil {
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		response, err := pc.service.DeleteImage(ctx, idUint64)
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
@@ -295,6 +285,9 @@ func (pc *ProfileController) UpdateFilter() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		profileListResponse, err := pc.service.UpdateFilter(ctx, req)
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
@@ -314,6 +307,9 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		profileResponse, err := pc.service.AddBlock(ctx, req)
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
@@ -332,6 +328,9 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			errorMessage := pc.getErrorMessage("AddLike", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		locale := ctf.Get("Accept-Language")
 		if locale == "" {
@@ -356,6 +355,9 @@ func (pc *ProfileController) UpdateLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		profileResponse, err := pc.service.UpdateLike(ctx, req)
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
@@ -375,6 +377,9 @@ func (pc *ProfileController) AddComplaint() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		profileResponse, err := pc.service.AddComplaint(ctx, req)
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
@@ -393,6 +398,9 @@ func (pc *ProfileController) UpdateCoordinates() fiber.Handler {
 			errorMessage := pc.getErrorMessage("UpdateCoordinates", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		profileResponse, err := pc.service.UpdateCoordinates(ctx, req)
 		if err != nil {
@@ -419,4 +427,17 @@ func (pc *ProfileController) convertToUint64(name, value string) (uint64, error)
 		return 0, err
 	}
 	return value64, nil
+}
+
+func (pc *ProfileController) validateAuthUser(ctf *fiber.Ctx, sessionId string) error {
+	telegramInitData, ok := ctf.UserContext().Value(enums.ContextKeyTelegram).(initdata.InitData)
+	if !ok {
+		err := errors.New("missing telegram data in context")
+		return err
+	}
+	if sessionId != strconv.FormatInt(telegramInitData.User.ID, 10) {
+		err := errors.New("unauthorized")
+		return err
+	}
+	return nil
 }

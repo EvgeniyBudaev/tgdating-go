@@ -148,3 +148,9 @@ Telegram Bot API
 ```
 go get -u github.com/go-telegram-bot-api/telegram-bot-api/v5
 ```
+
+Crypto
+https://github.com/Luzifer/go-openssl
+```
+go get github.com/Luzifer/go-openssl/v4
+```

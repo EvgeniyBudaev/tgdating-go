@@ -21,6 +21,7 @@ type Config struct {
 	S3EndpointUrl        string `envconfig:"S3_ENDPOINT_URL"`
 	S3BucketName         string `envconfig:"S3_BUCKET_NAME"`
 	S3BucketPublicDomain string `envconfig:"S3_BUCKET_PUBLIC_DOMAIN"`
+	CryptoSecretKey      string `envconfig:"CRYPTO_SECRET_KEY"`
 }
 
 func Load(l logger.Logger) (*Config, error) {

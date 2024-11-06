@@ -257,8 +257,6 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("navigatorEntity.Location.Latitude: ", navigatorEntity.Location.Latitude)
-	fmt.Println("navigatorEntity.Location.Longitude: ", navigatorEntity.Location.Longitude)
 	navigatorDistanceResponse, err := s.navigatorRepository.FindDistance(ctx, navigatorEntity, navigatorViewedEntity)
 	if err != nil {
 		return nil, err
@@ -448,6 +446,10 @@ func (s *ProfileService) GetImageBySessionId(ctx context.Context, sessionId, fil
 		return nil, err
 	}
 	return data, nil
+}
+
+func (s *ProfileService) GetImageById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error) {
+	return s.imageRepository.FindById(ctx, imageId)
 }
 
 func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entity.ImageEntity, error) {
