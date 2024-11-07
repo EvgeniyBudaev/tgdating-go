@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	pb "github.com/EvgeniyBudaev/tgdating-go/app/contracts/proto/profiles"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
@@ -81,6 +82,36 @@ func (pm *ProfileMapper) MapToShortInfoResponse(pe *entity.ProfileEntity, imageU
 func (pm *ProfileMapper) MapToAddResponse(pe *entity.ProfileEntity) *response.ProfileAddResponseDto {
 	return &response.ProfileAddResponseDto{
 		SessionId: pe.SessionId,
+	}
+}
+
+func (pm *ProfileMapper) MapControllerToAddRequest(
+	in *pb.ProfileAddRequest, fileList []*entity.FileMetadata) *request.ProfileAddRequestDto {
+	return &request.ProfileAddRequestDto{
+		SessionId:               in.SessionId,
+		DisplayName:             in.DisplayName,
+		Birthday:                in.Birthday.AsTime(),
+		Gender:                  in.Gender,
+		SearchGender:            in.SearchGender,
+		Location:                in.Location,
+		Description:             in.Description,
+		Height:                  in.Height,
+		Weight:                  in.Weight,
+		TelegramUserId:          in.TelegramUserId,
+		TelegramUsername:        in.TelegramUsername,
+		TelegramFirstName:       in.TelegramFirstName,
+		TelegramLastName:        in.TelegramLastName,
+		TelegramLanguageCode:    in.TelegramLanguageCode,
+		TelegramAllowsWriteToPm: in.TelegramAllowsWriteToPm,
+		TelegramQueryId:         in.TelegramQueryId,
+		Latitude:                in.Latitude,
+		Longitude:               in.Longitude,
+		AgeFrom:                 byte(in.AgeFrom),
+		AgeTo:                   byte(in.AgeTo),
+		Distance:                in.Distance,
+		Page:                    in.Page,
+		Size:                    in.Size,
+		Files:                   fileList,
 	}
 }
 

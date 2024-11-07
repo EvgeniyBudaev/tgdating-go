@@ -8,6 +8,7 @@ require (
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/golang-migrate/migrate/v4 v4.18.1
+	github.com/golang/protobuf v1.5.4
 	github.com/h2non/bimg v1.1.9
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.9

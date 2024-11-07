@@ -14,7 +14,6 @@ import (
 	"github.com/h2non/bimg"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"mime/multipart"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,7 +21,7 @@ import (
 )
 
 const (
-	errorFilePath = "internal/service/profileService.go"
+	errorFilePath = "internal/profiles/service/profileService.go"
 	minDistance   = 100
 )
 
@@ -68,7 +67,7 @@ func NewProfileService(
 }
 
 func (s *ProfileService) AddProfile(
-	ctx context.Context, ctf *fiber.Ctx, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error) {
+	ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error) {
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToAddRequest(pr)
 	profileCreated, err := s.profileRepository.Add(ctx, profileRequest)
@@ -80,7 +79,7 @@ func (s *ProfileService) AddProfile(
 		return nil, err
 	}
 	responseProfile := profileMapper.MapToAddResponse(profileCreated)
-	if err := s.AddImageList(ctx, ctf, profileCreated.SessionId); err != nil {
+	if err := s.AddImageList(ctx, profileCreated.SessionId, pr.Files); err != nil {
 		return nil, err
 	}
 	_, err = s.AddFilter(ctx, pr)
@@ -382,17 +381,10 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 	return profileListResponse, err
 }
 
-func (s *ProfileService) AddImageList(ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
-	form, err := ctf.MultipartForm()
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddImageList", "MultipartForm")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return err
-	}
-	files := form.File["image"]
+func (s *ProfileService) AddImageList(ctx context.Context, sessionId string, files []*entity.FileMetadata) error {
 	if len(files) > 0 {
 		for _, file := range files {
-			_, err := s.AddImage(ctx, ctf, sessionId, file)
+			_, err := s.AddImage(ctx, sessionId, file)
 			if err != nil {
 				return err
 			}
@@ -401,9 +393,9 @@ func (s *ProfileService) AddImageList(ctx context.Context, ctf *fiber.Ctx, sessi
 	return nil
 }
 
-func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId string,
-	file *multipart.FileHeader) (*entity.ImageEntity, error) {
-	imageConverted, err := s.uploadImageToFileSystem(ctx, ctf, file, sessionId)
+func (s *ProfileService) AddImage(ctx context.Context, sessionId string,
+	file *entity.FileMetadata) (*entity.ImageEntity, error) {
+	imageConverted, err := s.uploadImageToFileSystem(ctx, file, sessionId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddImage", "uploadImageToFileSystem")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -413,7 +405,8 @@ func (s *ProfileService) AddImage(ctx context.Context, ctf *fiber.Ctx, sessionId
 }
 
 func (s *ProfileService) UpdateImageList(ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
-	return s.AddImageList(ctx, ctf, sessionId)
+	//return s.AddImageList(ctx, sessionId)
+	return nil
 }
 
 func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) error {
@@ -531,7 +524,7 @@ func (s *ProfileService) removeStrSpaces(str string) string {
 	return strings.ReplaceAll(str, " ", "")
 }
 
-func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber.Ctx, file *multipart.FileHeader,
+func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, file *entity.FileMetadata,
 	sessionId string) (*request.ImageAddRequestRepositoryDto, error) {
 	directoryPath := fmt.Sprintf("static/profiles/%s/images", sessionId)
 	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
@@ -543,8 +536,8 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, ctf *fiber
 	}
 	filenameWithoutSpaces := s.removeStrSpaces(file.Filename)
 	filePath := fmt.Sprintf("%s/%s", directoryPath, filenameWithoutSpaces)
-	if err := ctf.SaveFile(file, filePath); err != nil {
-		errorMessage := s.getErrorMessage("uploadImageToFileSystem", "SaveFile")
+	if err := os.WriteFile(filePath, file.Content, 0666); err != nil {
+		errorMessage := s.getErrorMessage("uploadImageToFileSystem", "WriteFile")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}

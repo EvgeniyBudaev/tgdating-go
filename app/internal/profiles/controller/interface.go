@@ -9,8 +9,7 @@ import (
 )
 
 type ProfileService interface {
-	AddProfile(ctx context.Context, ctf *fiber.Ctx,
-		pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
+	AddProfile(ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
 	UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 		pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error)
 	DeleteProfile(ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)

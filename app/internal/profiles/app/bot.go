@@ -16,7 +16,7 @@ const (
 	EmojiSmile          = "\U0001F642"
 	EmojiSunglasses     = "\U0001F60E"
 	UpdateConfigTimeout = 60
-	errorFilePathBot    = "internal/app/http.go"
+	errorFilePathBot    = "internal/app/gRPC.go"
 )
 
 // bot - telegram bot

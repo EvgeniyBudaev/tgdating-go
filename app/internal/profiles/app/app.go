@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/config"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -12,10 +13,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"net"
 	"os"
-	// импортируем пакет со сгенерированными proto-файлами
-	pb "github.com/EvgeniyBudaev/tgdating-go/app/contracts/proto/profiles"
+	"sync"
 )
 
 const (
@@ -23,17 +22,21 @@ const (
 )
 
 // ProfileServer поддерживает все необходимые методы сервера.
-type ProfileServer struct {
-	// нужно встраивать тип pb.Unimplemented<TypeName>
-	// для совместимости с будущими версиями
-	pb.UnimplementedProfileServer
-}
+//type ProfileServer struct {
+//	// нужно встраивать тип pb.Unimplemented<TypeName>
+//	// для совместимости с будущими версиями
+//	pb.UnimplementedProfileServer
+//}
+
+//func NewProfileServer() *ProfileServer {
+//	return &ProfileServer{}
+//}
 
 // Add реализует интерфейс добавления пользователя.
-func (s *ProfileServer) Add(ctx context.Context, in *pb.ProfileAddRequest) (*pb.ProfileAddResponse, error) {
-	fmt.Println("RESULT sessionId: ", in.SessionId)
-	return &pb.ProfileAddResponse{SessionId: in.SessionId}, nil
-}
+//func (s *ProfileServer) Add(ctx context.Context, in *pb.ProfileAddRequest) (*pb.ProfileAddResponse, error) {
+//	fmt.Println("RESULT sessionId: ", in.SessionId)
+//	return &pb.ProfileAddResponse{SessionId: in.SessionId}, nil
+//}
 
 // App - application structure
 type App struct {
@@ -92,7 +95,7 @@ func New() *App {
 		errorMessage := getErrorMessage("New", "os.Getwd", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
-	migrationsPath := fmt.Sprintf("file://%s/migrations", dir)
+	migrationsPath := fmt.Sprintf("file://%s/migrations/profiles", dir)
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationsPath,
 		"postgres", driver)
@@ -105,8 +108,6 @@ func New() *App {
 
 	// gRPC-сервер
 	s := grpc.NewServer()
-	pb.RegisterProfileServer(s, &ProfileServer{})
-	fmt.Println("Сервер gRPC слушатель")
 
 	// Fiber
 	f := fiber.New(fiber.Config{
@@ -133,19 +134,19 @@ func New() *App {
 // Run launches the application
 func (app *App) Run(ctx context.Context) {
 	// Hub for telegram bot
-	//hub := entity.NewHub()
-	//
+	hub := entity.NewHub()
+
 	//msgChan := make(chan *entity.HubContent, 1) // msgChan - канал для передачи сообщений
-	//var wg sync.WaitGroup
-	//wg.Add(1)
-	//go func() {
-	//	if err := app.StartHTTPServer(ctx, hub); err != nil {
-	//		errorMessage := getErrorMessage("Run", "StartHTTPServer",
-	//			errorFilePathApp)
-	//		app.Logger.Fatal(errorMessage, zap.Error(err))
-	//	}
-	//	wg.Done()
-	//}()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		if err := app.StartServer(ctx, hub); err != nil {
+			errorMessage := getErrorMessage("Run", "StartServer",
+				errorFilePathApp)
+			app.Logger.Fatal(errorMessage, zap.Error(err))
+		}
+		wg.Done()
+	}()
 	//wg.Add(1)
 	//go func() {
 	//	if err := app.StartBot(ctx, msgChan); err != nil {
@@ -169,24 +170,7 @@ func (app *App) Run(ctx context.Context) {
 	//		}
 	//	}
 	//}()
-	//wg.Wait()
-	port := ":" + app.config.ProfilesPort
-	//if err := app.fiber.Listen(port); err != nil {
-	//	errorMessage := getErrorMessage("StartProfileServer", "Listen",
-	//		errorFilePathHttp)
-	//	app.Logger.Error(errorMessage, zap.Error(err))
-	//}
-	listen, err := net.Listen("tcp", port)
-	if err != nil {
-		errorMessage := getErrorMessage("Run", "net.Listen",
-			errorFilePathApp)
-		app.Logger.Error(errorMessage, zap.Error(err))
-	}
-	if err := app.gRPCServer.Serve(listen); err != nil {
-		errorMessage := getErrorMessage("Run", "s.Serve",
-			errorFilePathApp)
-		app.Logger.Error(errorMessage, zap.Error(err))
-	}
+	wg.Wait()
 }
 
 func getErrorMessage(repositoryMethodName, callMethodName, errorFilePath string) string {

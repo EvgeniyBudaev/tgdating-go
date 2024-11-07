@@ -2,20 +2,22 @@ package app
 
 import (
 	"context"
+	"fmt"
+	pb "github.com/EvgeniyBudaev/tgdating-go/app/contracts/proto/profiles"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/config"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/controller"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/middlewares"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/repository/psql"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/service"
 	"go.uber.org/zap"
+	"net"
 )
 
 const (
-	errorFilePathHttp = "internal/app/http.go"
+	errorFilePathHttp = "internal/app/gRPC.go"
 )
 
-func (app *App) StartHTTPServer(ctx context.Context, hub *entity.Hub) error {
+func (app *App) StartServer(ctx context.Context, hub *entity.Hub) error {
 	app.fiber.Static("/static", "./static")
 	done := make(chan struct{})
 	s3Client := config.NewS3(app.config)
@@ -29,14 +31,22 @@ func (app *App) StartHTTPServer(ctx context.Context, hub *entity.Hub) error {
 	profileRepository := psql.NewProfileRepository(app.Logger, app.db.psql)
 	profileService := service.NewProfileService(app.Logger, app.config, hub, s3Client, profileRepository, navigatorRepository, filterRepository,
 		telegramRepository, imageRepository, likeRepository, blockRepository, complaintRepository)
+	//middlewares.InitFiberMiddlewares(
+	//	app.fiber, app.config, app.Logger, profileController, InitPublicRoutes, InitProtectedRoutes)
 	profileController := controller.NewProfileController(app.Logger, profileService)
-	middlewares.InitFiberMiddlewares(
-		app.fiber, app.config, app.Logger, profileController, InitPublicRoutes, InitProtectedRoutes)
+	pb.RegisterProfileServer(app.gRPCServer, profileController)
+	fmt.Println("Сервер gRPC слушатель")
 	go func() {
 		port := ":" + app.config.ProfilesPort
-		if err := app.fiber.Listen(port); err != nil {
-			errorMessage := getErrorMessage("StartHTTPServer", "Listen",
-				errorFilePathHttp)
+		listen, err := net.Listen("tcp", port)
+		if err != nil {
+			errorMessage := getErrorMessage("StartServer", "net.Listen",
+				errorFilePathApp)
+			app.Logger.Error(errorMessage, zap.Error(err))
+		}
+		if err := app.gRPCServer.Serve(listen); err != nil {
+			errorMessage := getErrorMessage("StartServer", "s.Serve",
+				errorFilePathApp)
 			app.Logger.Error(errorMessage, zap.Error(err))
 		}
 		close(done)
@@ -44,7 +54,7 @@ func (app *App) StartHTTPServer(ctx context.Context, hub *entity.Hub) error {
 	select {
 	case <-ctx.Done():
 		if err := app.fiber.Shutdown(); err != nil {
-			errorMessage := getErrorMessage("StartHTTPServer", "Shutdown",
+			errorMessage := getErrorMessage("StartServer", "Shutdown",
 				errorFilePathHttp)
 			app.Logger.Error(errorMessage, zap.Error(err))
 		}

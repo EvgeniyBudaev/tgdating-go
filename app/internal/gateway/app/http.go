@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	proto "github.com/EvgeniyBudaev/tgdating-go/app/contracts/proto/profiles"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/middlewares"
@@ -9,7 +10,7 @@ import (
 )
 
 const (
-	errorFilePathHttp = "internal/app/http.go"
+	errorFilePathHttp = "internal/app/gRPC.go"
 )
 
 func (app *App) StartHTTPServer(ctx context.Context, proto proto.ProfileClient) error {
@@ -20,6 +21,7 @@ func (app *App) StartHTTPServer(ctx context.Context, proto proto.ProfileClient) 
 		app.fiber, app.config, app.Logger, profileController, InitPublicRoutes, InitProtectedRoutes)
 	go func() {
 		port := ":" + app.config.GatewayPort
+		fmt.Println("gateway port: ", port)
 		if err := app.fiber.Listen(port); err != nil {
 			errorMessage := getErrorMessage("StartHTTPServer", "Listen",
 				errorFilePathHttp)

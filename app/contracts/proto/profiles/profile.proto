@@ -2,10 +2,42 @@ syntax = "proto3";
 
 package protobuf;
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "github.com/EvgeniyBudaev/tgdating-go/app/proto";
+
+message FileMetadata {
+  string filename = 1; // Имя файла
+  int64 size = 2; // Размер файла в байтах
+  bytes content = 3;   // Содержимое файла в виде массива байтов
+}
 
 message ProfileAddRequest {
   string sessionId = 1;
+  string displayName = 2;
+  google.protobuf.Timestamp birthday = 3;
+  string gender = 4;
+  string searchGender = 5;
+  string location = 6;
+  string description = 7;
+  double height = 8;
+  double weight = 9;
+  string lookingFor = 10;
+  uint64 telegramUserId = 11;
+  string telegramUsername = 12;
+  string telegramFirstName = 13;
+  string telegramLastName = 14;
+  string telegramLanguageCode = 15;
+  bool telegramAllowsWriteToPm = 16;
+  string telegramQueryId = 17;
+  double latitude = 18;
+  double longitude = 19;
+  uint32 ageFrom = 20;
+  uint32 ageTo = 21;
+  double distance = 22;
+  uint64 page = 23;
+  uint64 size = 24;
+  repeated FileMetadata files = 25;
 }
 
 message ProfileAddResponse {
