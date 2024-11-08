@@ -15,8 +15,8 @@ var (
 	maxHeight        = 250
 	minWeight        = 40
 	maxWeight        = 650
-	minAge           = byte(18)
-	maxAge           = byte(100)
+	minAge           = uint64(18)
+	maxAge           = uint64(100)
 	maxCharacters    = 1000
 	maxDistance      = 1000
 )
@@ -124,12 +124,12 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 
 	if req.AgeFrom < minAge {
 		fieldErrorsLanguages["ageFrom"] = append(fieldErrorsLanguages["ageFrom"],
-			errorMessages.GetMoreOrEqualMinByteNumber(locale, minAge))
+			errorMessages.GetMoreOrEqualMinUint64Number(locale, minAge))
 	}
 
 	if req.AgeTo > maxAge {
 		fieldErrorsLanguages["ageTo"] = append(fieldErrorsLanguages["ageTo"],
-			errorMessages.GetLessOrEqualMaxByteNumber(locale, maxAge))
+			errorMessages.GetLessOrEqualMaxUint64Number(locale, maxAge))
 	}
 
 	if req.Distance < 0 {

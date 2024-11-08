@@ -20,6 +20,6 @@ type ProfileListItemResponseRepositoryDto struct {
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
 	LastOnline     time.Time `json:"lastOnline"`
-	Age            byte      `json:"age"`
+	Age            uint64    `json:"age"`
 	Distance       float64   `json:"distance"`
 }

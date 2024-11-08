@@ -1,11 +1,10 @@
-package request
+package entity
 
-import (
-	"time"
-)
+import "time"
 
-type ImageUpdateRequestRepositoryDto struct {
+type ImageEntity struct {
 	Id        uint64    `json:"id"`
+	SessionId string    `json:"sessionId"`
 	Name      string    `json:"name"`
 	Url       string    `json:"url"`
 	Size      int64     `json:"size"`
@@ -13,5 +12,6 @@ type ImageUpdateRequestRepositoryDto struct {
 	IsBlocked bool      `json:"isBlocked"`
 	IsPrimary bool      `json:"isPrimary"`
 	IsPrivate bool      `json:"isPrivate"`
+	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }

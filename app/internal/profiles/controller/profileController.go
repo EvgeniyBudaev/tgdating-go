@@ -32,7 +32,7 @@ func NewProfileController(l logger.Logger, ps ProfileService) *ProfileController
 	}
 }
 
-func (pc *ProfileController) Add(ctx context.Context, in *pb.ProfileAddRequest) (*pb.ProfileAddResponse, error) {
+func (pc *ProfileController) AddProfile(ctx context.Context, in *pb.ProfileAddRequest) (*pb.ProfileAddResponse, error) {
 	pc.logger.Info("POST /gateway/api/v1/profiles")
 	fileList := make([]*entity.FileMetadata, 0)
 	if len(in.Files) > 0 {
@@ -46,11 +46,35 @@ func (pc *ProfileController) Add(ctx context.Context, in *pb.ProfileAddRequest) 
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapControllerToAddRequest(in, fileList)
-	profileResponse, err := pc.service.AddProfile(ctx, profileRequest)
+	profileAdded, err := pc.service.AddProfile(ctx, profileRequest)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.ProfileAddResponse{SessionId: profileResponse.SessionId}, nil
+	profileResponse := profileMapper.MapControllerToAddResponse(profileAdded)
+	return profileResponse, nil
+}
+
+func (pc *ProfileController) UpdateProfile(
+	ctx context.Context, in *pb.ProfileUpdateRequest) (*pb.ProfileUpdateResponse, error) {
+	pc.logger.Info("PUT /gateway/api/v1/profiles")
+	fileList := make([]*entity.FileMetadata, 0)
+	if len(in.Files) > 0 {
+		for _, file := range in.Files {
+			fileList = append(fileList, &entity.FileMetadata{
+				Filename: file.Filename,
+				Size:     file.Size,
+				Content:  file.Content,
+			})
+		}
+	}
+	profileMapper := &mapper.ProfileMapper{}
+	profileRequest := profileMapper.MapControllerToUpdateRequest(in, fileList)
+	profileUpdated, err := pc.service.UpdateProfile(ctx, profileRequest)
+	if err != nil {
+		return nil, err
+	}
+	profileResponse := profileMapper.MapControllerToResponse(profileUpdated)
+	return profileResponse, nil
 }
 
 //func (pc *ProfileController) UpdateProfile() fiber.Handler {
@@ -72,7 +96,6 @@ func (pc *ProfileController) Add(ctx context.Context, in *pb.ProfileAddRequest) 
 //			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 //		}
 //		validateErr := validation.ValidateProfileEditRequestDto(ctf, req, acceptLanguage)
-//		fmt.Println("UpdateProfile validateErr: ", validateErr)
 //		if validateErr != nil {
 //			return v1.ResponseFieldsError(ctf, validateErr)
 //		}
@@ -80,11 +103,10 @@ func (pc *ProfileController) Add(ctx context.Context, in *pb.ProfileAddRequest) 
 //		if err != nil {
 //			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 //		}
-//		fmt.Println("UpdateProfile profileResponse: ", profileResponse)
 //		return v1.ResponseCreated(ctf, profileResponse)
 //	}
 //}
-//
+
 //func (pc *ProfileController) DeleteProfile() fiber.Handler {
 //	return func(ctf *fiber.Ctx) error {
 //		pc.logger.Info("DELETE /gateway/api/v1/profiles")

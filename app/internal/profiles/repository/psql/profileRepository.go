@@ -231,7 +231,7 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 }
 
 func (r *ProfileRepository) getNumberEntities(
-	ctx context.Context, sessionId, searchGender string, ageFrom, ageTo byte) (uint64, error) {
+	ctx context.Context, sessionId, searchGender string, ageFrom, ageTo uint64) (uint64, error) {
 	query := "SELECT COUNT(*)" +
 		" FROM profiles" +
 		" WHERE is_deleted=false AND is_blocked=false AND" +

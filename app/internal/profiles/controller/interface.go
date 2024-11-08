@@ -5,13 +5,11 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
-	"github.com/gofiber/fiber/v2"
 )
 
 type ProfileService interface {
 	AddProfile(ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
-	UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
-		pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error)
+	UpdateProfile(ctx context.Context, pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error)
 	DeleteProfile(ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
 	GetProfileBySessionId(ctx context.Context, sessionId string,
 		pr *request.ProfileGetBySessionIdRequestDto) (*response.ProfileResponseDto, error)

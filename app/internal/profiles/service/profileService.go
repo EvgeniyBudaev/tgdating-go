@@ -10,7 +10,6 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/service/mapper"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/gofiber/fiber/v2"
 	"github.com/h2non/bimg"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -78,7 +77,7 @@ func (s *ProfileService) AddProfile(
 	if err != nil {
 		return nil, err
 	}
-	responseProfile := profileMapper.MapToAddResponse(profileCreated)
+	profileResponse := profileMapper.MapToAddResponse(profileCreated)
 	if err := s.AddImageList(ctx, profileCreated.SessionId, pr.Files); err != nil {
 		return nil, err
 	}
@@ -90,11 +89,11 @@ func (s *ProfileService) AddProfile(
 	if err != nil {
 		return nil, err
 	}
-	return responseProfile, err
+	return profileResponse, err
 }
 
-func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
-	pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error) {
+func (s *ProfileService) UpdateProfile(
+	ctx context.Context, pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error) {
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		return nil, err
@@ -105,7 +104,7 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, ctf *fiber.Ctx,
 	if err != nil {
 		return nil, err
 	}
-	if err := s.UpdateImageList(ctx, ctf, profileEntity.SessionId); err != nil {
+	if err := s.UpdateImageList(ctx, profileEntity.SessionId, pr.Files); err != nil {
 		return nil, err
 	}
 	var navigatorResponse *response.NavigatorResponseDto
@@ -404,9 +403,8 @@ func (s *ProfileService) AddImage(ctx context.Context, sessionId string,
 	return s.imageRepository.Add(ctx, imageConverted)
 }
 
-func (s *ProfileService) UpdateImageList(ctx context.Context, ctf *fiber.Ctx, sessionId string) error {
-	//return s.AddImageList(ctx, sessionId)
-	return nil
+func (s *ProfileService) UpdateImageList(ctx context.Context, sessionId string, files []*entity.FileMetadata) error {
+	return s.AddImageList(ctx, sessionId, files)
 }
 
 func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) error {

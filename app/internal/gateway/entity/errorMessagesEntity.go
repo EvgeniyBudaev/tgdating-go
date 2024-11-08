@@ -53,7 +53,29 @@ func (e *ErrorMessagesEntity) GetMoreOrEqualMinByteNumber(locale string, min byt
 	}
 }
 
+func (e *ErrorMessagesEntity) GetMoreOrEqualMinUint64Number(locale string, min uint64) string {
+	switch locale {
+	case "ru":
+		return fmt.Sprintf("Должно быть больше или равно %d", min)
+	case "en":
+		return fmt.Sprintf("Must be more or equal to %d", min)
+	default:
+		return fmt.Sprintf("Unsupported language: %s", locale)
+	}
+}
+
 func (e *ErrorMessagesEntity) GetLessOrEqualMaxByteNumber(locale string, max byte) string {
+	switch locale {
+	case "ru":
+		return fmt.Sprintf("Должно быть меньше или равно %d", max)
+	case "en":
+		return fmt.Sprintf("Must be less or equal to %d", max)
+	default:
+		return fmt.Sprintf("Unsupported language: %s", locale)
+	}
+}
+
+func (e *ErrorMessagesEntity) GetLessOrEqualMaxUint64Number(locale string, max uint64) string {
 	switch locale {
 	case "ru":
 		return fmt.Sprintf("Должно быть меньше или равно %d", max)

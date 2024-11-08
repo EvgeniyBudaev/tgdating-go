@@ -13,4 +13,5 @@ func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileContr
 func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileController) {
 	router := app.Group(prefix)
 	router.Post("/profiles", profileController.AddProfile())
+	router.Put("/profiles", profileController.UpdateProfile())
 }

@@ -110,12 +110,12 @@ func ValidateProfileEditRequestDto(ctf *fiber.Ctx, req *request.ProfileUpdateReq
 
 	if req.AgeFrom < minAge {
 		fieldErrorsLanguages["ageFrom"] = append(fieldErrorsLanguages["ageFrom"],
-			errorMessages.GetMoreOrEqualMinByteNumber(locale, minAge))
+			errorMessages.GetMoreOrEqualMinUint64Number(locale, minAge))
 	}
 
 	if req.AgeTo > maxAge {
 		fieldErrorsLanguages["ageTo"] = append(fieldErrorsLanguages["ageTo"],
-			errorMessages.GetLessOrEqualMaxByteNumber(locale, maxAge))
+			errorMessages.GetLessOrEqualMaxUint64Number(locale, maxAge))
 	}
 
 	if req.Distance < 0 {
