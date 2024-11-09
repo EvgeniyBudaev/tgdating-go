@@ -82,32 +82,32 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 			errorMessages.GetMaxSymbols(locale, maxCharacters))
 	}
 
-	if req.Height < 0 {
+	if req.Height != nil && *req.Height < 0 {
 		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
 			errorMessages.GetNonNegativeNumber(locale))
 	}
 
-	if req.Height > 0 && int(req.Height) < minHeight {
+	if req.Height != nil && *req.Height > 0 && int(*req.Height) < minHeight {
 		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
 			errorMessages.GetMoreOrEqualMinNumber(locale, minHeight))
 	}
 
-	if int(req.Height) > maxHeight {
+	if req.Height != nil && int(*req.Height) > maxHeight {
 		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
 			errorMessages.GetLessOrEqualMaxNumber(locale, maxHeight))
 	}
 
-	if req.Weight < 0 {
+	if req.Weight != nil && *req.Weight < 0 {
 		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
 			errorMessages.GetNonNegativeNumber(locale))
 	}
 
-	if req.Weight > 0 && int(req.Weight) < minWeight {
+	if req.Weight != nil && *req.Weight > 0 && int(*req.Weight) < minWeight {
 		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
 			errorMessages.GetMoreOrEqualMinNumber(locale, minWeight))
 	}
 
-	if int(req.Weight) > maxWeight {
+	if req.Weight != nil && int(*req.Weight) > maxWeight {
 		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
 			errorMessages.GetLessOrEqualMaxNumber(locale, maxWeight))
 	}

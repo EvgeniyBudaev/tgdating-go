@@ -9,8 +9,8 @@ type ProfileUpdateRequestRepositoryDto struct {
 	Gender      string    `json:"gender"`
 	Location    string    `json:"location"`
 	Description string    `json:"description"`
-	Height      float64   `json:"height"`
-	Weight      float64   `json:"weight"`
+	Height      *float64  `json:"height"`
+	Weight      *float64  `json:"weight"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 	LastOnline  time.Time `json:"lastOnline"`
 }

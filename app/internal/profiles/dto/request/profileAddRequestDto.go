@@ -13,8 +13,8 @@ type ProfileAddRequestDto struct {
 	SearchGender            string                 `json:"searchGender"`
 	Location                string                 `json:"location"`
 	Description             string                 `json:"description"`
-	Height                  float64                `json:"height"`
-	Weight                  float64                `json:"weight"`
+	Height                  *float64               `json:"height"`
+	Weight                  *float64               `json:"weight"`
 	LookingFor              string                 `json:"lookingFor"`
 	TelegramUserId          uint64                 `json:"telegramUserId"`
 	TelegramUsername        string                 `json:"telegramUsername"`

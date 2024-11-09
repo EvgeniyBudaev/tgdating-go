@@ -1,7 +1,7 @@
 package response
 
 import (
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/entity"
 	"time"
 )
 

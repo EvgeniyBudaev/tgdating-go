@@ -191,9 +191,10 @@ go get -u google.golang.org/protobuf
 
 Вызовите утилиту protoc для генерации соответствующих go-файлов. Для этого выполните команду:
 ```
-protoc --go_out=. --go_opt=paths=source_relative \
-  --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-  contracts/proto/profiles/profile.proto
+   protoc --go_out=. --go_opt=paths=source_relative \
+      --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+      --experimental_allow_proto3_optional \
+      contracts/proto/profiles/profile.proto
 ```
 В --go-out запишется файл с кодом для Protobuf-сериализации.
 В --go-grpc_out сохранится файл с gRPC-интерфейсами и методами.

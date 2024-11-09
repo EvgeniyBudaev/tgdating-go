@@ -11,6 +11,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/logger"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/shared/enums"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/validation"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/repository/psql"
 	"github.com/gofiber/fiber/v2"
 	initdata "github.com/telegram-mini-apps/init-data-golang"
 	"go.uber.org/zap"
@@ -109,8 +110,61 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 		if err != nil {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		profileResponse := profileMapper.MapToUpdateResponse(profileUpdated)
+		profileResponse := profileMapper.MapToBySessionIdResponse(profileUpdated)
 		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /gateway/api/v1/profiles/session/:sessionId")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.ProfileGetBySessionIdRequestDto{}
+		if err := ctf.QueryParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileBySessionId", "QueryParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		sessionId := ctf.Params("sessionId")
+		profileMapper := &mapper.ProfileMapper{}
+		profileRequest := profileMapper.MapToGetBySessionIdRequest(req, sessionId)
+		profileBySessionId, err := pc.proto.GetProfileBySessionId(ctx, profileRequest)
+		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		profileResponse := profileMapper.MapToBySessionIdResponse(profileBySessionId)
+		return v1.ResponseOk(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) GetProfileDetail() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /gateway/api/v1/profiles/detail/:viewedSessionId")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.ProfileGetDetailRequestDto{}
+		if err := ctf.QueryParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileDetail", "QueryParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		viewedSessionId := ctf.Params("viewedSessionId")
+		profileMapper := &mapper.ProfileMapper{}
+		profileRequest := profileMapper.MapToGetDetailRequest(req, viewedSessionId)
+		profileDetail, err := pc.proto.GetProfileDetail(ctx, profileRequest)
+		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		fmt.Println("profileDetail.SessionId: ", profileDetail.SessionId)
+		profileResponse := profileMapper.MapToDetailResponse(profileDetail)
+		return v1.ResponseOk(ctf, profileResponse)
 	}
 }
 

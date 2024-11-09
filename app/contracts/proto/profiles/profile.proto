@@ -35,6 +35,10 @@ message NavigatorResponse {
   string sessionId = 1; // id сессии
   Point location = 2; // объект с координатами
 }
+message NavigatorDetailResponse {
+  uint64 distance = 1; // расстояние до просматриваемого пользователя
+}
+
 
 message FilterResponse {
   string sessionId = 1; // id сессии
@@ -58,6 +62,19 @@ message TelegramResponse {
   string queryId = 8; // id чата
 }
 
+message BlockResponse {
+  bool isBlocked = 1; // заблокирован пользователь да/нет
+}
+
+message LikeResponse {
+  uint64 id = 1; // id лайка
+  string sessionId = 2; // id сессии
+  string likedSessionId = 3; // id сессии того, кого лайкнули
+  bool isLiked = 4; // установлен лайк да/нет
+  google.protobuf.Timestamp createdAt = 5; // дата создания
+  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+}
+
 message ProfileAddRequest {
   string sessionId = 1; // id сессии
   string displayName = 2; // Имя для отображения
@@ -66,8 +83,8 @@ message ProfileAddRequest {
   string searchGender = 5; // поиск по половому признаку
   string location = 6; // местоположение
   string description = 7; // описание
-  double height = 8; // рост
-  double weight = 9; // вес
+  optional double height = 8; // рост
+  optional double weight = 9; // вес
   string lookingFor = 10; // цель поиска
   uint64 telegramUserId = 11; // id пользователя в телеграм
   string telegramUsername = 12; // username пользователя в телеграм
@@ -83,7 +100,7 @@ message ProfileAddRequest {
   double distance = 22; // дистанция
   uint64 page = 23; // номер текущей страницы
   uint64 size = 24; // количество элементов на странице
-  repeated FileMetadata files = 25;
+  repeated FileMetadata files = 25; // список файлов-изображений
 }
 
 message ProfileAddResponse {
@@ -98,8 +115,8 @@ message ProfileUpdateRequest {
   string searchGender = 5; // поиск по половому признаку
   string location = 6; // местоположение
   string description = 7; // описание
-  double height = 8; // рост
-  double weight = 9; // вес
+  optional double height = 8; // рост
+  optional double weight = 9; // вес
   string lookingFor = 10; // цель поиска
   uint64 telegramUserId = 11; // id пользователя в телеграм
   string telegramUsername = 12; // username пользователя в телеграм
@@ -119,15 +136,21 @@ message ProfileUpdateRequest {
   repeated FileMetadata files = 26;
 }
 
-message ProfileUpdateResponse {
+message ProfileGetBySessionIdRequest {
+  string sessionId = 1; // id сессии
+  double latitude = 2; // широта
+  double longitude = 3; // долгота
+}
+
+message ProfileBySessionIdResponse {
   string sessionId = 1; // id сессии
   string displayName = 2; // Имя для отображения
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
   string location = 5; // местоположение
   string description = 6; // описание
-  double height = 7; // рост
-  double weight = 8; // вес
+  optional double height = 7; // рост
+  optional double weight = 8; // вес
   bool isDeleted = 9; // удален пользователь да/нет
   bool isBlocked = 10; // заблокирован пользователь да/нет
   bool isPremium = 11; // наличие премиум аакаунта да/нет
@@ -143,10 +166,44 @@ message ProfileUpdateResponse {
   repeated Image images = 21; // список изображений
 }
 
+message ProfileGetDetailRequest {
+  string sessionId = 1; // id сессии
+  string viewedSessionId = 2; // id сессии того, кого смотрим
+  double latitude = 3; // широта
+  double longitude = 4; // долгота
+}
+
+message ProfileDetailResponse {
+  string sessionId = 1; // id сессии
+  string displayName = 2; // Имя для отображения
+  google.protobuf.Timestamp birthday = 3; // дата для рождения
+  string gender = 4; // пол
+  string location = 5; // местоположение
+  string description = 6; // описание
+  optional double height = 7; // рост
+  optional double weight = 8; // вес
+  bool isDeleted = 9; // удален пользователь да/нет
+  bool isBlocked = 10; // заблокирован пользователь да/нет
+  bool isPremium = 11; // наличие премиум аакаунта да/нет
+  bool isShowDistance = 12; // показывать дистанцию до текущего пользователя да/нет
+  bool isInvisible = 13; // неведимка да/нет
+  bool isOnline = 14; // пользователь онлайн да/нет
+  google.protobuf.Timestamp createdAt = 15; // дата создания
+  google.protobuf.Timestamp updatedAt = 16; // дата обновления
+  google.protobuf.Timestamp lastOnline = 17; // дата последнего входа в систему
+  NavigatorDetailResponse navigator = 18; // объект навигатор
+  TelegramResponse telegram = 19; // объект телеграм
+  BlockResponse block = 20; // объект блок
+  LikeResponse like = 21; //  объект дайк
+  repeated Image images = 22; // список изображений
+}
+
 /*
 * Описание сервиса Profile
 */
 service Profile {
   rpc AddProfile(ProfileAddRequest) returns (ProfileAddResponse); // добавление нового пользователя
-  rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileUpdateResponse); // обновление данных пользователя
+  rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileBySessionIdResponse); // обновление данных пользователя
+  rpc GetProfileBySessionId(ProfileGetBySessionIdRequest) returns (ProfileBySessionIdResponse); // получение профиля по id сессии
+  rpc GetProfileDetail(ProfileGetDetailRequest) returns (ProfileDetailResponse); // получение карточки профиля
 }

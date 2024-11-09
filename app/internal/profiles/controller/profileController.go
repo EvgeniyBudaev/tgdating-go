@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	pb "github.com/EvgeniyBudaev/tgdating-go/app/contracts/proto/profiles"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/controller/mapper"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/service/mapper"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"strconv"
@@ -44,7 +45,7 @@ func (pc *ProfileController) AddProfile(ctx context.Context, in *pb.ProfileAddRe
 			})
 		}
 	}
-	profileMapper := &mapper.ProfileMapper{}
+	profileMapper := &mapper.ProfileControllerMapper{}
 	profileRequest := profileMapper.MapControllerToAddRequest(in, fileList)
 	profileAdded, err := pc.service.AddProfile(ctx, profileRequest)
 	if err != nil {
@@ -55,7 +56,7 @@ func (pc *ProfileController) AddProfile(ctx context.Context, in *pb.ProfileAddRe
 }
 
 func (pc *ProfileController) UpdateProfile(
-	ctx context.Context, in *pb.ProfileUpdateRequest) (*pb.ProfileUpdateResponse, error) {
+	ctx context.Context, in *pb.ProfileUpdateRequest) (*pb.ProfileBySessionIdResponse, error) {
 	pc.logger.Info("PUT /gateway/api/v1/profiles")
 	fileList := make([]*entity.FileMetadata, 0)
 	if len(in.Files) > 0 {
@@ -67,45 +68,15 @@ func (pc *ProfileController) UpdateProfile(
 			})
 		}
 	}
-	profileMapper := &mapper.ProfileMapper{}
+	profileMapper := &mapper.ProfileControllerMapper{}
 	profileRequest := profileMapper.MapControllerToUpdateRequest(in, fileList)
 	profileUpdated, err := pc.service.UpdateProfile(ctx, profileRequest)
 	if err != nil {
 		return nil, err
 	}
-	profileResponse := profileMapper.MapControllerToResponse(profileUpdated)
+	profileResponse := profileMapper.MapControllerToBySessionIdResponse(profileUpdated)
 	return profileResponse, nil
 }
-
-//func (pc *ProfileController) UpdateProfile() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("PUT /gateway/api/v1/profiles")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		acceptLanguage := ctf.Get("Accept-Language")
-//		if acceptLanguage == "" {
-//			acceptLanguage = defaultLocale
-//		}
-//		req := &request.ProfileUpdateRequestDto{}
-//		if err := ctf.BodyParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("UpdateProfile", "BodyParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-//		}
-//		validateErr := validation.ValidateProfileEditRequestDto(ctf, req, acceptLanguage)
-//		if validateErr != nil {
-//			return v1.ResponseFieldsError(ctf, validateErr)
-//		}
-//		profileResponse, err := pc.service.UpdateProfile(ctx, ctf, req)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseCreated(ctf, profileResponse)
-//	}
-//}
 
 //func (pc *ProfileController) DeleteProfile() fiber.Handler {
 //	return func(ctf *fiber.Ctx) error {
@@ -125,53 +96,43 @@ func (pc *ProfileController) UpdateProfile(
 //		return v1.ResponseCreated(ctf, profileResponse)
 //	}
 //}
-//
-//func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("GET /gateway/api/v1/profiles/session/:sessionId")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.ProfileGetBySessionIdRequestDto{}
-//		if err := ctf.QueryParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("GetProfileBySessionId", "QueryParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		sessionId := ctf.Params("sessionId")
-//		profileResponse, err := pc.service.GetProfileBySessionId(ctx, sessionId, req)
-//		if err != nil {
-//			if errors.Is(err, psql.ErrNotRowFound) {
-//				return v1.ResponseError(ctf, err, http.StatusNotFound)
-//			}
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseOk(ctf, profileResponse)
-//	}
-//}
-//
-//func (pc *ProfileController) GetProfileDetail() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("GET /gateway/api/v1/profiles/detail/:sessionId")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.ProfileGetDetailRequestDto{}
-//		if err := ctf.QueryParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("GetProfileDetail", "QueryParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		viewedSessionId := ctf.Params("viewedSessionId")
-//		profileResponse, err := pc.service.GetProfileDetail(ctx, viewedSessionId, req)
-//		if err != nil {
-//			if errors.Is(err, psql.ErrNotRowFound) {
-//				return v1.ResponseError(ctf, err, http.StatusNotFound)
-//			}
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseOk(ctf, profileResponse)
-//	}
-//}
-//
+
+func (pc *ProfileController) GetProfileBySessionId(
+	ctx context.Context, in *pb.ProfileGetBySessionIdRequest) (*pb.ProfileBySessionIdResponse, error) {
+	pc.logger.Info("GET /gateway/api/v1/profiles/session/:sessionId")
+	sessionId := in.SessionId
+	req := &request.ProfileGetBySessionIdRequestDto{
+		Latitude:  in.Latitude,
+		Longitude: in.Longitude,
+	}
+	profileBySessionId, err := pc.service.GetProfileBySessionId(ctx, sessionId, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	profileResponse := profileMapper.MapControllerToBySessionIdResponse(profileBySessionId)
+	return profileResponse, nil
+}
+
+func (pc *ProfileController) GetProfileDetail(
+	ctx context.Context, in *pb.ProfileGetDetailRequest) (*pb.ProfileDetailResponse, error) {
+	pc.logger.Info("GET /gateway/api/v1/profiles/detail/:viewedSessionId")
+	req := &request.ProfileGetDetailRequestDto{
+		SessionId: in.SessionId,
+		Latitude:  in.Latitude,
+		Longitude: in.Longitude,
+	}
+	viewedSessionId := in.ViewedSessionId
+	profileDetail, err := pc.service.GetProfileDetail(ctx, viewedSessionId, req)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("profileDetail.SessionId", profileDetail.SessionId)
+	profileMapper := &mapper.ProfileControllerMapper{}
+	profileResponse := profileMapper.MapControllerToDetailResponse(profileDetail)
+	return profileResponse, nil
+}
+
 //func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 //	return func(ctf *fiber.Ctx) error {
 //		pc.logger.Info("GET /gateway/api/v1/profiles/short/:sessionId")

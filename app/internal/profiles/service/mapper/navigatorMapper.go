@@ -13,14 +13,19 @@ type NavigatorMapper struct {
 
 func (pm *NavigatorMapper) MapToResponse(
 	sessionId string, longitude float64, latitude float64) *response.NavigatorResponseDto {
-	location := &entity.PointEntity{
-		Longitude: longitude,
-		Latitude:  latitude,
+	var navigatorResponse *response.NavigatorResponseDto
+	if longitude != 0 || latitude != 0 {
+		location := &entity.PointEntity{
+			Longitude: longitude,
+			Latitude:  latitude,
+		}
+		navigatorResponse = &response.NavigatorResponseDto{
+			SessionId: sessionId,
+			Location:  location,
+		}
 	}
-	return &response.NavigatorResponseDto{
-		SessionId: sessionId,
-		Location:  location,
-	}
+
+	return navigatorResponse
 }
 
 func (pm *NavigatorMapper) MapToDetailResponse(distance float64) *response.NavigatorDetailResponseDto {
