@@ -73,7 +73,11 @@ func (s *ProfileService) AddProfile(
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.AddNavigator(ctx, pr)
+	if pr.Longitude != nil && pr.Latitude != nil {
+		longitude := *pr.Longitude
+		latitude := *pr.Latitude
+		_, err = s.AddNavigator(ctx, pr.SessionId, longitude, latitude)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -108,8 +112,10 @@ func (s *ProfileService) UpdateProfile(
 		return nil, err
 	}
 	var navigatorResponse *response.NavigatorResponseDto
-	if pr.Longitude != 0 && pr.Latitude != 0 {
-		navigatorResponse, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+	if pr.Longitude != nil && pr.Latitude != nil {
+		longitude := *pr.Longitude
+		latitude := *pr.Latitude
+		navigatorResponse, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
 			return nil, err
 		}
@@ -184,25 +190,26 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	if err != nil {
 		return nil, err
 	}
-	if pr.Longitude != 0 && pr.Latitude != 0 {
-		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+	if pr.Longitude != nil && pr.Latitude != nil {
+		longitude := *pr.Longitude
+		latitude := *pr.Latitude
+		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
 			return nil, err
 		}
 	}
-	profileMapper := &mapper.ProfileMapper{}
 	profileEntity, err := s.profileRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
 		return nil, err
 	}
-	navigatorMapper := &mapper.NavigatorMapper{}
-	navigatorEntity, err := s.navigatorRepository.FindBySessionId(ctx, sessionId)
-	if err != nil {
-		return nil, err
+	navigatorEntity, _ := s.navigatorRepository.FindBySessionId(ctx, sessionId)
+	var navigatorResponse *response.NavigatorResponseDto
+	if navigatorEntity != nil {
+		longitude := navigatorEntity.Location.Longitude
+		latitude := navigatorEntity.Location.Latitude
+		navigatorMapper := &mapper.NavigatorMapper{}
+		navigatorResponse = navigatorMapper.MapToResponse(sessionId, longitude, latitude)
 	}
-	longitude := navigatorEntity.Location.Longitude
-	latitude := navigatorEntity.Location.Latitude
-	navigatorResponse := navigatorMapper.MapToResponse(sessionId, longitude, latitude)
 	filterMapper := &mapper.FilterMapper{}
 	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
@@ -220,6 +227,7 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	if err != nil {
 		return nil, err
 	}
+	profileMapper := &mapper.ProfileMapper{}
 	profileResponse := profileMapper.MapToResponse(
 		profileEntity, navigatorResponse, filterResponse, telegramResponse, imageEntityList, isOnline)
 	return profileResponse, err
@@ -235,8 +243,10 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 	if err != nil {
 		return nil, err
 	}
-	if pr.Longitude != 0 && pr.Latitude != 0 {
-		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+	if pr.Longitude != nil && pr.Latitude != nil {
+		longitude := *pr.Longitude
+		latitude := *pr.Latitude
+		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
 			return nil, err
 		}
@@ -247,27 +257,26 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 		return nil, err
 	}
 	navigatorMapper := &mapper.NavigatorMapper{}
-	navigatorEntity, err := s.navigatorRepository.FindBySessionId(ctx, sessionId)
-	if err != nil {
-		return nil, err
-	}
-	navigatorViewedEntity, err := s.navigatorRepository.FindBySessionId(ctx, viewedSessionId)
-	if err != nil {
-		return nil, err
-	}
-	navigatorDistanceResponse, err := s.navigatorRepository.FindDistance(ctx, navigatorEntity, navigatorViewedEntity)
-	if err != nil {
-		return nil, err
-	}
-	distance := navigatorDistanceResponse.Distance
-	if distance < minDistance {
-		distance = minDistance
-	}
-	navigatorResponse := navigatorMapper.MapToDetailResponse(distance)
-	if pr.Longitude != 0 && pr.Latitude != 0 {
-		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+	navigatorEntity, _ := s.navigatorRepository.FindBySessionId(ctx, sessionId)
+	navigatorViewedEntity, _ := s.navigatorRepository.FindBySessionId(ctx, viewedSessionId)
+	var navigatorResponse *response.NavigatorDetailResponseDto
+	if navigatorEntity != nil && navigatorViewedEntity != nil {
+		navigatorDistanceResponse, err := s.navigatorRepository.FindDistance(ctx, navigatorEntity, navigatorViewedEntity)
 		if err != nil {
 			return nil, err
+		}
+		distance := navigatorDistanceResponse.Distance
+		if distance < minDistance {
+			distance = minDistance
+		}
+		navigatorResponse = navigatorMapper.MapToDetailResponse(distance)
+		if pr.Longitude != nil && pr.Latitude != nil {
+			longitude := *pr.Longitude
+			latitude := *pr.Latitude
+			_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	blockEntity, err := s.blockRepository.Find(ctx, sessionId, viewedSessionId)
@@ -624,9 +633,9 @@ func (s *ProfileService) deleteFile(filePath string) error {
 }
 
 func (s *ProfileService) AddNavigator(
-	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.NavigatorEntity, error) {
+	ctx context.Context, sessionId string, longitude, latitude float64) (*entity.NavigatorEntity, error) {
 	navigatorMapper := &mapper.NavigatorMapper{}
-	navigatorRequest := navigatorMapper.MapToAddRequest(pr)
+	navigatorRequest := navigatorMapper.MapToAddRequest(sessionId, longitude, latitude)
 	return s.navigatorRepository.Add(ctx, navigatorRequest)
 }
 

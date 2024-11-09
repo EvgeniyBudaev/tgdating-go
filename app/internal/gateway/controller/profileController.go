@@ -162,7 +162,6 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		fmt.Println("profileDetail.SessionId: ", profileDetail.SessionId)
 		profileResponse := profileMapper.MapToDetailResponse(profileDetail)
 		return v1.ResponseOk(ctf, profileResponse)
 	}

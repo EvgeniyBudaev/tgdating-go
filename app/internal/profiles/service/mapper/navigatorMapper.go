@@ -36,13 +36,13 @@ func (pm *NavigatorMapper) MapToDetailResponse(distance float64) *response.Navig
 }
 
 func (pm *NavigatorMapper) MapToAddRequest(
-	pr *request.ProfileAddRequestDto) *request.NavigatorAddRequestRepositoryDto {
+	sessionId string, longitude, latitude float64) *request.NavigatorAddRequestRepositoryDto {
 	point := &entity.PointEntity{
-		Longitude: pr.Longitude,
-		Latitude:  pr.Latitude,
+		Longitude: longitude,
+		Latitude:  latitude,
 	}
 	return &request.NavigatorAddRequestRepositoryDto{
-		SessionId: pr.SessionId,
+		SessionId: sessionId,
 		Location:  point,
 		IsDeleted: false,
 		CreatedAt: time.Now(),

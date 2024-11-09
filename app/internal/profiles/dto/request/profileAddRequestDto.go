@@ -23,8 +23,8 @@ type ProfileAddRequestDto struct {
 	TelegramLanguageCode    string                 `json:"telegramLanguageCode"`
 	TelegramAllowsWriteToPm bool                   `json:"telegramAllowsWriteToPm"`
 	TelegramQueryId         string                 `json:"telegramQueryId"`
-	Latitude                float64                `json:"latitude"`
-	Longitude               float64                `json:"longitude"`
+	Latitude                *float64               `json:"latitude"`
+	Longitude               *float64               `json:"longitude"`
 	AgeFrom                 uint64                 `json:"ageFrom"`
 	AgeTo                   uint64                 `json:"ageTo"`
 	Distance                float64                `json:"distance"`

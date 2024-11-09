@@ -127,7 +127,6 @@ func (pc *ProfileController) GetProfileDetail(
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("profileDetail.SessionId", profileDetail.SessionId)
 	profileMapper := &mapper.ProfileControllerMapper{}
 	profileResponse := profileMapper.MapControllerToDetailResponse(profileDetail)
 	return profileResponse, nil

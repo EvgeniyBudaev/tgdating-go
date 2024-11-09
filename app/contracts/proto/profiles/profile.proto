@@ -93,8 +93,8 @@ message ProfileAddRequest {
   string telegramLanguageCode = 15; // язык пользователя в телеграм
   bool telegramAllowsWriteToPm = 16; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 17; // id чата в телеграм
-  double latitude = 18; // широта
-  double longitude = 19; // долгота
+  optional double latitude = 18; // широта
+  optional double longitude = 19; // долгота
   uint64 ageFrom = 20; // возраст от
   uint64 ageTo = 21; // возраст до
   double distance = 22; // дистанция
@@ -125,8 +125,8 @@ message ProfileUpdateRequest {
   string telegramLanguageCode = 15; // язык пользователя в телеграм
   bool telegramAllowsWriteToPm = 16; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 17; // id чата в телеграм
-  double latitude = 18; // широта
-  double longitude = 19; // долгота
+  optional double latitude = 18; // широта
+  optional double longitude = 19; // долгота
   uint64 ageFrom = 20; // возраст от
   uint64 ageTo = 21; // возраст до
   double distance = 22; // дистанция
@@ -138,8 +138,8 @@ message ProfileUpdateRequest {
 
 message ProfileGetBySessionIdRequest {
   string sessionId = 1; // id сессии
-  double latitude = 2; // широта
-  double longitude = 3; // долгота
+  optional double latitude = 2; // широта
+  optional double longitude = 3; // долгота
 }
 
 message ProfileBySessionIdResponse {
@@ -169,8 +169,8 @@ message ProfileBySessionIdResponse {
 message ProfileGetDetailRequest {
   string sessionId = 1; // id сессии
   string viewedSessionId = 2; // id сессии того, кого смотрим
-  double latitude = 3; // широта
-  double longitude = 4; // долгота
+  optional double latitude = 3; // широта
+  optional double longitude = 4; // долгота
 }
 
 message ProfileDetailResponse {

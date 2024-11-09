@@ -3,6 +3,7 @@ package psql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
@@ -122,6 +123,9 @@ func (r *NavigatorRepository) FindBySessionId(
 	row := r.db.QueryRowContext(ctx, query, sessionId)
 	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
