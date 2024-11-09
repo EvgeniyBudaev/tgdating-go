@@ -11,8 +11,8 @@ type ProfileUpdateRequestDto struct {
 	Birthday                time.Time              `json:"birthday"`
 	Gender                  string                 `json:"gender"`
 	SearchGender            string                 `json:"searchGender"`
-	Location                string                 `json:"location"`
-	Description             string                 `json:"description"`
+	Location                *string                `json:"location"`
+	Description             *string                `json:"description"`
 	Height                  *float64               `json:"height"`
 	Weight                  *float64               `json:"weight"`
 	LookingFor              string                 `json:"lookingFor"`

@@ -81,8 +81,8 @@ message ProfileAddRequest {
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
   string searchGender = 5; // поиск по половому признаку
-  string location = 6; // местоположение
-  string description = 7; // описание
+  optional string location = 6; // местоположение
+  optional string description = 7; // описание
   optional double height = 8; // рост
   optional double weight = 9; // вес
   string lookingFor = 10; // цель поиска
@@ -113,8 +113,8 @@ message ProfileUpdateRequest {
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
   string searchGender = 5; // поиск по половому признаку
-  string location = 6; // местоположение
-  string description = 7; // описание
+  optional string location = 6; // местоположение
+  optional string description = 7; // описание
   optional double height = 8; // рост
   optional double weight = 9; // вес
   string lookingFor = 10; // цель поиска
@@ -147,8 +147,8 @@ message ProfileBySessionIdResponse {
   string displayName = 2; // Имя для отображения
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
-  string location = 5; // местоположение
-  string description = 6; // описание
+  optional string location = 5; // местоположение
+  optional string description = 6; // описание
   optional double height = 7; // рост
   optional double weight = 8; // вес
   bool isDeleted = 9; // удален пользователь да/нет
@@ -178,8 +178,8 @@ message ProfileDetailResponse {
   string displayName = 2; // Имя для отображения
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
-  string location = 5; // местоположение
-  string description = 6; // описание
+  optional string location = 5; // местоположение
+  optional string description = 6; // описание
   optional double height = 7; // рост
   optional double weight = 8; // вес
   bool isDeleted = 9; // удален пользователь да/нет

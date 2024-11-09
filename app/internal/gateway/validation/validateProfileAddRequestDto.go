@@ -77,7 +77,7 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 			errorMessages.GetBadRequest(locale))
 	}
 
-	if len(req.Description) > maxCharacters {
+	if req.Description != nil && len(*req.Description) > maxCharacters {
 		fieldErrorsLanguages["description"] = append(fieldErrorsLanguages["description"],
 			errorMessages.GetMaxSymbols(locale, maxCharacters))
 	}
