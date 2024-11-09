@@ -84,14 +84,6 @@ func (pm *ProfileMapper) MapToGetBySessionIdRequest(
 }
 
 func (pm *ProfileMapper) MapToBySessionIdResponse(r *pb.ProfileBySessionIdResponse) *response.ProfileResponseDto {
-	var heightResponse *float64
-	if r.Height != nil {
-		heightResponse = r.Height
-	}
-	var weightResponse *float64
-	if r.Weight != nil {
-		weightResponse = r.Weight
-	}
 	var navigatorResponse *response.NavigatorResponseDto
 	if r.Navigator != nil {
 		location := &entity.PointEntity{
@@ -128,8 +120,8 @@ func (pm *ProfileMapper) MapToBySessionIdResponse(r *pb.ProfileBySessionIdRespon
 		Gender:         r.Gender,
 		Location:       r.Location,
 		Description:    r.Description,
-		Height:         heightResponse,
-		Weight:         weightResponse,
+		Height:         r.Height,
+		Weight:         r.Weight,
 		IsDeleted:      r.IsDeleted,
 		IsBlocked:      r.IsBlocked,
 		IsPremium:      r.IsPremium,
@@ -175,14 +167,6 @@ func (pm *ProfileMapper) MapToGetDetailRequest(
 }
 
 func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *response.ProfileDetailResponseDto {
-	var heightResponse *float64
-	if r.Height != nil {
-		heightResponse = r.Height
-	}
-	var weightResponse *float64
-	if r.Weight != nil {
-		weightResponse = r.Weight
-	}
 	var navigatorResponse *response.NavigatorDetailResponseDto
 	if r.Navigator != nil {
 		navigatorResponse = &response.NavigatorDetailResponseDto{
@@ -230,8 +214,8 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 		Gender:         r.Gender,
 		Location:       r.Location,
 		Description:    r.Description,
-		Height:         heightResponse,
-		Weight:         weightResponse,
+		Height:         r.Height,
+		Weight:         r.Weight,
 		IsDeleted:      r.IsDeleted,
 		IsBlocked:      r.IsBlocked,
 		IsPremium:      r.IsPremium,

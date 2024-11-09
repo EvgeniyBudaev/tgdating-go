@@ -55,8 +55,8 @@ message TelegramResponse {
   string sessionId = 1; // id сессии
   uint64 userId = 2; // id пользователя
   string username = 3; // username пользователя
-  string firstName = 4; // имя пользователя
-  string lastName = 5; // фамилия пользователя
+  optional string firstName = 4; // имя пользователя
+  optional string lastName = 5; // фамилия пользователя
   string languageCode = 6; // язык пользователя
   bool allowsWriteToPm = 7; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string queryId = 8; // id чата
@@ -88,8 +88,8 @@ message ProfileAddRequest {
   string lookingFor = 10; // цель поиска
   uint64 telegramUserId = 11; // id пользователя в телеграм
   string telegramUsername = 12; // username пользователя в телеграм
-  string telegramFirstName = 13; // имя пользователя в телеграм
-  string telegramLastName = 14; // фамилия пользователя в телеграм
+  optional string telegramFirstName = 13; // имя пользователя в телеграм
+  optional string telegramLastName = 14; // фамилия пользователя в телеграм
   string telegramLanguageCode = 15; // язык пользователя в телеграм
   bool telegramAllowsWriteToPm = 16; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 17; // id чата в телеграм
@@ -120,8 +120,8 @@ message ProfileUpdateRequest {
   string lookingFor = 10; // цель поиска
   uint64 telegramUserId = 11; // id пользователя в телеграм
   string telegramUsername = 12; // username пользователя в телеграм
-  string telegramFirstName = 13; // имя пользователя в телеграм
-  string telegramLastName = 14; // фамилия пользователя в телеграм
+  optional string telegramFirstName = 13; // имя пользователя в телеграм
+  optional string telegramLastName = 14; // фамилия пользователя в телеграм
   string telegramLanguageCode = 15; // язык пользователя в телеграм
   bool telegramAllowsWriteToPm = 16; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 17; // id чата в телеграм
