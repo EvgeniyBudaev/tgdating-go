@@ -11,6 +11,7 @@ func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileContr
 	router := app.Group(prefix)
 	router.Get("/profiles/session/:sessionId", profileController.GetProfileBySessionId())
 	router.Get("/profiles/detail/:viewedSessionId", profileController.GetProfileDetail())
+	router.Get("/profiles/short/:sessionId", profileController.GetProfileShortInfo())
 }
 
 func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileController) {

@@ -198,6 +198,19 @@ message ProfileDetailResponse {
   repeated Image images = 22; // список изображений
 }
 
+message ProfileGetShortInfoRequest {
+  string sessionId = 1; // id сессии
+  optional double latitude = 2; // широта
+  optional double longitude = 3; // долгота
+}
+
+message ProfileShortInfoResponse {
+  string sessionId = 1; // id сессии
+  string imageUrl = 2; // url освного изображения
+  bool isDeleted = 3; // удален пользователь да/нет
+  bool isBlocked = 4; // заблокирован пользователь да/нет
+}
+
 /*
 * Описание сервиса Profile
 */
@@ -206,4 +219,5 @@ service Profile {
   rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileBySessionIdResponse); // обновление данных пользователя
   rpc GetProfileBySessionId(ProfileGetBySessionIdRequest) returns (ProfileBySessionIdResponse); // получение профиля по id сессии
   rpc GetProfileDetail(ProfileGetDetailRequest) returns (ProfileDetailResponse); // получение карточки профиля
+  rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю
 }

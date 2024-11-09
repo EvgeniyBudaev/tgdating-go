@@ -316,8 +316,10 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 	if err != nil {
 		return nil, err
 	}
-	if pr.Longitude != 0 && pr.Latitude != 0 {
-		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+	if pr.Longitude != nil && pr.Latitude != nil {
+		longitude := *pr.Longitude
+		latitude := *pr.Latitude
+		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
 			return nil, err
 		}

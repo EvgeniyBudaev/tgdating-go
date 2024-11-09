@@ -167,6 +167,31 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /gateway/api/v1/profiles/short/:sessionId")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.ProfileGetShortInfoRequestDto{}
+		if err := ctf.QueryParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileShortInfo", "QueryParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		sessionId := ctf.Params("sessionId")
+		profileMapper := &mapper.ProfileMapper{}
+		profileRequest := profileMapper.MapToGetShortInfoRequest(req, sessionId)
+		profileShortInfo, err := pc.proto.GetProfileShortInfo(ctx, profileRequest)
+		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseOk(ctf, profileShortInfo)
+	}
+}
+
 func (pc *ProfileController) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
 		errorFilePath)

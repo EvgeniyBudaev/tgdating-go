@@ -241,3 +241,12 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 		Images: images,
 	}
 }
+
+func (pm *ProfileMapper) MapToGetShortInfoRequest(
+	r *request.ProfileGetShortInfoRequestDto, sessionId string) *pb.ProfileGetShortInfoRequest {
+	return &pb.ProfileGetShortInfoRequest{
+		SessionId: sessionId,
+		Latitude:  r.Latitude,
+		Longitude: r.Longitude,
+	}
+}

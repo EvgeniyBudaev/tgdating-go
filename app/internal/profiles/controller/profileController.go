@@ -132,29 +132,23 @@ func (pc *ProfileController) GetProfileDetail(
 	return profileResponse, nil
 }
 
-//func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("GET /gateway/api/v1/profiles/short/:sessionId")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.ProfileGetShortInfoRequestDto{}
-//		if err := ctf.QueryParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("GetProfileShortInfo", "QueryParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		sessionId := ctf.Params("sessionId")
-//		profileResponse, err := pc.service.GetProfileShortInfo(ctx, sessionId, req)
-//		if err != nil {
-//			if errors.Is(err, psql.ErrNotRowFound) {
-//				return v1.ResponseError(ctf, err, http.StatusNotFound)
-//			}
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseOk(ctf, profileResponse)
-//	}
-//}
-//
+func (pc *ProfileController) GetProfileShortInfo(
+	ctx context.Context, in *pb.ProfileGetShortInfoRequest) (*pb.ProfileShortInfoResponse, error) {
+	pc.logger.Info("GET /gateway/api/v1/profiles/short/:sessionId")
+	req := &request.ProfileGetShortInfoRequestDto{
+		Latitude:  in.Latitude,
+		Longitude: in.Longitude,
+	}
+	sessionId := in.SessionId
+	profileShortInfo, err := pc.service.GetProfileShortInfo(ctx, sessionId, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	profileResponse := profileMapper.MapControllerToShortInfoResponse(profileShortInfo)
+	return profileResponse, nil
+}
+
 //func (pc *ProfileController) GetProfileList() fiber.Handler {
 //	return func(ctf *fiber.Ctx) error {
 //		pc.logger.Info("GET /gateway/api/v1/profiles/list")

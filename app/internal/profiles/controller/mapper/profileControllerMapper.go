@@ -242,3 +242,13 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 		Images: images,
 	}
 }
+
+func (pm *ProfileControllerMapper) MapControllerToShortInfoResponse(
+	r *response.ProfileShortInfoResponseDto) *pb.ProfileShortInfoResponse {
+	return &pb.ProfileShortInfoResponse{
+		SessionId: r.SessionId,
+		ImageUrl:  r.ImageUrl,
+		IsDeleted: r.IsDeleted,
+		IsBlocked: r.IsBlocked,
+	}
+}
