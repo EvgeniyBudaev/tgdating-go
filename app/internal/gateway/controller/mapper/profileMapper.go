@@ -250,3 +250,59 @@ func (pm *ProfileMapper) MapToGetShortInfoRequest(
 		Longitude: r.Longitude,
 	}
 }
+
+func (pm *ProfileMapper) MapToListRequest(
+	r *request.ProfileGetListRequestDto) *pb.ProfileGetListRequest {
+	return &pb.ProfileGetListRequest{
+		SessionId: r.SessionId,
+		Latitude:  r.Latitude,
+		Longitude: r.Longitude,
+	}
+}
+
+func (pm *ProfileMapper) MapToListResponse(r *pb.ProfileListResponse) *response.ProfileListResponseDto {
+	paginationEntity := &entity.PaginationEntity{
+		HasPrevious:   r.HasPrevious,
+		HasNext:       r.HasNext,
+		Page:          r.Page,
+		Size:          r.Size,
+		TotalEntities: r.TotalEntities,
+		TotalPages:    r.TotalPages,
+	}
+	profileContent := make([]*response.ProfileListItemResponseDto, 0)
+	if len(r.Content) > 0 {
+		for _, c := range r.Content {
+			profileContent = append(profileContent, &response.ProfileListItemResponseDto{
+				SessionId:  c.SessionId,
+				Distance:   c.Distance,
+				Url:        c.Url,
+				IsOnline:   c.IsOnline,
+				LastOnline: c.LastOnline.AsTime(),
+			})
+		}
+	}
+	return &response.ProfileListResponseDto{
+		PaginationEntity: paginationEntity,
+		Content:          profileContent,
+	}
+}
+
+func (pm *ProfileMapper) MapToImageBySessionIdRequest(
+	sessionId, fileName string) *pb.GetImageBySessionIdRequest {
+	return &pb.GetImageBySessionIdRequest{
+		SessionId: sessionId,
+		FileName:  fileName,
+	}
+}
+
+func (pm *ProfileMapper) MapToImageBySessionIdResponse(
+	r *pb.ImageBySessionIdResponse) []byte {
+	return r.File
+}
+func (pm *ProfileMapper) MapToFilterRequest(r *request.FilterGetRequestDto, sessionId string) *pb.FilterGetRequest {
+	return &pb.FilterGetRequest{
+		SessionId: sessionId,
+		Latitude:  r.Latitude,
+		Longitude: r.Longitude,
+	}
+}

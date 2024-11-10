@@ -55,9 +55,9 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
-			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		}
+		//if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+		//	return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		//}
 		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, locale)
 		if validateErr != nil {
 			return v1.ResponseFieldsError(ctf, validateErr)
@@ -189,6 +189,75 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseOk(ctf, profileShortInfo)
+	}
+}
+
+func (pc *ProfileController) GetProfileList() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /gateway/api/v1/profiles/list")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.ProfileGetListRequestDto{}
+		if err := ctf.QueryParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileList", "QueryParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileMapper := &mapper.ProfileMapper{}
+		profileRequest := profileMapper.MapToListRequest(req)
+		profileList, err := pc.proto.GetProfileList(ctx, profileRequest)
+		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		profileListResponse := profileMapper.MapToListResponse(profileList)
+		return v1.ResponseOk(ctf, profileListResponse)
+	}
+}
+
+func (pc *ProfileController) GetImageBySessionId() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/images/:fileName")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		sessionId := ctf.Params("sessionId")
+		fileName := ctf.Params("fileName")
+		profileMapper := &mapper.ProfileMapper{}
+		profileRequest := profileMapper.MapToImageBySessionIdRequest(sessionId, fileName)
+		file, err := pc.proto.GetImageBySessionId(ctx, profileRequest)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		fileResponse := profileMapper.MapToImageBySessionIdResponse(file)
+		ctf.Set("Content-Type", "image/jpeg")
+		return v1.ResponseImage(ctf, fileResponse)
+	}
+}
+
+func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /gateway/api/v1/profiles/filter/:sessionId")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		sessionId := ctf.Params("sessionId")
+		req := &request.FilterGetRequestDto{}
+		if err := ctf.QueryParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("GetFilterBySessionId", "QueryParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileMapper := &mapper.ProfileMapper{}
+		filterRequest := profileMapper.MapToFilterRequest(req, sessionId)
+		filter, err := pc.proto.GetFilterBySessionId(ctx, filterRequest)
+		if err != nil {
+			if errors.Is(err, psql.ErrNotRowFound) {
+				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			}
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseOk(ctf, filter)
 	}
 }
 

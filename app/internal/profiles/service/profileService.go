@@ -347,8 +347,10 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	if pr.Longitude != 0 && pr.Latitude != 0 {
-		_, err = s.updateNavigator(ctx, sessionId, pr.Longitude, pr.Latitude)
+	if pr.Longitude != nil && pr.Latitude != nil {
+		longitude := *pr.Longitude
+		latitude := *pr.Latitude
+		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
 			return nil, err
 		}
@@ -359,9 +361,19 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToListRequest(filterEntity)
-	paginationProfileEntityList, err := s.profileRepository.SelectListBySessionId(ctx, profileRequest)
-	if err != nil {
-		return nil, err
+	var paginationProfileEntityList *response.ProfileListResponseRepositoryDto
+	navigatorEntity, _ := s.navigatorRepository.FindBySessionId(ctx, sessionId)
+	if navigatorEntity != nil {
+		paginationProfileEntityList, err = s.profileRepository.SelectListBySessionId(ctx, profileRequest)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		paginationProfileEntityList, err = s.profileRepository.SelectListBySessionIdWithoutNavigation(ctx,
+			profileRequest)
+		if err != nil {
+			return nil, err
+		}
 	}
 	profileContentResponse := make([]*response.ProfileListItemResponseDto, 0)
 	if len(paginationProfileEntityList.Content) > 0 {
@@ -370,16 +382,14 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 			if err != nil {
 				return nil, err
 			}
-			url := lastImage.Url
 			lastOnline := profileEntity.LastOnline
 			isOnline := s.checkIsOnline(lastOnline)
-			distance := profileEntity.Distance
 			profileItem := response.ProfileListItemResponseDto{
 				SessionId:  profileEntity.SessionId,
-				Distance:   distance,
-				Url:        url,
+				Distance:   profileEntity.Distance,
+				Url:        lastImage.Url,
 				IsOnline:   isOnline,
-				LastOnline: lastOnline,
+				LastOnline: profileEntity.LastOnline,
 			}
 			profileContentResponse = append(profileContentResponse, &profileItem)
 		}
@@ -498,8 +508,10 @@ func (s *ProfileService) GetFilterBySessionId(
 	if err != nil {
 		return nil, err
 	}
-	if fr.Longitude != 0 && fr.Latitude != 0 {
-		_, err = s.updateNavigator(ctx, sessionId, fr.Longitude, fr.Latitude)
+	if fr.Longitude != nil && fr.Latitude != nil {
+		longitude := *fr.Longitude
+		latitude := *fr.Latitude
+		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
 			return nil, err
 		}

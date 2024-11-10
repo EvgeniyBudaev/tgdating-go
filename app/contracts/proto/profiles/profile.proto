@@ -39,7 +39,6 @@ message NavigatorDetailResponse {
   uint64 distance = 1; // расстояние до просматриваемого пользователя
 }
 
-
 message FilterResponse {
   string sessionId = 1; // id сессии
   string searchGender = 2; // поиск по половому признаку
@@ -55,8 +54,8 @@ message TelegramResponse {
   string sessionId = 1; // id сессии
   uint64 userId = 2; // id пользователя
   string username = 3; // username пользователя
-  optional string firstName = 4; // имя пользователя
-  optional string lastName = 5; // фамилия пользователя
+  string firstName = 4; // имя пользователя
+  string lastName = 5; // фамилия пользователя
   string languageCode = 6; // язык пользователя
   bool allowsWriteToPm = 7; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string queryId = 8; // id чата
@@ -81,15 +80,15 @@ message ProfileAddRequest {
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
   string searchGender = 5; // поиск по половому признаку
-  optional string location = 6; // местоположение
-  optional string description = 7; // описание
-  optional double height = 8; // рост
-  optional double weight = 9; // вес
+  string location = 6; // местоположение
+  string description = 7; // описание
+  double height = 8; // рост
+  double weight = 9; // вес
   string lookingFor = 10; // цель поиска
   uint64 telegramUserId = 11; // id пользователя в телеграм
   string telegramUsername = 12; // username пользователя в телеграм
-  optional string telegramFirstName = 13; // имя пользователя в телеграм
-  optional string telegramLastName = 14; // фамилия пользователя в телеграм
+  string telegramFirstName = 13; // имя пользователя в телеграм
+  string telegramLastName = 14; // фамилия пользователя в телеграм
   string telegramLanguageCode = 15; // язык пользователя в телеграм
   bool telegramAllowsWriteToPm = 16; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 17; // id чата в телеграм
@@ -113,15 +112,15 @@ message ProfileUpdateRequest {
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
   string searchGender = 5; // поиск по половому признаку
-  optional string location = 6; // местоположение
-  optional string description = 7; // описание
-  optional double height = 8; // рост
-  optional double weight = 9; // вес
+  string location = 6; // местоположение
+  string description = 7; // описание
+  double height = 8; // рост
+  double weight = 9; // вес
   string lookingFor = 10; // цель поиска
   uint64 telegramUserId = 11; // id пользователя в телеграм
   string telegramUsername = 12; // username пользователя в телеграм
-  optional string telegramFirstName = 13; // имя пользователя в телеграм
-  optional string telegramLastName = 14; // фамилия пользователя в телеграм
+  string telegramFirstName = 13; // имя пользователя в телеграм
+  string telegramLastName = 14; // фамилия пользователя в телеграм
   string telegramLanguageCode = 15; // язык пользователя в телеграм
   bool telegramAllowsWriteToPm = 16; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 17; // id чата в телеграм
@@ -147,10 +146,10 @@ message ProfileBySessionIdResponse {
   string displayName = 2; // Имя для отображения
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
-  optional string location = 5; // местоположение
-  optional string description = 6; // описание
-  optional double height = 7; // рост
-  optional double weight = 8; // вес
+  string location = 5; // местоположение
+  string description = 6; // описание
+  double height = 7; // рост
+  double weight = 8; // вес
   bool isDeleted = 9; // удален пользователь да/нет
   bool isBlocked = 10; // заблокирован пользователь да/нет
   bool isPremium = 11; // наличие премиум аакаунта да/нет
@@ -178,10 +177,10 @@ message ProfileDetailResponse {
   string displayName = 2; // Имя для отображения
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
-  optional string location = 5; // местоположение
-  optional string description = 6; // описание
-  optional double height = 7; // рост
-  optional double weight = 8; // вес
+  string location = 5; // местоположение
+  string description = 6; // описание
+  double height = 7; // рост
+  double weight = 8; // вес
   bool isDeleted = 9; // удален пользователь да/нет
   bool isBlocked = 10; // заблокирован пользователь да/нет
   bool isPremium = 11; // наличие премиум аакаунта да/нет
@@ -211,6 +210,56 @@ message ProfileShortInfoResponse {
   bool isBlocked = 4; // заблокирован пользователь да/нет
 }
 
+message ProfileGetListRequest {
+  string sessionId = 1; // id сессии
+  optional double latitude = 2; // широта
+  optional double longitude = 3; // долгота
+}
+
+message ProfileListItemResponse {
+  string sessionId = 1; // id сессии
+  optional double distance = 2; // дистанция
+  string url = 3; // url изображения
+  bool isOnline = 4; // пользователь онлайн да/нет
+  google.protobuf.Timestamp lastOnline = 5; // дата последнего входа в систему
+}
+
+message ProfileListResponse {
+  bool hasPrevious = 1; // наличие предыдущих страниц да/нет
+  bool hasNext = 2; // наличие следующих страниц да/нет
+  uint64 page = 3; // номер текущей страницы
+  uint64 size = 4; // количество элементов на странице
+  uint64 totalEntities = 5; // общее количество элементов
+  uint64 totalPages = 6; // общее количество страниц
+  repeated ProfileListItemResponse content = 7; // список профилей
+}
+
+message GetImageBySessionIdRequest {
+  string sessionId = 1; // id сессии
+  string fileName = 2; // название файла с расширением
+}
+
+message ImageBySessionIdResponse {
+  bytes file = 1; // файл
+}
+
+message FilterGetRequest {
+  string sessionId = 1; // id сессии
+  optional double latitude = 2; // широта
+  optional double longitude = 3; // долгота
+}
+
+message FilterGetResponse {
+  string sessionId = 1; // id сессии
+  string searchGender = 2; // поиск по половому признаку
+  string lookingFor = 3; // цель поиска
+  uint64 ageFrom = 4; // возраст от
+  uint64 ageTo = 5; // возраст до
+  double distance = 6; // дистанция
+  uint64 page = 7; // номер текущей страницы
+  uint64 size = 8; // количество элементов на странице
+}
+
 /*
 * Описание сервиса Profile
 */
@@ -220,4 +269,7 @@ service Profile {
   rpc GetProfileBySessionId(ProfileGetBySessionIdRequest) returns (ProfileBySessionIdResponse); // получение профиля по id сессии
   rpc GetProfileDetail(ProfileGetDetailRequest) returns (ProfileDetailResponse); // получение карточки профиля
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю
+  rpc GetProfileList(ProfileGetListRequest) returns (ProfileListResponse); // получение списка профилей
+  rpc GetImageBySessionId(GetImageBySessionIdRequest) returns (ImageBySessionIdResponse); // получение файла
+  rpc GetFilterBySessionId(FilterGetRequest) returns (FilterGetResponse); // получение данных фильтра
 }

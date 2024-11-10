@@ -252,3 +252,43 @@ func (pm *ProfileControllerMapper) MapControllerToShortInfoResponse(
 		IsBlocked: r.IsBlocked,
 	}
 }
+
+func (pm *ProfileControllerMapper) MapControllerToListResponse(
+	r *response.ProfileListResponseDto) *pb.ProfileListResponse {
+	contentList := make([]*pb.ProfileListItemResponse, 0)
+	if len(r.Content) > 0 {
+		for _, c := range r.Content {
+			lastOnlineTimestamp := timestamppb.New(c.LastOnline)
+			contentList = append(contentList, &pb.ProfileListItemResponse{
+				SessionId:  c.SessionId,
+				Distance:   c.Distance,
+				Url:        c.Url,
+				IsOnline:   c.IsOnline,
+				LastOnline: lastOnlineTimestamp,
+			})
+		}
+	}
+	return &pb.ProfileListResponse{
+		HasPrevious:   r.HasPrevious,
+		HasNext:       r.HasNext,
+		Page:          r.Page,
+		Size:          r.Size,
+		TotalEntities: r.TotalEntities,
+		TotalPages:    r.TotalPages,
+		Content:       contentList,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToFilterResponse(
+	r *response.FilterResponseDto) *pb.FilterGetResponse {
+	return &pb.FilterGetResponse{
+		SessionId:    r.SessionId,
+		SearchGender: r.SearchGender,
+		LookingFor:   r.LookingFor,
+		AgeFrom:      r.AgeFrom,
+		AgeTo:        r.AgeTo,
+		Distance:     r.Distance,
+		Page:         r.Page,
+		Size:         r.Size,
+	}
+}

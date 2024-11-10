@@ -205,7 +205,7 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 		return nil, err
 	}
 	defer rows.Close()
-	profileEntityList := make([]*response.ProfileListItemResponseRepositoryDto, 0)
+	profileContent := make([]*response.ProfileListItemResponseRepositoryDto, 0)
 	for rows.Next() {
 		p := response.ProfileListItemResponseRepositoryDto{}
 		err := rows.Scan(&p.Id, &p.SessionId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
@@ -216,35 +216,92 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 			r.logger.Info(errorMessage, zap.Error(ErrNotRowsFound))
 			continue
 		}
-		profileEntityList = append(profileEntityList, &p)
+		profileContent = append(profileContent, &p)
 	}
-	numberEntities, err := r.getNumberEntities(ctx, sessionId, searchGender, ageFrom, ageTo)
+	totalEntities, err := r.getTotalEntities(ctx, sessionId, searchGender, ageFrom, ageTo)
 	if err != nil {
 		return nil, err
 	}
-	paginationEntity := entity.GetPagination(page, size, numberEntities)
+	paginationEntity := entity.GetPagination(page, size, totalEntities)
 	paginationProfileEntityList := &response.ProfileListResponseRepositoryDto{
 		PaginationEntity: paginationEntity,
-		Content:          profileEntityList,
+		Content:          profileContent,
 	}
 	return paginationProfileEntityList, nil
 }
 
-func (r *ProfileRepository) getNumberEntities(
+func (r *ProfileRepository) SelectListBySessionIdWithoutNavigation(ctx context.Context,
+	pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error) {
+	sessionId := pr.SessionId
+	searchGender := pr.SearchGender
+	ageFrom := pr.AgeFrom
+	ageTo := pr.AgeTo
+	page := pr.Page
+	size := pr.Size
+	offset := (page - 1) * size
+	query := "SELECT p.id, p.session_id, p.display_name, p.birthday, p.gender, p.location, p.description, p.height," +
+		" p.weight, p.is_deleted, p.is_blocked, p.is_premium, p.is_show_distance, p.is_invisible, p.created_at," +
+		" p.updated_at, p.last_online," +
+		" EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) AS age, pt.language_code" +
+		" FROM profiles p" +
+		" JOIN profile_telegrams pt ON p.session_id = pt.session_id" +
+		" WHERE p.is_deleted = false AND p.is_blocked = false AND" +
+		" (EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) BETWEEN $3 AND $4) AND" +
+		" ($2 = 'all' OR gender = $2) AND p.session_id <> $1 AND" +
+		" NOT EXISTS (SELECT 1 FROM profile_blocks WHERE session_id = $1 AND" +
+		" blocked_user_session_id = p.session_id) AND" +
+		" pt.language_code = (SELECT pt2.language_code FROM profile_telegrams pt2 WHERE pt2.session_id = $1)" +
+		" ORDER BY p.last_online DESC" +
+		" LIMIT $5 OFFSET $6"
+	rows, err := r.db.QueryContext(ctx, query, sessionId, searchGender, ageFrom, ageTo, size, offset)
+	if err != nil {
+		errorMessage := r.getErrorMessage("SelectListBySessionIdWithoutNavigation",
+			"QueryContext")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowsFound))
+		return nil, err
+	}
+	defer rows.Close()
+	profileContent := make([]*response.ProfileListItemResponseRepositoryDto, 0)
+	for rows.Next() {
+		p := response.ProfileListItemResponseRepositoryDto{}
+		err := rows.Scan(&p.Id, &p.SessionId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
+			&p.Description, &p.Height, &p.Weight, &p.IsDeleted, &p.IsBlocked, &p.IsPremium,
+			&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline, &p.Age, &p.LanguageCode)
+		if err != nil {
+			errorMessage := r.getErrorMessage("SelectListBySessionIdWithoutNavigation",
+				"Scan")
+			r.logger.Info(errorMessage, zap.Error(ErrNotRowsFound))
+			continue
+		}
+		profileContent = append(profileContent, &p)
+	}
+	totalEntities, err := r.getTotalEntities(ctx, sessionId, searchGender, ageFrom, ageTo)
+	if err != nil {
+		return nil, err
+	}
+	paginationEntity := entity.GetPagination(page, size, totalEntities)
+	paginationProfileEntityList := &response.ProfileListResponseRepositoryDto{
+		PaginationEntity: paginationEntity,
+		Content:          profileContent,
+	}
+	return paginationProfileEntityList, nil
+}
+
+func (r *ProfileRepository) getTotalEntities(
 	ctx context.Context, sessionId, searchGender string, ageFrom, ageTo uint64) (uint64, error) {
 	query := "SELECT COUNT(*)" +
 		" FROM profiles" +
 		" WHERE is_deleted=false AND is_blocked=false AND" +
 		" (EXTRACT(YEAR FROM AGE(NOW(), birthday)) BETWEEN $3 AND $4) AND" +
 		" ($2 = 'all' OR gender = $2) AND session_id <> $1"
-	var numberEntities uint64
-	err := r.db.QueryRowContext(ctx, query, sessionId, searchGender, ageFrom, ageTo).Scan(&numberEntities)
+	var totalEntities uint64
+	err := r.db.QueryRowContext(ctx, query, sessionId, searchGender, ageFrom, ageTo).Scan(&totalEntities)
 	if err != nil {
-		errorMessage := r.getErrorMessage("getNumberEntities", "QueryRowContext")
+		errorMessage := r.getErrorMessage("getTotalEntities", "QueryRowContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return 0, err
 	}
-	return numberEntities, nil
+	return totalEntities, nil
 }
 
 func (r *ProfileRepository) UpdateLastOnline(

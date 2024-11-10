@@ -149,44 +149,38 @@ func (pc *ProfileController) GetProfileShortInfo(
 	return profileResponse, nil
 }
 
-//func (pc *ProfileController) GetProfileList() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("GET /gateway/api/v1/profiles/list")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.ProfileGetListRequestDto{}
-//		if err := ctf.QueryParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("GetProfileList", "QueryParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		profileListResponse, err := pc.service.GetProfileList(ctx, req)
-//		if err != nil {
-//			if errors.Is(err, psql.ErrNotRowFound) {
-//				return v1.ResponseError(ctf, err, http.StatusNotFound)
-//			}
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseOk(ctf, profileListResponse)
-//	}
-//}
-//
-//func (pc *ProfileController) GetImageBySessionId() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/images/:fileName")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		sessionId := ctf.Params("sessionId")
-//		fileName := ctf.Params("fileName")
-//		response, err := pc.service.GetImageBySessionId(ctx, sessionId, fileName)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		ctf.Set("Content-Type", "image/jpeg")
-//		return v1.ResponseImage(ctf, response)
-//	}
-//}
-//
+func (pc *ProfileController) GetProfileList(
+	ctx context.Context, in *pb.ProfileGetListRequest) (*pb.ProfileListResponse, error) {
+	pc.logger.Info("GET /gateway/api/v1/profiles/list")
+	req := &request.ProfileGetListRequestDto{
+		SessionId: in.SessionId,
+		Latitude:  in.Latitude,
+		Longitude: in.Longitude,
+	}
+	profileList, err := pc.service.GetProfileList(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	profileResponse := profileMapper.MapControllerToListResponse(profileList)
+	return profileResponse, nil
+}
+
+func (pc *ProfileController) GetImageBySessionId(
+	ctx context.Context, in *pb.GetImageBySessionIdRequest) (*pb.ImageBySessionIdResponse, error) {
+	pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/images/:fileName")
+	sessionId := in.SessionId
+	fileName := in.FileName
+	file, err := pc.service.GetImageBySessionId(ctx, sessionId, fileName)
+	if err != nil {
+		return nil, err
+	}
+	fileResponse := &pb.ImageBySessionIdResponse{
+		File: file,
+	}
+	return fileResponse, nil
+}
+
 //func (pc *ProfileController) DeleteImage() fiber.Handler {
 //	return func(ctf *fiber.Ctx) error {
 //		pc.logger.Info("DELETE /gateway/api/v1/profiles/images/:id")
@@ -212,30 +206,24 @@ func (pc *ProfileController) GetProfileShortInfo(
 //		return v1.ResponseCreated(ctf, response)
 //	}
 //}
-//
-//func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("GET /gateway/api/v1/profiles/filter/:sessionId")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		sessionId := ctf.Params("sessionId")
-//		req := &request.FilterGetRequestDto{}
-//		if err := ctf.QueryParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("GetFilterBySessionId", "QueryParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		profileListResponse, err := pc.service.GetFilterBySessionId(ctx, sessionId, req)
-//		if err != nil {
-//			if errors.Is(err, psql.ErrNotRowFound) {
-//				return v1.ResponseError(ctf, err, http.StatusNotFound)
-//			}
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseOk(ctf, profileListResponse)
-//	}
-//}
-//
+
+func (pc *ProfileController) GetFilterBySessionId(
+	ctx context.Context, in *pb.FilterGetRequest) (*pb.FilterGetResponse, error) {
+	pc.logger.Info("GET /gateway/api/v1/profiles/filter/:sessionId")
+	req := &request.FilterGetRequestDto{
+		Latitude:  in.Latitude,
+		Longitude: in.Longitude,
+	}
+	sessionId := in.SessionId
+	profileFilter, err := pc.service.GetFilterBySessionId(ctx, sessionId, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	filterResponse := profileMapper.MapControllerToFilterResponse(profileFilter)
+	return filterResponse, nil
+}
+
 //func (pc *ProfileController) UpdateFilter() fiber.Handler {
 //	return func(ctf *fiber.Ctx) error {
 //		pc.logger.Info("PUT /gateway/api/v1/profiles/filters")

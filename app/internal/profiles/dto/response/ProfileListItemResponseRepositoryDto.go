@@ -8,8 +8,8 @@ type ProfileListItemResponseRepositoryDto struct {
 	DisplayName    string    `json:"displayName"`
 	Birthday       time.Time `json:"birthday"`
 	Gender         string    `json:"gender"`
-	Location       *string   `json:"location"`
-	Description    *string   `json:"description"`
+	Location       string    `json:"location"`
+	Description    string    `json:"description"`
 	Height         float64   `json:"height"`
 	Weight         float64   `json:"weight"`
 	IsDeleted      bool      `json:"isDeleted"`
@@ -21,5 +21,6 @@ type ProfileListItemResponseRepositoryDto struct {
 	UpdatedAt      time.Time `json:"updatedAt"`
 	LastOnline     time.Time `json:"lastOnline"`
 	Age            uint64    `json:"age"`
-	Distance       float64   `json:"distance"`
+	Distance       *float64  `json:"distance"`
+	LanguageCode   string    `json:"languageCode"`
 }
