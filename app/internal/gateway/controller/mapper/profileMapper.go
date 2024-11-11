@@ -299,9 +299,104 @@ func (pm *ProfileMapper) MapToImageBySessionIdResponse(
 	r *pb.ImageBySessionIdResponse) []byte {
 	return r.File
 }
+
 func (pm *ProfileMapper) MapToFilterRequest(r *request.FilterGetRequestDto, sessionId string) *pb.FilterGetRequest {
 	return &pb.FilterGetRequest{
 		SessionId: sessionId,
+		Latitude:  r.Latitude,
+		Longitude: r.Longitude,
+	}
+}
+
+func (pm *ProfileMapper) MapToFilterUpdateRequest(r *request.FilterUpdateRequestDto) *pb.FilterUpdateRequest {
+	return &pb.FilterUpdateRequest{
+		SessionId:    r.SessionId,
+		SearchGender: r.SearchGender,
+		AgeFrom:      r.AgeFrom,
+		AgeTo:        r.AgeTo,
+	}
+}
+
+func (pm *ProfileMapper) MapToBlockAddRequest(r *request.BlockAddRequestDto) *pb.BlockAddRequest {
+	return &pb.BlockAddRequest{
+		SessionId:            r.SessionId,
+		BlockedUserSessionId: r.BlockedUserSessionId,
+	}
+}
+
+func (pm *ProfileMapper) MapToBlockAddResponse(r *pb.BlockAddResponse) *entity.BlockEntity {
+	return &entity.BlockEntity{
+		Id:                   r.Id,
+		SessionId:            r.SessionId,
+		BlockedUserSessionId: r.BlockedUserSessionId,
+		IsBlocked:            r.IsBlocked,
+		CreatedAt:            r.CreatedAt.AsTime(),
+		UpdatedAt:            r.UpdatedAt.AsTime(),
+	}
+}
+
+func (pm *ProfileMapper) MapToLikeAddRequest(r *request.LikeAddRequestDto, locale string) *pb.LikeAddRequest {
+	return &pb.LikeAddRequest{
+		SessionId:      r.SessionId,
+		LikedSessionId: r.LikedSessionId,
+		Locale:         locale,
+	}
+}
+
+func (pm *ProfileMapper) MapToLikeAddResponse(r *pb.LikeAddResponse) *response.LikeResponseDto {
+	return &response.LikeResponseDto{
+		Id:             r.Id,
+		SessionId:      r.SessionId,
+		LikedSessionId: r.LikedSessionId,
+		IsLiked:        r.IsLiked,
+		CreatedAt:      r.CreatedAt.AsTime(),
+		UpdatedAt:      r.UpdatedAt.AsTime(),
+	}
+}
+
+func (pm *ProfileMapper) MapToLikeUpdateRequest(r *request.LikeUpdateRequestDto) *pb.LikeUpdateRequest {
+	return &pb.LikeUpdateRequest{
+		Id:        r.Id,
+		SessionId: r.SessionId,
+		IsLiked:   r.IsLiked,
+	}
+}
+
+func (pm *ProfileMapper) MapToLikeUpdateResponse(r *pb.LikeUpdateResponse) *response.LikeResponseDto {
+	return &response.LikeResponseDto{
+		Id:             r.Id,
+		SessionId:      r.SessionId,
+		LikedSessionId: r.LikedSessionId,
+		IsLiked:        r.IsLiked,
+		CreatedAt:      r.CreatedAt.AsTime(),
+		UpdatedAt:      r.UpdatedAt.AsTime(),
+	}
+}
+
+func (pm *ProfileMapper) MapToComplaintAddRequest(r *request.ComplaintAddRequestDto) *pb.ComplaintAddRequest {
+	return &pb.ComplaintAddRequest{
+		SessionId:         r.SessionId,
+		CriminalSessionId: r.CriminalSessionId,
+		Reason:            r.Reason,
+	}
+}
+
+func (pm *ProfileMapper) MapToComplaintAddResponse(r *pb.ComplaintAddResponse) *entity.ComplaintEntity {
+	return &entity.ComplaintEntity{
+		Id:                r.Id,
+		SessionId:         r.SessionId,
+		CriminalSessionId: r.CriminalSessionId,
+		Reason:            r.Reason,
+		IsDeleted:         r.IsDeleted,
+		CreatedAt:         r.CreatedAt.AsTime(),
+		UpdatedAt:         r.UpdatedAt.AsTime(),
+	}
+}
+
+func (pm *ProfileMapper) MapToUpdateCoordinatesRequest(
+	r *request.NavigatorUpdateRequestDto) *pb.NavigatorUpdateRequest {
+	return &pb.NavigatorUpdateRequest{
+		SessionId: r.SessionId,
 		Latitude:  r.Latitude,
 		Longitude: r.Longitude,
 	}

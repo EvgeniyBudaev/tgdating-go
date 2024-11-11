@@ -279,6 +279,24 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 	}
 }
 
+func (pm *ProfileControllerMapper) MapControllerToImageResponse(r *entity.ImageEntity) *pb.Image {
+	createdAtImageTimestamp := timestamppb.New(r.CreatedAt)
+	updatedAtImageTimestamp := timestamppb.New(r.UpdatedAt)
+	return &pb.Image{
+		Id:        r.Id,
+		SessionId: r.SessionId,
+		Name:      r.Name,
+		Url:       r.Url,
+		Size:      r.Size,
+		IsDeleted: r.IsDeleted,
+		IsBlocked: r.IsBlocked,
+		IsPrimary: r.IsPrimary,
+		IsPrivate: r.IsPrivate,
+		CreatedAt: createdAtImageTimestamp,
+		UpdatedAt: updatedAtImageTimestamp,
+	}
+}
+
 func (pm *ProfileControllerMapper) MapControllerToFilterResponse(
 	r *response.FilterResponseDto) *pb.FilterGetResponse {
 	return &pb.FilterGetResponse{
@@ -290,5 +308,86 @@ func (pm *ProfileControllerMapper) MapControllerToFilterResponse(
 		Distance:     r.Distance,
 		Page:         r.Page,
 		Size:         r.Size,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToFilterUpdateResponse(
+	r *response.FilterResponseDto) *pb.FilterUpdateResponse {
+	return &pb.FilterUpdateResponse{
+		SessionId:    r.SessionId,
+		SearchGender: r.SearchGender,
+		LookingFor:   r.LookingFor,
+		AgeFrom:      r.AgeFrom,
+		AgeTo:        r.AgeTo,
+		Distance:     r.Distance,
+		Page:         r.Page,
+		Size:         r.Size,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToBlockAddResponse(r *entity.BlockEntity) *pb.BlockAddResponse {
+	createdAtTimestamp := timestamppb.New(r.CreatedAt)
+	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
+	return &pb.BlockAddResponse{
+		Id:                   r.Id,
+		SessionId:            r.SessionId,
+		BlockedUserSessionId: r.BlockedUserSessionId,
+		IsBlocked:            r.IsBlocked,
+		CreatedAt:            createdAtTimestamp,
+		UpdatedAt:            updatedAtTimestamp,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToLikeAddResponse(r *response.LikeResponseDto) *pb.LikeAddResponse {
+	createdAtTimestamp := timestamppb.New(r.CreatedAt)
+	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
+	return &pb.LikeAddResponse{
+		Id:             r.Id,
+		SessionId:      r.SessionId,
+		LikedSessionId: r.LikedSessionId,
+		IsLiked:        r.IsLiked,
+		CreatedAt:      createdAtTimestamp,
+		UpdatedAt:      updatedAtTimestamp,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToLikeUpdateResponse(
+	r *response.LikeResponseDto) *pb.LikeUpdateResponse {
+	createdAtTimestamp := timestamppb.New(r.CreatedAt)
+	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
+	return &pb.LikeUpdateResponse{
+		Id:             r.Id,
+		SessionId:      r.SessionId,
+		LikedSessionId: r.LikedSessionId,
+		IsLiked:        r.IsLiked,
+		CreatedAt:      createdAtTimestamp,
+		UpdatedAt:      updatedAtTimestamp,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToComplaintAddResponse(
+	r *entity.ComplaintEntity) *pb.ComplaintAddResponse {
+	createdAtTimestamp := timestamppb.New(r.CreatedAt)
+	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
+	return &pb.ComplaintAddResponse{
+		Id:                r.Id,
+		SessionId:         r.SessionId,
+		CriminalSessionId: r.CriminalSessionId,
+		Reason:            r.Reason,
+		IsDeleted:         r.IsDeleted,
+		CreatedAt:         createdAtTimestamp,
+		UpdatedAt:         updatedAtTimestamp,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToUpdateCoordinatesResponse(
+	r *response.NavigatorResponseDto) *pb.NavigatorUpdateResponse {
+	location := &pb.Point{
+		Latitude:  r.Location.Latitude,
+		Longitude: r.Location.Longitude,
+	}
+	return &pb.NavigatorUpdateResponse{
+		SessionId: r.SessionId,
+		Location:  location,
 	}
 }

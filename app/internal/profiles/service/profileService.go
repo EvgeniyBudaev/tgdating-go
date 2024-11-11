@@ -667,10 +667,10 @@ func (s *ProfileService) AddTelegram(
 	return s.telegramRepository.Add(ctx, telegramRequest)
 }
 
-func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error) {
+func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*entity.BlockEntity, error) {
 	blockMapper := &mapper.BlockMapper{}
 	blockRequest := blockMapper.MapToAddRequest(pr)
-	prForTwoUser := &request.BlockRequestDto{
+	prForTwoUser := &request.BlockAddRequestDto{
 		SessionId:            pr.BlockedUserSessionId,
 		BlockedUserSessionId: pr.SessionId,
 	}

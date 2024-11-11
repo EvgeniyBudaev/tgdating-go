@@ -21,4 +21,9 @@ func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileCo
 	router := app.Group(prefix)
 	router.Post("/profiles", profileController.AddProfile())
 	router.Put("/profiles", profileController.UpdateProfile())
+	router.Put("/profiles/filters", profileController.UpdateFilter())
+	router.Post("/profiles/blocks", profileController.AddBlock())
+	router.Post("/profiles/likes", profileController.AddLike())
+	router.Put("/profiles/likes", profileController.UpdateLike())
+	router.Post("/profiles/complaints", profileController.AddComplaint())
 }

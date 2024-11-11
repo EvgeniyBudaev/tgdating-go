@@ -181,31 +181,32 @@ func (pc *ProfileController) GetImageBySessionId(
 	return fileResponse, nil
 }
 
-//func (pc *ProfileController) DeleteImage() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("DELETE /gateway/api/v1/profiles/images/:id")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		id := ctf.Params("id")
-//		idUint64, err := pc.convertToUint64("id", id)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		image, err := pc.service.GetImageById(ctx, idUint64)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		sessionId := image.SessionId
-//		if err := pc.validateAuthUser(ctf, sessionId); err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-//		}
-//		response, err := pc.service.DeleteImage(ctx, idUint64)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseCreated(ctf, response)
-//	}
-//}
+func (pc *ProfileController) GetImageById(ctx context.Context, in *pb.GetImageByIdRequest) (*pb.Image, error) {
+	pc.logger.Info("GET image by id")
+	imageById, err := pc.service.GetImageById(ctx, in.Id)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	imageResponse := profileMapper.MapControllerToImageResponse(imageById)
+	return imageResponse, nil
+}
+
+func (pc *ProfileController) DeleteImage(
+	ctx context.Context, in *pb.ImageDeleteRequest) (*pb.ImageDeleteResponse, error) {
+	pc.logger.Info("DELETE /gateway/api/v1/profiles/images/:id")
+	req := &request.ImageDeleteRequestDto{
+		Id: in.Id,
+	}
+	fileDeleted, err := pc.service.DeleteImage(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	fileResponse := &pb.ImageDeleteResponse{
+		Success: fileDeleted.Success,
+	}
+	return fileResponse, nil
+}
 
 func (pc *ProfileController) GetFilterBySessionId(
 	ctx context.Context, in *pb.FilterGetRequest) (*pb.FilterGetResponse, error) {
@@ -224,141 +225,100 @@ func (pc *ProfileController) GetFilterBySessionId(
 	return filterResponse, nil
 }
 
-//func (pc *ProfileController) UpdateFilter() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("PUT /gateway/api/v1/profiles/filters")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.FilterUpdateRequestDto{}
-//		if err := ctf.BodyParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("UpdateFilter", "BodyParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-//		}
-//		profileListResponse, err := pc.service.UpdateFilter(ctx, req)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseCreated(ctf, profileListResponse)
-//	}
-//}
-//
-//func (pc *ProfileController) AddBlock() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("POST /gateway/api/v1/profiles/blocks")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.BlockRequestDto{}
-//		if err := ctf.BodyParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("AddBlock", "BodyParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-//		}
-//		profileResponse, err := pc.service.AddBlock(ctx, req)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseCreated(ctf, profileResponse)
-//	}
-//}
-//
-//func (pc *ProfileController) AddLike() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("POST /gateway/api/v1/profiles/likes")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.LikeAddRequestDto{}
-//		if err := ctf.BodyParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("AddLike", "BodyParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-//		}
-//		locale := ctf.Get("Accept-Language")
-//		if locale == "" {
-//			locale = defaultLocale
-//		}
-//		profileResponse, err := pc.service.AddLike(ctx, req, locale)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseCreated(ctf, profileResponse)
-//	}
-//}
-//
-//func (pc *ProfileController) UpdateLike() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("PUT /gateway/api/v1/profiles/likes")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.LikeUpdateRequestDto{}
-//		if err := ctf.BodyParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("UpdateLike", "BodyParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-//		}
-//		profileResponse, err := pc.service.UpdateLike(ctx, req)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseCreated(ctf, profileResponse)
-//	}
-//}
-//
-//func (pc *ProfileController) AddComplaint() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("POST /gateway/api/v1/profiles/complaints")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.ComplaintAddRequestDto{}
-//		if err := ctf.BodyParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("AddComplaint", "BodyParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-//		}
-//		profileResponse, err := pc.service.AddComplaint(ctx, req)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseCreated(ctf, profileResponse)
-//	}
-//}
-//
-//func (pc *ProfileController) UpdateCoordinates() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("PUT /gateway/api/v1/profiles/navigators")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.NavigatorUpdateRequestDto{}
-//		if err := ctf.BodyParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("UpdateCoordinates", "BodyParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-//		}
-//		profileResponse, err := pc.service.UpdateCoordinates(ctx, req)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseCreated(ctf, profileResponse)
-//	}
-//}
+func (pc *ProfileController) UpdateFilter(
+	ctx context.Context, in *pb.FilterUpdateRequest) (*pb.FilterUpdateResponse, error) {
+	pc.logger.Info("PUT /gateway/api/v1/profiles/filters")
+	req := &request.FilterUpdateRequestDto{
+		SessionId:    in.SessionId,
+		SearchGender: in.SearchGender,
+		AgeFrom:      in.AgeFrom,
+		AgeTo:        in.AgeTo,
+	}
+	filterUpdated, err := pc.service.UpdateFilter(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	filterResponse := profileMapper.MapControllerToFilterUpdateResponse(filterUpdated)
+	return filterResponse, nil
+}
+
+func (pc *ProfileController) AddBlock(ctx context.Context, in *pb.BlockAddRequest) (*pb.BlockAddResponse, error) {
+	pc.logger.Info("POST /gateway/api/v1/profiles/blocks")
+	req := &request.BlockAddRequestDto{
+		SessionId:            in.SessionId,
+		BlockedUserSessionId: in.BlockedUserSessionId,
+	}
+	block, err := pc.service.AddBlock(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	blockResponse := profileMapper.MapControllerToBlockAddResponse(block)
+	return blockResponse, nil
+}
+
+func (pc *ProfileController) AddLike(ctx context.Context, in *pb.LikeAddRequest) (*pb.LikeAddResponse, error) {
+	pc.logger.Info("POST /gateway/api/v1/profiles/likes")
+	req := &request.LikeAddRequestDto{
+		SessionId:      in.SessionId,
+		LikedSessionId: in.LikedSessionId,
+	}
+	locale := in.Locale
+	likeAdded, err := pc.service.AddLike(ctx, req, locale)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	likeResponse := profileMapper.MapControllerToLikeAddResponse(likeAdded)
+	return likeResponse, nil
+}
+
+func (pc *ProfileController) UpdateLike(ctx context.Context, in *pb.LikeUpdateRequest) (*pb.LikeUpdateResponse, error) {
+	pc.logger.Info("PUT /gateway/api/v1/profiles/likes")
+	req := &request.LikeUpdateRequestDto{}
+	likeUpdated, err := pc.service.UpdateLike(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	likeResponse := profileMapper.MapControllerToLikeUpdateResponse(likeUpdated)
+	return likeResponse, nil
+}
+
+func (pc *ProfileController) AddComplaint(
+	ctx context.Context, in *pb.ComplaintAddRequest) (*pb.ComplaintAddResponse, error) {
+	pc.logger.Info("POST /gateway/api/v1/profiles/complaints")
+	req := &request.ComplaintAddRequestDto{
+		SessionId:         in.SessionId,
+		CriminalSessionId: in.CriminalSessionId,
+		Reason:            in.Reason,
+	}
+	complaintAdded, err := pc.service.AddComplaint(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	complaintResponse := profileMapper.MapControllerToComplaintAddResponse(complaintAdded)
+	return complaintResponse, nil
+}
+
+func (pc *ProfileController) UpdateCoordinates(
+	ctx context.Context, in *pb.NavigatorUpdateRequest) (*pb.NavigatorUpdateResponse, error) {
+	pc.logger.Info("PUT /gateway/api/v1/profiles/navigators")
+	req := &request.NavigatorUpdateRequestDto{
+		SessionId: in.SessionId,
+		Latitude:  in.Latitude,
+		Longitude: in.Longitude,
+	}
+	updatedCoordinates, err := pc.service.UpdateCoordinates(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	updatedCoordinatesResponse := profileMapper.MapControllerToUpdateCoordinatesResponse(updatedCoordinates)
+	return updatedCoordinatesResponse, nil
+}
 
 func (pc *ProfileController) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,

@@ -243,6 +243,18 @@ message ImageBySessionIdResponse {
   bytes file = 1; // файл
 }
 
+message GetImageByIdRequest {
+  uint64 id = 1; // id изображения
+}
+
+message ImageDeleteRequest {
+  uint64 id = 1; // id файла
+}
+
+message ImageDeleteResponse {
+  bool success = 1; // успешно удаление файла да/нет
+}
+
 message FilterGetRequest {
   string sessionId = 1; // id сессии
   optional double latitude = 2; // широта
@@ -260,6 +272,95 @@ message FilterGetResponse {
   uint64 size = 8; // количество элементов на странице
 }
 
+message FilterUpdateRequest {
+  string sessionId = 1; // id сессии
+  string searchGender = 2; // поиск по половому признаку
+  uint64 ageFrom = 3; // возраст от
+  uint64 ageTo = 4; // возраст до
+}
+
+message FilterUpdateResponse {
+  string sessionId = 1; // id сессии
+  string searchGender = 2; // поиск по половому признаку
+  string lookingFor = 3; // цель поиска
+  uint64 ageFrom = 4; // возраст от
+  uint64 ageTo = 5; // возраст до
+  double distance = 6; // дистанция
+  uint64 page = 7; // номер текущей страницы
+  uint64 size = 8; // количество элементов на странице
+}
+
+message BlockAddRequest {
+  string sessionId = 1; // id сессии
+  string blockedUserSessionId = 2; // id сессии того, кого блокируем
+}
+
+message BlockAddResponse {
+  uint64 id = 1; // id блока
+  string sessionId = 2; // id сессии
+  string blockedUserSessionId = 3; // id сессии того, кого заблокировали
+  bool isBlocked = 4; // заблокирован пользователь да/нет
+  google.protobuf.Timestamp createdAt = 5; // дата создания
+  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+}
+
+message LikeAddRequest {
+  string sessionId = 1; // id сессии
+  string likedSessionId = 2; // id сессии того, кто понравился
+  string locale = 3; // локаль пользователя
+}
+
+message LikeAddResponse {
+  uint64 id = 1; // id блока
+  string sessionId = 2; // id сессии
+  string likedSessionId = 3; // id сессии того, кто понравился
+  bool isLiked = 4; // есть лайк да/нет
+  google.protobuf.Timestamp createdAt = 5; // дата создания
+  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+}
+
+message LikeUpdateRequest {
+  uint64 id = 1; // id блока
+  string sessionId = 2; // id сессии
+  bool isLiked = 3; // есть лайк да/нет
+}
+
+message LikeUpdateResponse {
+  uint64 id = 1; // id блока
+  string sessionId = 2; // id сессии
+  string likedSessionId = 3; // id сессии того, кто понравился
+  bool isLiked = 4; // есть лайк да/нет
+  google.protobuf.Timestamp createdAt = 5; // дата создания
+  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+}
+
+message ComplaintAddRequest {
+  string sessionId = 1; // id сессии
+  string criminalSessionId = 2; // id сессии мошенника
+  string reason = 3; // причина жалобы
+}
+
+message ComplaintAddResponse {
+  uint64 id = 1; // id блока
+  string sessionId = 2; // id сессии
+  string criminalSessionId = 3; // id сессии мошенника
+  string reason = 4; // причина жалобы
+  bool isDeleted = 5; // удалена жалоба да/нет
+  google.protobuf.Timestamp createdAt = 6; // дата создания
+  google.protobuf.Timestamp updatedAt = 7; // дата обновления
+}
+
+message NavigatorUpdateRequest {
+  string sessionId = 1; // id сессии
+  double latitude = 2; // широта
+  double longitude = 3; // долгота
+}
+
+message NavigatorUpdateResponse {
+  string sessionId = 1; // id сессии
+  Point location = 2; // объект с координатами
+}
+
 /*
 * Описание сервиса Profile
 */
@@ -271,5 +372,13 @@ service Profile {
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю
   rpc GetProfileList(ProfileGetListRequest) returns (ProfileListResponse); // получение списка профилей
   rpc GetImageBySessionId(GetImageBySessionIdRequest) returns (ImageBySessionIdResponse); // получение файла
+  rpc GetImageById(GetImageByIdRequest) returns (Image); // получение изображения по id
+  rpc DeleteImage(ImageDeleteRequest) returns (ImageDeleteResponse); // удаление файла
   rpc GetFilterBySessionId(FilterGetRequest) returns (FilterGetResponse); // получение данных фильтра
+  rpc UpdateFilter(FilterUpdateRequest) returns (FilterUpdateResponse); // получение данных фильтра
+  rpc AddBlock(BlockAddRequest) returns (BlockAddResponse); // добавить пользователя в блок лист
+  rpc AddLike(LikeAddRequest) returns (LikeAddResponse); // поставить лайк
+  rpc UpdateLike(LikeUpdateRequest) returns (LikeUpdateResponse); // обновить лайк
+  rpc AddComplaint(ComplaintAddRequest) returns (ComplaintAddResponse); // добавить жалобу
+  rpc UpdateCoordinates(NavigatorUpdateRequest) returns (NavigatorUpdateResponse); // обновление координат
 }
