@@ -115,6 +115,27 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) DeleteProfile() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("DELETE /gateway/api/v1/profiles")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.ProfileDeleteRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("DeleteProfile", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileMapper := &mapper.ProfileMapper{}
+		profileRequest := profileMapper.MapToDeleteRequest(req)
+		profileResponse, err := pc.proto.DeleteProfile(ctx, profileRequest)
+		if err != nil {
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
 func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("GET /gateway/api/v1/profiles/session/:sessionId")

@@ -78,24 +78,20 @@ func (pc *ProfileController) UpdateProfile(
 	return profileResponse, nil
 }
 
-//func (pc *ProfileController) DeleteProfile() fiber.Handler {
-//	return func(ctf *fiber.Ctx) error {
-//		pc.logger.Info("DELETE /gateway/api/v1/profiles")
-//		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-//		defer cancel()
-//		req := &request.ProfileDeleteRequestDto{}
-//		if err := ctf.BodyParser(req); err != nil {
-//			errorMessage := pc.getErrorMessage("DeleteProfile", "BodyParser")
-//			pc.logger.Debug(errorMessage, zap.Error(err))
-//			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-//		}
-//		profileResponse, err := pc.service.DeleteProfile(ctx, req)
-//		if err != nil {
-//			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-//		}
-//		return v1.ResponseCreated(ctf, profileResponse)
-//	}
-//}
+func (pc *ProfileController) DeleteProfile(
+	ctx context.Context, in *pb.ProfileDeleteRequest) (*pb.ProfileDeleteResponse, error) {
+	pc.logger.Info("DELETE /gateway/api/v1/profiles")
+	req := &request.ProfileDeleteRequestDto{
+		SessionId: in.SessionId,
+	}
+	profileDeleted, err := pc.service.DeleteProfile(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ProfileDeleteResponse{
+		Success: profileDeleted.Success,
+	}, nil
+}
 
 func (pc *ProfileController) GetProfileBySessionId(
 	ctx context.Context, in *pb.ProfileGetBySessionIdRequest) (*pb.ProfileBySessionIdResponse, error) {

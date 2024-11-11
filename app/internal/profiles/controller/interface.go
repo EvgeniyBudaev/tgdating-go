@@ -24,7 +24,7 @@ type ProfileService interface {
 	GetFilterBySessionId(
 		ctx context.Context, sessionId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error)
 	UpdateFilter(ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error)
-	AddBlock(ctx context.Context, pr *request.BlockRequestDto) (*entity.BlockEntity, error)
+	AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*entity.BlockEntity, error)
 	AddLike(ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error)
 	UpdateLike(ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.LikeResponseDto, error)
 	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error)

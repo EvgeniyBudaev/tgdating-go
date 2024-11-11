@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Profile_AddProfile_FullMethodName            = "/protobuf.Profile/AddProfile"
 	Profile_UpdateProfile_FullMethodName         = "/protobuf.Profile/UpdateProfile"
+	Profile_DeleteProfile_FullMethodName         = "/protobuf.Profile/DeleteProfile"
 	Profile_GetProfileBySessionId_FullMethodName = "/protobuf.Profile/GetProfileBySessionId"
 	Profile_GetProfileDetail_FullMethodName      = "/protobuf.Profile/GetProfileDetail"
 	Profile_GetProfileShortInfo_FullMethodName   = "/protobuf.Profile/GetProfileShortInfo"
@@ -45,6 +46,7 @@ const (
 type ProfileClient interface {
 	AddProfile(ctx context.Context, in *ProfileAddRequest, opts ...grpc.CallOption) (*ProfileAddResponse, error)
 	UpdateProfile(ctx context.Context, in *ProfileUpdateRequest, opts ...grpc.CallOption) (*ProfileBySessionIdResponse, error)
+	DeleteProfile(ctx context.Context, in *ProfileDeleteRequest, opts ...grpc.CallOption) (*ProfileDeleteResponse, error)
 	GetProfileBySessionId(ctx context.Context, in *ProfileGetBySessionIdRequest, opts ...grpc.CallOption) (*ProfileBySessionIdResponse, error)
 	GetProfileDetail(ctx context.Context, in *ProfileGetDetailRequest, opts ...grpc.CallOption) (*ProfileDetailResponse, error)
 	GetProfileShortInfo(ctx context.Context, in *ProfileGetShortInfoRequest, opts ...grpc.CallOption) (*ProfileShortInfoResponse, error)
@@ -83,6 +85,16 @@ func (c *profileClient) UpdateProfile(ctx context.Context, in *ProfileUpdateRequ
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ProfileBySessionIdResponse)
 	err := c.cc.Invoke(ctx, Profile_UpdateProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *profileClient) DeleteProfile(ctx context.Context, in *ProfileDeleteRequest, opts ...grpc.CallOption) (*ProfileDeleteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ProfileDeleteResponse)
+	err := c.cc.Invoke(ctx, Profile_DeleteProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -237,6 +249,7 @@ func (c *profileClient) UpdateCoordinates(ctx context.Context, in *NavigatorUpda
 type ProfileServer interface {
 	AddProfile(context.Context, *ProfileAddRequest) (*ProfileAddResponse, error)
 	UpdateProfile(context.Context, *ProfileUpdateRequest) (*ProfileBySessionIdResponse, error)
+	DeleteProfile(context.Context, *ProfileDeleteRequest) (*ProfileDeleteResponse, error)
 	GetProfileBySessionId(context.Context, *ProfileGetBySessionIdRequest) (*ProfileBySessionIdResponse, error)
 	GetProfileDetail(context.Context, *ProfileGetDetailRequest) (*ProfileDetailResponse, error)
 	GetProfileShortInfo(context.Context, *ProfileGetShortInfoRequest) (*ProfileShortInfoResponse, error)
@@ -266,6 +279,9 @@ func (UnimplementedProfileServer) AddProfile(context.Context, *ProfileAddRequest
 }
 func (UnimplementedProfileServer) UpdateProfile(context.Context, *ProfileUpdateRequest) (*ProfileBySessionIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
+}
+func (UnimplementedProfileServer) DeleteProfile(context.Context, *ProfileDeleteRequest) (*ProfileDeleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteProfile not implemented")
 }
 func (UnimplementedProfileServer) GetProfileBySessionId(context.Context, *ProfileGetBySessionIdRequest) (*ProfileBySessionIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfileBySessionId not implemented")
@@ -362,6 +378,24 @@ func _Profile_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ProfileServer).UpdateProfile(ctx, req.(*ProfileUpdateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Profile_DeleteProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileDeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).DeleteProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Profile_DeleteProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).DeleteProfile(ctx, req.(*ProfileDeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -632,6 +666,10 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateProfile",
 			Handler:    _Profile_UpdateProfile_Handler,
+		},
+		{
+			MethodName: "DeleteProfile",
+			Handler:    _Profile_DeleteProfile_Handler,
 		},
 		{
 			MethodName: "GetProfileBySessionId",

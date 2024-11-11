@@ -11,7 +11,7 @@ type BlockMapper struct {
 }
 
 func (pm *BlockMapper) MapToAddRequest(
-	pr *request.BlockRequestDto) *request.BlockAddRequestRepositoryDto {
+	pr *request.BlockAddRequestDto) *request.BlockAddRequestRepositoryDto {
 	return &request.BlockAddRequestRepositoryDto{
 		SessionId:            pr.SessionId,
 		BlockedUserSessionId: pr.BlockedUserSessionId,

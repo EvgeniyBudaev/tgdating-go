@@ -135,6 +135,14 @@ message ProfileUpdateRequest {
   repeated FileMetadata files = 26;
 }
 
+message ProfileDeleteRequest {
+  string sessionId = 1; // id сессии
+}
+
+message ProfileDeleteResponse {
+  bool success = 1; // успешно удалено да/нет
+}
+
 message ProfileGetBySessionIdRequest {
   string sessionId = 1; // id сессии
   optional double latitude = 2; // широта
@@ -367,6 +375,7 @@ message NavigatorUpdateResponse {
 service Profile {
   rpc AddProfile(ProfileAddRequest) returns (ProfileAddResponse); // добавление нового пользователя
   rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileBySessionIdResponse); // обновление данных пользователя
+  rpc DeleteProfile(ProfileDeleteRequest) returns (ProfileDeleteResponse); // удаление пользователя
   rpc GetProfileBySessionId(ProfileGetBySessionIdRequest) returns (ProfileBySessionIdResponse); // получение профиля по id сессии
   rpc GetProfileDetail(ProfileGetDetailRequest) returns (ProfileDetailResponse); // получение карточки профиля
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю

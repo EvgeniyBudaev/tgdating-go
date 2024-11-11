@@ -74,6 +74,12 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 	}
 }
 
+func (pm *ProfileMapper) MapToDeleteRequest(r *request.ProfileDeleteRequestDto) *pb.ProfileDeleteRequest {
+	return &pb.ProfileDeleteRequest{
+		SessionId: r.SessionId,
+	}
+}
+
 func (pm *ProfileMapper) MapToGetBySessionIdRequest(
 	r *request.ProfileGetBySessionIdRequestDto, sessionId string) *pb.ProfileGetBySessionIdRequest {
 	return &pb.ProfileGetBySessionIdRequest{
