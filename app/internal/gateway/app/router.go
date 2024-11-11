@@ -21,7 +21,10 @@ func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileCo
 	router := app.Group(prefix)
 	router.Post("/profiles", profileController.AddProfile())
 	router.Put("/profiles", profileController.UpdateProfile())
+	//router.Delete("/profiles", profileController.DeleteProfile()) // not used
+	router.Delete("/profiles/images/:id", profileController.DeleteImage())
 	router.Put("/profiles/filters", profileController.UpdateFilter())
+	router.Put("/profiles/navigators", profileController.UpdateCoordinates())
 	router.Post("/profiles/blocks", profileController.AddBlock())
 	router.Post("/profiles/likes", profileController.AddLike())
 	router.Put("/profiles/likes", profileController.UpdateLike())
