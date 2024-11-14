@@ -350,6 +350,9 @@ func (pm *ProfileMapper) MapToLikeAddRequest(r *request.LikeAddRequestDto, local
 }
 
 func (pm *ProfileMapper) MapToLikeAddResponse(r *pb.LikeAddResponse) *response.LikeResponseDto {
+	if r == nil {
+		return nil
+	}
 	return &response.LikeResponseDto{
 		Id:             r.Id,
 		SessionId:      r.SessionId,

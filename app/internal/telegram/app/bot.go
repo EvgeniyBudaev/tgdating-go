@@ -1,11 +1,13 @@
-// Package app - module for working with telegram bot
+// Package app - module for working with telegram
 package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/telegram/entity"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	"time"
 )
@@ -16,7 +18,7 @@ const (
 	EmojiSmile          = "\U0001F642"
 	EmojiSunglasses     = "\U0001F60E"
 	UpdateConfigTimeout = 60
-	errorFilePathBot    = "internal/app/gRPC.go"
+	errorFilePathBot    = "internal/telegram/app/bot.go"
 )
 
 // bot - telegram bot
@@ -45,8 +47,8 @@ func printIntro(chatId int64) {
 		" чтобы перейти на главную страницу приложения")
 }
 
-// StartBot - launches the bot
-func (app *App) StartBot(ctx context.Context, msgChan <-chan *entity.HubContent) error {
+// StartBot - launches the telegram
+func (app *App) StartBot(ctx context.Context) error {
 	var err error
 	// Telegram Bot
 	if bot, err = tgbotapi.NewBotAPI(app.config.TelegramBotToken); err != nil {
@@ -58,28 +60,47 @@ func (app *App) StartBot(ctx context.Context, msgChan <-chan *entity.HubContent)
 	updateConfig.Timeout = UpdateConfigTimeout
 	updates := bot.GetUpdatesChan(updateConfig) // Получаем все обновления от пользователя
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case c, ok := <-msgChan:
-				if !ok {
-					return
-				}
-				msg := tgbotapi.NewPhoto(int64(c.UserId), tgbotapi.FileURL(c.UserImageUrl))
-				msg.ParseMode = "HTML"
-				msg.Caption = fmt.Sprintf("%s %s <a href=\"tg://resolve?domain=%s\">@%s</a>",
-					c.Message, EmojiPointRight, c.Username, c.Username)
-				_, err = bot.Send(msg)
-				if err != nil {
-					errorMessage := getErrorMessage("StartBot", "bot.Send",
-						errorFilePathBot)
-					app.Logger.Debug(errorMessage, zap.Error(err))
-				}
-			}
+	var brokers = []string{"127.0.0.1:9095", "127.0.0.1:9096", "127.0.0.1:9097"}
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers:  brokers,
+		GroupID:  "consumer-group-id",
+		Topic:    "like_topic",
+		MaxBytes: 16384, // 16kB
+	})
+	var hc *entity.HubContent
+
+	for {
+		c, err := r.ReadMessage(context.Background())
+		if err != nil {
+			errorMessage := getErrorMessage("StartBot", "r.ReadMessage",
+				errorFilePathBot)
+			app.Logger.Debug(errorMessage, zap.Error(err))
+			break
 		}
-	}()
+		err = json.Unmarshal(c.Value, &hc)
+		if err != nil {
+			errorMessage := getErrorMessage("StartBot", "json.Unmarshal",
+				errorFilePathBot)
+			app.Logger.Error(errorMessage, zap.Error(err))
+			continue
+		}
+		msg := tgbotapi.NewPhoto(int64(hc.UserId), tgbotapi.FileURL(hc.UserImageUrl))
+		msg.ParseMode = "HTML"
+		msg.Caption = fmt.Sprintf("%s %s <a href=\"tg://resolve?domain=%s\">@%s</a>",
+			hc.Message, EmojiPointRight, hc.Username, hc.Username)
+		_, err = bot.Send(msg)
+		if err != nil {
+			errorMessage := getErrorMessage("StartBot", "telegram.Send",
+				errorFilePathBot)
+			app.Logger.Debug(errorMessage, zap.Error(err))
+		}
+	}
+
+	if err := r.Close(); err != nil {
+		errorMessage := getErrorMessage("StartBot", "r.Close",
+			errorFilePathBot)
+		app.Logger.Debug(errorMessage, zap.Error(err))
+	}
 
 	for update := range updates {
 		chatId := update.Message.Chat.ID
@@ -94,7 +115,7 @@ func (app *App) StartBot(ctx context.Context, msgChan <-chan *entity.HubContent)
 		//	log.Printf("[%s] %s", update.Message.From.UserName, userText)
 		//	msg := tgbotapi.NewMessage(chatId, userText)
 		//	msg.ReplyToMessageID = update.Message.MessageID
-		//	bot.Send(msg)
+		//	telegram.Send(msg)
 		//}
 	}
 	return nil

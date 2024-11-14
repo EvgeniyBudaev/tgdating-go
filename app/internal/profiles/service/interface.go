@@ -15,8 +15,6 @@ type ProfileRepository interface {
 	FindBySessionId(ctx context.Context, sessionId string) (*entity.ProfileEntity, error)
 	SelectListBySessionId(ctx context.Context,
 		pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error)
-	SelectListBySessionIdWithoutNavigation(ctx context.Context,
-		pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error)
 	UpdateLastOnline(ctx context.Context, p *request.ProfileUpdateLastOnlineRequestRepositoryDto) error
 }
 

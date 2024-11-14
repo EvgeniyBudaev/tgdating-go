@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/config"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
@@ -12,9 +13,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/h2non/bimg"
 	"github.com/pkg/errors"
+	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -27,7 +30,7 @@ const (
 type ProfileService struct {
 	logger              logger.Logger
 	config              *config.Config
-	hub                 *entity.Hub
+	kafkaWriter         *kafka.Writer
 	s3                  *config.S3
 	profileRepository   ProfileRepository
 	navigatorRepository NavigatorRepository
@@ -42,7 +45,7 @@ type ProfileService struct {
 func NewProfileService(
 	l logger.Logger,
 	cfg *config.Config,
-	h *entity.Hub,
+	kw *kafka.Writer,
 	s3 *config.S3,
 	pr ProfileRepository,
 	nr NavigatorRepository,
@@ -52,7 +55,7 @@ func NewProfileService(
 	return &ProfileService{
 		logger:              l,
 		config:              cfg,
-		hub:                 h,
+		kafkaWriter:         kw,
 		s3:                  s3,
 		profileRepository:   pr,
 		navigatorRepository: nr,
@@ -362,18 +365,9 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToListRequest(filterEntity)
 	var paginationProfileEntityList *response.ProfileListResponseRepositoryDto
-	navigatorEntity, _ := s.navigatorRepository.FindBySessionId(ctx, sessionId)
-	if navigatorEntity != nil {
-		paginationProfileEntityList, err = s.profileRepository.SelectListBySessionId(ctx, profileRequest)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		paginationProfileEntityList, err = s.profileRepository.SelectListBySessionIdWithoutNavigation(ctx,
-			profileRequest)
-		if err != nil {
-			return nil, err
-		}
+	paginationProfileEntityList, err = s.profileRepository.SelectListBySessionId(ctx, profileRequest)
+	if err != nil {
+		return nil, err
 	}
 	profileContentResponse := make([]*response.ProfileListItemResponseDto, 0)
 	if len(paginationProfileEntityList.Content) > 0 {
@@ -700,15 +694,30 @@ func (s *ProfileService) AddLike(
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		s.hub.Broadcast <- &entity.HubContent{
-			Type:         "like",
-			Message:      s.GetMessageLike(locale),
-			UserId:       likedTelegramProfile.UserId,
-			UserImageUrl: lastImageProfile.Url,
-			Username:     telegramProfile.UserName,
-		}
-	}()
+	hc := &entity.HubContent{
+		Type:         "like",
+		Message:      s.GetMessageLike(locale),
+		UserId:       likedTelegramProfile.UserId,
+		UserImageUrl: lastImageProfile.Url,
+		Username:     telegramProfile.UserName,
+	}
+	hubContentJson, err := json.Marshal(hc)
+	if err != nil {
+		return nil, err
+	}
+	err = s.kafkaWriter.WriteMessages(context.Background(),
+		kafka.Message{
+			Key:   []byte(strconv.FormatUint(likedTelegramProfile.UserId, 10)),
+			Value: hubContentJson,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.kafkaWriter.Close(); err != nil {
+		return nil, err
+	}
+
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToAddRequest(pr)
 	likeAdded, err := s.likeRepository.Add(ctx, likeRequest)

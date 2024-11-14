@@ -30,7 +30,7 @@ func Load(l logger.Logger) (*Config, error) {
 	var cfg Config
 	err := envconfig.Process("TGDATING", &cfg)
 	if err != nil {
-		l.Debug("error func Load, method Process by path internal/config/config.go", zap.Error(err))
+		l.Debug("error func Load, method Process by path internal/profiles/config/config.go", zap.Error(err))
 		return nil, err
 	}
 	return &cfg, nil

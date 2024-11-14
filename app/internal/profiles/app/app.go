@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/config"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"os"
@@ -21,30 +21,14 @@ const (
 	errorFilePathApp = "internal/profiles/app/app.go"
 )
 
-// ProfileServer поддерживает все необходимые методы сервера.
-//type ProfileServer struct {
-//	// нужно встраивать тип pb.Unimplemented<TypeName>
-//	// для совместимости с будущими версиями
-//	pb.UnimplementedProfileServer
-//}
-
-//func NewProfileServer() *ProfileServer {
-//	return &ProfileServer{}
-//}
-
-// Add реализует интерфейс добавления пользователя.
-//func (s *ProfileServer) Add(ctx context.Context, in *pb.ProfileAddRequest) (*pb.ProfileAddResponse, error) {
-//	fmt.Println("RESULT sessionId: ", in.SessionId)
-//	return &pb.ProfileAddResponse{SessionId: in.SessionId}, nil
-//}
-
 // App - application structure
 type App struct {
-	Logger     logger.Logger
-	config     *config.Config
-	db         *Database
-	fiber      *fiber.App
-	gRPCServer *grpc.Server
+	config      *config.Config
+	db          *Database
+	fiber       *fiber.App
+	gRPCServer  *grpc.Server
+	kafkaWriter *kafka.Writer
+	Logger      logger.Logger
 }
 
 // New - create new application
@@ -109,6 +93,22 @@ func New() *App {
 	// gRPC-сервер
 	s := grpc.NewServer()
 
+	// Kafka
+	w := &kafka.Writer{
+		Addr:         kafka.TCP("127.0.0.1:9095", "27.0.0.1:9096", "127.0.0.1:9097"),
+		Topic:        "like_topic",
+		Balancer:     &kafka.LeastBytes{},
+		BatchSize:    1048576,
+		BatchTimeout: 1000,
+		Compression:  kafka.Gzip,
+		RequiredAcks: kafka.RequireOne,
+	}
+	//if err := w.Close(); err != nil {
+	//	errorMessage := getErrorMessage("New", "w.Close",
+	//		errorFilePathApp)
+	//	defaultLogger.Fatal(errorMessage, zap.Error(err))
+	//}
+
 	// Fiber
 	f := fiber.New(fiber.Config{
 		ReadBufferSize: 256 << 8,
@@ -123,53 +123,27 @@ func New() *App {
 	}))
 
 	return &App{
-		config:     cfg,
-		db:         database,
-		Logger:     loggerLevel,
-		fiber:      f,
-		gRPCServer: s,
+		config:      cfg,
+		db:          database,
+		fiber:       f,
+		gRPCServer:  s,
+		kafkaWriter: w,
+		Logger:      loggerLevel,
 	}
 }
 
 // Run launches the application
 func (app *App) Run(ctx context.Context) {
-	// Hub for telegram bot
-	hub := entity.NewHub()
-
-	//msgChan := make(chan *entity.HubContent, 1) // msgChan - канал для передачи сообщений
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		if err := app.StartServer(ctx, hub); err != nil {
+		if err := app.StartServer(ctx); err != nil {
 			errorMessage := getErrorMessage("Run", "StartServer",
 				errorFilePathApp)
 			app.Logger.Fatal(errorMessage, zap.Error(err))
 		}
 		wg.Done()
 	}()
-	//wg.Add(1)
-	//go func() {
-	//	if err := app.StartBot(ctx, msgChan); err != nil {
-	//		errorMessage := getErrorMessage("Run", "StartBot", errorFilePathApp)
-	//		app.Logger.Fatal(errorMessage, zap.Error(err))
-	//	}
-	//	wg.Done()
-	//}()
-	//wg.Add(1)
-	//go func() {
-	//	for {
-	//		select {
-	//		case <-ctx.Done():
-	//			wg.Done()
-	//			return
-	//		case c, ok := <-hub.Broadcast:
-	//			if !ok {
-	//				return
-	//			}
-	//			msgChan <- c
-	//		}
-	//	}
-	//}()
 	wg.Wait()
 }
 

@@ -201,3 +201,9 @@ go get -u google.golang.org/protobuf
 Так как вы указали параметр paths=source_relative, сгенерированные файлы создадутся в поддиректории ./proto.
 Если бы указали параметр paths=import, то сгенерированные файлы создались бы в директории,
 указанной в директиве go_package, то есть ./demo/proto.
+
+kafka-go
+https://github.com/segmentio/kafka-go
+```
+go get github.com/segmentio/kafka-go
+```
