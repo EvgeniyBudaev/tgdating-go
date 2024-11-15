@@ -13,12 +13,14 @@ import (
 )
 
 const (
-	errorFilePath = "internal/repository/psql/profileRepository.go"
+	errorFilePath          = "internal/repository/psql/profileRepository.go"
+	ErrNotRowsFoundMessage = "profiles not found"
+	ErrNotRowFoundMessage  = "profile not found"
 )
 
 var (
-	ErrNotRowsFound = errors.New("profiles not found")
-	ErrNotRowFound  = errors.New("profile not found")
+	ErrNotRowsFound = errors.New(ErrNotRowsFoundMessage)
+	ErrNotRowFound  = errors.New(ErrNotRowFoundMessage)
 )
 
 type ProfileRepository struct {

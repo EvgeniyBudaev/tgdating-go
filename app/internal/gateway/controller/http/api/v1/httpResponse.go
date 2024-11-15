@@ -5,22 +5,22 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func ResponseError(ctf *fiber.Ctx, err error, httpStatusCode int) error {
-	return ctf.Status(httpStatusCode).JSON(err.Error())
+func ResponseError(ctx *fiber.Ctx, err error, httpStatusCode int) error {
+	return ctx.Status(httpStatusCode).JSON(err.Error())
 }
 
-func ResponseFieldsError(ctf *fiber.Ctx, err *entity.ValidationErrorEntity) error {
-	return ctf.Status(fiber.StatusBadRequest).JSON(err)
+func ResponseFieldsError(ctx *fiber.Ctx, err *entity.ValidationErrorEntity) error {
+	return ctx.Status(fiber.StatusBadRequest).JSON(err)
 }
 
-func ResponseOk(ctf *fiber.Ctx, data interface{}) error {
-	return ctf.Status(fiber.StatusOK).JSON(data)
+func ResponseOk(ctx *fiber.Ctx, data interface{}) error {
+	return ctx.Status(fiber.StatusOK).JSON(data)
 }
 
-func ResponseCreated(ctf *fiber.Ctx, data interface{}) error {
-	return ctf.Status(fiber.StatusCreated).JSON(data)
+func ResponseCreated(ctx *fiber.Ctx, data interface{}) error {
+	return ctx.Status(fiber.StatusCreated).JSON(data)
 }
 
-func ResponseImage(ctf *fiber.Ctx, data []byte) error {
-	return ctf.Status(fiber.StatusOK).Send(data)
+func ResponseImage(ctx *fiber.Ctx, data []byte) error {
+	return ctx.Status(fiber.StatusOK).Send(data)
 }

@@ -9,7 +9,6 @@ import (
 type Config struct {
 	LoggerLevel      string `envconfig:"LOGGER_LEVEL"`
 	TelegramBotToken string `envconfig:"TELEGRAM_BOT_TOKEN"`
-	TelegramPort     string `envconfig:"TTELEGRAM_PORT"`
 }
 
 func Load(l logger.Logger) (*Config, error) {

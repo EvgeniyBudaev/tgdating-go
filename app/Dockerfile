@@ -12,7 +12,9 @@ RUN go mod download
 
 # build
 COPY . .
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/app ./cmd
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/app ./cmd/gateway
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/app ./cmd/profiles
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/app ./cmd/telegram
 
 FROM alpine:latest
 

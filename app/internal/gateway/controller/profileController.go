@@ -11,11 +11,12 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/logger"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/shared/enums"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/validation"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/repository/psql"
 	"github.com/gofiber/fiber/v2"
 	initdata "github.com/telegram-mini-apps/init-data-golang"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"io"
 	"net/http"
 	"strconv"
@@ -55,9 +56,9 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		//if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
-		//	return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		//}
+		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, locale)
 		if validateErr != nil {
 			return v1.ResponseFieldsError(ctf, validateErr)
@@ -152,8 +153,11 @@ func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 		profileRequest := profileMapper.MapToGetBySessionIdRequest(req, sessionId)
 		profileBySessionId, err := pc.proto.GetProfileBySessionId(ctx, profileRequest)
 		if err != nil {
-			if errors.Is(err, psql.ErrNotRowFound) {
-				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			if e, ok := status.FromError(err); ok {
+				if e.Code() == codes.NotFound {
+					return v1.ResponseError(ctf, err, http.StatusNotFound)
+				}
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
@@ -178,8 +182,11 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 		profileRequest := profileMapper.MapToGetDetailRequest(req, viewedSessionId)
 		profileDetail, err := pc.proto.GetProfileDetail(ctx, profileRequest)
 		if err != nil {
-			if errors.Is(err, psql.ErrNotRowFound) {
-				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			if e, ok := status.FromError(err); ok {
+				if e.Code() == codes.NotFound {
+					return v1.ResponseError(ctf, err, http.StatusNotFound)
+				}
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
@@ -204,8 +211,11 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 		profileRequest := profileMapper.MapToGetShortInfoRequest(req, sessionId)
 		profileShortInfo, err := pc.proto.GetProfileShortInfo(ctx, profileRequest)
 		if err != nil {
-			if errors.Is(err, psql.ErrNotRowFound) {
-				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			if e, ok := status.FromError(err); ok {
+				if e.Code() == codes.NotFound {
+					return v1.ResponseError(ctf, err, http.StatusNotFound)
+				}
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
@@ -228,8 +238,11 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 		profileRequest := profileMapper.MapToListRequest(req)
 		profileList, err := pc.proto.GetProfileList(ctx, profileRequest)
 		if err != nil {
-			if errors.Is(err, psql.ErrNotRowFound) {
-				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			if e, ok := status.FromError(err); ok {
+				if e.Code() == codes.NotFound {
+					return v1.ResponseError(ctf, err, http.StatusNotFound)
+				}
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
@@ -305,8 +318,11 @@ func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
 		filterRequest := profileMapper.MapToFilterRequest(req, sessionId)
 		filterResponse, err := pc.proto.GetFilterBySessionId(ctx, filterRequest)
 		if err != nil {
-			if errors.Is(err, psql.ErrNotRowFound) {
-				return v1.ResponseError(ctf, err, http.StatusNotFound)
+			if e, ok := status.FromError(err); ok {
+				if e.Code() == codes.NotFound {
+					return v1.ResponseError(ctf, err, http.StatusNotFound)
+				}
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}

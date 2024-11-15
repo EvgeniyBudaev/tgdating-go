@@ -10,7 +10,7 @@ type Config struct {
 	GatewayPort          string `envconfig:"GATEWAY_PORT"`
 	ProfilesPort         string `envconfig:"PROFILES_PORT"`
 	Domain               string `envconfig:"DOMAIN"`
-	LoggerLevel          string `envconfig:"AGGREGATION_LOGGER_LEVEL"`
+	LoggerLevel          string `envconfig:"LOGGER_LEVEL"`
 	DBHost               string `envconfig:"POSTGRES_HOST"`
 	DBPort               string `envconfig:"POSTGRES_PORT"`
 	DBUser               string `envconfig:"POSTGRES_USER"`

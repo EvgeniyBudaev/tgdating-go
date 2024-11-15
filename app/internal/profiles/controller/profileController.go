@@ -8,16 +8,16 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/repository/psql"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strconv"
-	"time"
 )
 
 const (
-	defaultLocale   = "ru"
-	errorFilePath   = "internal/profiles/controller/profileController.go"
-	timeoutDuration = 30 * time.Second
+	errorFilePath = "internal/profiles/controller/profileController.go"
 )
 
 type ProfileController struct {
@@ -103,6 +103,9 @@ func (pc *ProfileController) GetProfileBySessionId(
 	}
 	profileBySessionId, err := pc.service.GetProfileBySessionId(ctx, sessionId, req)
 	if err != nil {
+		if errors.Is(err, psql.ErrNotRowFound) {
+			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
+		}
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileControllerMapper{}
@@ -121,6 +124,9 @@ func (pc *ProfileController) GetProfileDetail(
 	viewedSessionId := in.ViewedSessionId
 	profileDetail, err := pc.service.GetProfileDetail(ctx, viewedSessionId, req)
 	if err != nil {
+		if errors.Is(err, psql.ErrNotRowFound) {
+			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
+		}
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileControllerMapper{}
@@ -138,6 +144,9 @@ func (pc *ProfileController) GetProfileShortInfo(
 	sessionId := in.SessionId
 	profileShortInfo, err := pc.service.GetProfileShortInfo(ctx, sessionId, req)
 	if err != nil {
+		if errors.Is(err, psql.ErrNotRowFound) {
+			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
+		}
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileControllerMapper{}
@@ -155,6 +164,12 @@ func (pc *ProfileController) GetProfileList(
 	}
 	profileList, err := pc.service.GetProfileList(ctx, req)
 	if err != nil {
+		if errors.Is(err, psql.ErrNotRowFound) {
+			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
+		}
+		if errors.Is(err, psql.ErrNotRowsFound) {
+			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowsFoundMessage)
+		}
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileControllerMapper{}
@@ -214,6 +229,9 @@ func (pc *ProfileController) GetFilterBySessionId(
 	sessionId := in.SessionId
 	profileFilter, err := pc.service.GetFilterBySessionId(ctx, sessionId, req)
 	if err != nil {
+		if errors.Is(err, psql.ErrNotRowFound) {
+			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
+		}
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileControllerMapper{}
