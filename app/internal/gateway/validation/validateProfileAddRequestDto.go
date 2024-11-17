@@ -18,7 +18,7 @@ var (
 	minAge           = uint64(18)
 	maxAge           = uint64(100)
 	maxCharacters    = 1000
-	maxDistance      = 1000
+	maxDistance      = 10000
 )
 
 func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequestDto,

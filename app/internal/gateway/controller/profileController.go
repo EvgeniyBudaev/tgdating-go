@@ -57,16 +57,23 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			errorMessage := pc.getErrorMessage("AddProfile", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, locale)
 		if validateErr != nil {
+			errorMessage := pc.getErrorMessage("AddProfile",
+				"ValidateProfileAddRequestDto")
+			pc.logger.Debug(errorMessage)
 			return v1.ResponseFieldsError(ctf, validateErr)
 		}
 		md := metadata.New(map[string]string{"Accept-Language": locale})
 		ctx = metadata.NewOutgoingContext(ctx, md)
 		fileList, err := pc.getFiles(ctf)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("AddProfile", "getFiles")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		profileMapper := &mapper.ProfileMapper{}
@@ -95,20 +102,29 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			errorMessage := pc.getErrorMessage("UpdateProfile", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		validateErr := validation.ValidateProfileEditRequestDto(ctf, req, locale)
 		if validateErr != nil {
+			errorMessage := pc.getErrorMessage("UpdateProfile",
+				"ValidateProfileEditRequestDto")
+			pc.logger.Debug(errorMessage)
 			return v1.ResponseFieldsError(ctf, validateErr)
 		}
 		fileList, err := pc.getFiles(ctf)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("UpdateProfile", "getFiles")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		profileMapper := &mapper.ProfileMapper{}
 		profileRequest := profileMapper.MapToUpdateRequest(req, fileList)
 		profileUpdated, err := pc.proto.UpdateProfile(ctx, profileRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("UpdateProfile", "proto.UpdateProfile")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		profileResponse := profileMapper.MapToBySessionIdResponse(profileUpdated)
@@ -131,6 +147,8 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 		profileRequest := profileMapper.MapToDeleteRequest(req)
 		profileResponse, err := pc.proto.DeleteProfile(ctx, profileRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("DeleteProfile", "proto.DeleteProfile")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, profileResponse)
@@ -153,6 +171,9 @@ func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 		profileRequest := profileMapper.MapToGetBySessionIdRequest(req, sessionId)
 		profileBySessionId, err := pc.proto.GetProfileBySessionId(ctx, profileRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileBySessionId",
+				"proto.GetProfileBySessionId")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			if e, ok := status.FromError(err); ok {
 				if e.Code() == codes.NotFound {
 					return v1.ResponseError(ctf, err, http.StatusNotFound)
@@ -182,6 +203,9 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 		profileRequest := profileMapper.MapToGetDetailRequest(req, viewedSessionId)
 		profileDetail, err := pc.proto.GetProfileDetail(ctx, profileRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileDetail",
+				"proto.GetProfileDetail")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			if e, ok := status.FromError(err); ok {
 				if e.Code() == codes.NotFound {
 					return v1.ResponseError(ctf, err, http.StatusNotFound)
@@ -211,6 +235,9 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 		profileRequest := profileMapper.MapToGetShortInfoRequest(req, sessionId)
 		profileShortInfo, err := pc.proto.GetProfileShortInfo(ctx, profileRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileShortInfo",
+				"GetProfileShortInfo")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			if e, ok := status.FromError(err); ok {
 				if e.Code() == codes.NotFound {
 					return v1.ResponseError(ctf, err, http.StatusNotFound)
@@ -238,6 +265,9 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 		profileRequest := profileMapper.MapToListRequest(req)
 		profileList, err := pc.proto.GetProfileList(ctx, profileRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("GetProfileList",
+				"proto.GetProfileList")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			if e, ok := status.FromError(err); ok {
 				if e.Code() == codes.NotFound {
 					return v1.ResponseError(ctf, err, http.StatusNotFound)
@@ -262,6 +292,9 @@ func (pc *ProfileController) GetImageBySessionId() fiber.Handler {
 		profileRequest := profileMapper.MapToImageBySessionIdRequest(sessionId, fileName)
 		file, err := pc.proto.GetImageBySessionId(ctx, profileRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("GetImageBySessionId",
+				"proto.GetImageBySessionId")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		fileResponse := profileMapper.MapToImageBySessionIdResponse(file)
@@ -278,6 +311,8 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 		id := ctf.Params("id")
 		idUint64, err := pc.convertToUint64("id", id)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("DeleteImage", "convertToUint64")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		imageByIdRequest := &pb.GetImageByIdRequest{
@@ -285,10 +320,14 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 		}
 		image, err := pc.proto.GetImageById(ctx, imageByIdRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("DeleteImage", "proto.GetImageById")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		sessionId := image.SessionId
 		if err := pc.validateAuthUser(ctf, sessionId); err != nil {
+			errorMessage := pc.getErrorMessage("DeleteImage", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		req := &pb.ImageDeleteRequest{
@@ -296,6 +335,8 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 		}
 		response, err := pc.proto.DeleteImage(ctx, req)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("DeleteImage", "proto.DeleteImage")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, response)
@@ -318,6 +359,9 @@ func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
 		filterRequest := profileMapper.MapToFilterRequest(req, sessionId)
 		filterResponse, err := pc.proto.GetFilterBySessionId(ctx, filterRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("GetFilterBySessionId",
+				"proto.GetFilterBySessionId")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			if e, ok := status.FromError(err); ok {
 				if e.Code() == codes.NotFound {
 					return v1.ResponseError(ctf, err, http.StatusNotFound)
@@ -342,12 +386,16 @@ func (pc *ProfileController) UpdateFilter() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			errorMessage := pc.getErrorMessage("UpdateFilter", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		profileMapper := &mapper.ProfileMapper{}
 		filterRequest := profileMapper.MapToFilterUpdateRequest(req)
 		filterResponse, err := pc.proto.UpdateFilter(ctx, filterRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("UpdateFilter", "proto.UpdateFilter")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, filterResponse)
@@ -366,12 +414,16 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			errorMessage := pc.getErrorMessage("AddBlock", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		profileMapper := &mapper.ProfileMapper{}
 		blockRequest := profileMapper.MapToBlockAddRequest(req)
 		blockAdded, err := pc.proto.AddBlock(ctx, blockRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("AddBlock", "proto.AddBlock")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		blockResponse := profileMapper.MapToBlockAddResponse(blockAdded)
@@ -391,6 +443,8 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			errorMessage := pc.getErrorMessage("AddLike", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		locale := ctf.Get("Accept-Language")
@@ -401,6 +455,8 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 		likeRequest := profileMapper.MapToLikeAddRequest(req, locale)
 		likeAdded, err := pc.proto.AddLike(ctx, likeRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("AddLike", "proto.AddLike")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		likeResponse := profileMapper.MapToLikeAddResponse(likeAdded)
@@ -420,12 +476,16 @@ func (pc *ProfileController) UpdateLike() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			errorMessage := pc.getErrorMessage("UpdateLike", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		profileMapper := &mapper.ProfileMapper{}
 		likeRequest := profileMapper.MapToLikeUpdateRequest(req)
 		likeUpdated, err := pc.proto.UpdateLike(ctx, likeRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("UpdateLike", "proto.UpdateLike")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		likeResponse := profileMapper.MapToLikeUpdateResponse(likeUpdated)
@@ -445,12 +505,16 @@ func (pc *ProfileController) AddComplaint() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			errorMessage := pc.getErrorMessage("AddComplaint", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		profileMapper := &mapper.ProfileMapper{}
 		complaintRequest := profileMapper.MapToComplaintAddRequest(req)
 		complaintAdded, err := pc.proto.AddComplaint(ctx, complaintRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("AddComplaint", "proto.AddComplaint")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		complaintResponse := profileMapper.MapToComplaintAddResponse(complaintAdded)
@@ -470,12 +534,17 @@ func (pc *ProfileController) UpdateCoordinates() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+			errorMessage := pc.getErrorMessage("UpdateCoordinates", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		profileMapper := &mapper.ProfileMapper{}
 		updateCoordinatesRequest := profileMapper.MapToUpdateCoordinatesRequest(req)
 		updateCoordinatesResponse, err := pc.proto.UpdateCoordinates(ctx, updateCoordinatesRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("UpdateCoordinates",
+				"proto.UpdateCoordinates")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, updateCoordinatesResponse)

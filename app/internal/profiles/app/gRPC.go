@@ -17,7 +17,6 @@ const (
 
 func (app *App) StartServer(ctx context.Context) error {
 	app.fiber.Static("/static", "./static")
-	done := make(chan struct{})
 	s3Client := config.NewS3(app.config)
 	navigatorRepository := psql.NewNavigatorRepository(app.Logger, app.db.psql)
 	filterRepository := psql.NewFilterRepository(app.Logger, app.db.psql)
@@ -45,7 +44,6 @@ func (app *App) StartServer(ctx context.Context) error {
 				errorFilePathApp)
 			app.Logger.Error(errorMessage, zap.Error(err))
 		}
-		close(done)
 	}()
 	select {
 	case <-ctx.Done():
@@ -54,8 +52,6 @@ func (app *App) StartServer(ctx context.Context) error {
 				errorFilePathHttp)
 			app.Logger.Error(errorMessage, zap.Error(err))
 		}
-	case <-done:
-		app.Logger.Info("profiles server finished successfully")
 	}
 	return nil
 }

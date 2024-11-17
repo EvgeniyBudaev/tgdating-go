@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/telegram/entity"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	"time"
 )
@@ -56,21 +55,14 @@ func (app *App) StartBot(ctx context.Context) error {
 	}
 	bot.Debug = true
 	app.Logger.Info("Authorized on account:", zap.String("username", bot.Self.UserName))
-	updateConfig := tgbotapi.NewUpdate(0)
-	updateConfig.Timeout = UpdateConfigTimeout
-	updates := bot.GetUpdatesChan(updateConfig) // Получаем все обновления от пользователя
+	//updateConfig := tgbotapi.NewUpdate(0)
+	//updateConfig.Timeout = UpdateConfigTimeout
+	//updates := bot.GetUpdatesChan(updateConfig) // Получаем все обновления от пользователя
 
-	var brokers = []string{"127.0.0.1:9095", "127.0.0.1:9096", "127.0.0.1:9097"}
-	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  brokers,
-		GroupID:  "consumer-group-id",
-		Topic:    "like_topic",
-		MaxBytes: 16384, // 16kB
-	})
 	var hc *entity.HubContent
 
 	for {
-		c, err := r.ReadMessage(context.Background())
+		c, err := app.kafkaReader.ReadMessage(context.Background())
 		if err != nil {
 			errorMessage := getErrorMessage("StartBot", "r.ReadMessage",
 				errorFilePathBot)
@@ -84,7 +76,7 @@ func (app *App) StartBot(ctx context.Context) error {
 			app.Logger.Error(errorMessage, zap.Error(err))
 			continue
 		}
-		msg := tgbotapi.NewPhoto(int64(hc.UserId), tgbotapi.FileURL(hc.UserImageUrl))
+		msg := tgbotapi.NewPhoto(int64(hc.LikedUserId), tgbotapi.FileURL(hc.UserImageUrl))
 		msg.ParseMode = "HTML"
 		msg.Caption = fmt.Sprintf("%s %s <a href=\"tg://resolve?domain=%s\">@%s</a>",
 			hc.Message, EmojiPointRight, hc.Username, hc.Username)
@@ -96,27 +88,15 @@ func (app *App) StartBot(ctx context.Context) error {
 		}
 	}
 
-	if err := r.Close(); err != nil {
-		errorMessage := getErrorMessage("StartBot", "r.Close",
-			errorFilePathBot)
-		app.Logger.Debug(errorMessage, zap.Error(err))
-	}
-
-	for update := range updates {
-		chatId := update.Message.Chat.ID
-		if isStartMessage(&update) {
-			userText := update.Message.Text // userText - сообщение, которое отправил пользователь
-			app.Logger.Info("Начало общения: ", zap.String("username", update.Message.From.UserName),
-				zap.String("message", userText))
-			printIntro(chatId)
-		}
-
-		//if update.Message != nil {
-		//	log.Printf("[%s] %s", update.Message.From.UserName, userText)
-		//	msg := tgbotapi.NewMessage(chatId, userText)
-		//	msg.ReplyToMessageID = update.Message.MessageID
-		//	telegram.Send(msg)
-		//}
-	}
+	//for update := range updates {
+	//	chatId := update.Message.Chat.ID
+	//	if isStartMessage(&update) {
+	//		userText := update.Message.Text // userText - сообщение, которое отправил пользователь
+	//		app.Logger.Info("Начало общения: ", zap.String("username", update.Message.From.UserName),
+	//			zap.String("message", userText))
+	//		printIntro(chatId)
+	//	}
+	//
+	//}
 	return nil
 }

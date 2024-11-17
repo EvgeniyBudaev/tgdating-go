@@ -12,9 +12,9 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"os"
-	"sync"
 )
 
 const (
@@ -103,11 +103,6 @@ func New() *App {
 		Compression:  kafka.Gzip,
 		RequiredAcks: kafka.RequireOne,
 	}
-	//if err := w.Close(); err != nil {
-	//	errorMessage := getErrorMessage("New", "w.Close",
-	//		errorFilePathApp)
-	//	defaultLogger.Fatal(errorMessage, zap.Error(err))
-	//}
 
 	// Fiber
 	f := fiber.New(fiber.Config{
@@ -134,17 +129,37 @@ func New() *App {
 
 // Run launches the application
 func (app *App) Run(ctx context.Context) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
+	g, ctx := errgroup.WithContext(ctx)
+
+	// Start server
+	g.Go(func() error {
 		if err := app.StartServer(ctx); err != nil {
 			errorMessage := getErrorMessage("Run", "StartServer",
 				errorFilePathApp)
 			app.Logger.Fatal(errorMessage, zap.Error(err))
+			return err
 		}
-		wg.Done()
-	}()
-	wg.Wait()
+		return nil
+	})
+
+	// Close kafka writer when context done
+	g.Go(func() error {
+		select {
+		case <-ctx.Done():
+			if err := app.kafkaWriter.Close(); err != nil {
+				errorMessage := getErrorMessage("Run", "kafkaWriter.Close",
+					errorFilePathApp)
+				app.Logger.Fatal(errorMessage, zap.Error(err))
+			}
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		errorMessage := getErrorMessage("Run", "g.Wait",
+			errorFilePathApp)
+		app.Logger.Fatal(errorMessage, zap.Error(err))
+	}
 }
 
 func getErrorMessage(repositoryMethodName, callMethodName, errorFilePath string) string {

@@ -14,7 +14,6 @@ const (
 
 func (app *App) StartHTTPServer(ctx context.Context, proto proto.ProfileClient) error {
 	app.fiber.Static("/static", "./static")
-	done := make(chan struct{})
 	profileController := controller.NewProfileController(app.Logger, proto)
 	middlewares.InitFiberMiddlewares(
 		app.fiber, app.config, app.Logger, profileController, InitPublicRoutes, InitProtectedRoutes)
@@ -25,7 +24,6 @@ func (app *App) StartHTTPServer(ctx context.Context, proto proto.ProfileClient) 
 				errorFilePathHttp)
 			app.Logger.Error(errorMessage, zap.Error(err))
 		}
-		close(done)
 	}()
 	select {
 	case <-ctx.Done():
@@ -34,8 +32,6 @@ func (app *App) StartHTTPServer(ctx context.Context, proto proto.ProfileClient) 
 				errorFilePathHttp)
 			app.Logger.Error(errorMessage, zap.Error(err))
 		}
-	case <-done:
-		app.Logger.Info("gateway server finished successfully")
 	}
 	return nil
 }

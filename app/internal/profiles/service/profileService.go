@@ -695,14 +695,16 @@ func (s *ProfileService) AddLike(
 		return nil, err
 	}
 	hc := &entity.HubContent{
-		Type:         "like",
+		LikedUserId:  likedTelegramProfile.UserId,
 		Message:      s.GetMessageLike(locale),
-		UserId:       likedTelegramProfile.UserId,
+		Type:         "like",
 		UserImageUrl: lastImageProfile.Url,
 		Username:     telegramProfile.UserName,
 	}
 	hubContentJson, err := json.Marshal(hc)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddLike", "json.Marshal")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	err = s.kafkaWriter.WriteMessages(context.Background(),
@@ -712,12 +714,10 @@ func (s *ProfileService) AddLike(
 		},
 	)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddLike", "kafkaWriter.WriteMessages")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	if err := s.kafkaWriter.Close(); err != nil {
-		return nil, err
-	}
-
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToAddRequest(pr)
 	likeAdded, err := s.likeRepository.Add(ctx, likeRequest)
