@@ -35,7 +35,6 @@ func (pm *TelegramMapper) MapToAddRequest(
 		LanguageCode:    pr.TelegramLanguageCode,
 		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
 		QueryId:         pr.TelegramQueryId,
-		IsDeleted:       false,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
 	}
@@ -53,13 +52,5 @@ func (pm *TelegramMapper) MapToUpdateRequest(
 		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
 		QueryId:         pr.TelegramQueryId,
 		UpdatedAt:       time.Now(),
-	}
-}
-
-func (pm *TelegramMapper) MapToDeleteRequest(sessionId string) *request.TelegramDeleteRequestRepositoryDto {
-	return &request.TelegramDeleteRequestRepositoryDto{
-		SessionId: sessionId,
-		IsDeleted: true,
-		UpdatedAt: time.Now(),
 	}
 }

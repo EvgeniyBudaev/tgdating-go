@@ -35,7 +35,6 @@ func (pm *FilterMapper) MapToAddRequest(
 		Distance:     pr.Distance,
 		Page:         pr.Page,
 		Size:         pr.Size,
-		IsDeleted:    false,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
@@ -60,13 +59,5 @@ func (pm *FilterMapper) MapProfileToUpdateRequest(
 		AgeFrom:      pr.AgeFrom,
 		AgeTo:        pr.AgeTo,
 		UpdatedAt:    time.Now(),
-	}
-}
-
-func (pm *FilterMapper) MapToDeleteRequest(sessionId string) *request.FilterDeleteRequestRepositoryDto {
-	return &request.FilterDeleteRequestRepositoryDto{
-		SessionId: sessionId,
-		IsDeleted: true,
-		UpdatedAt: time.Now(),
 	}
 }

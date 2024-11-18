@@ -74,6 +74,8 @@ func (s *ProfileService) AddProfile(
 	profileRequest := profileMapper.MapToAddRequest(pr)
 	profileCreated, err := s.profileRepository.Add(ctx, profileRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "Add")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	if pr.Longitude != nil && pr.Latitude != nil {
@@ -82,18 +84,26 @@ func (s *ProfileService) AddProfile(
 		_, err = s.AddNavigator(ctx, pr.SessionId, longitude, latitude)
 	}
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "AddNavigator")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileResponse := profileMapper.MapToAddResponse(profileCreated)
 	if err := s.AddImageList(ctx, profileCreated.SessionId, pr.Files); err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "AddImageList")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	_, err = s.AddFilter(ctx, pr)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "AddFilter")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	_, err = s.AddTelegram(ctx, pr)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "AddTelegram")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	return profileResponse, err
@@ -103,12 +113,16 @@ func (s *ProfileService) UpdateProfile(
 	ctx context.Context, pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error) {
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "checkUserExists")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToUpdateRequest(pr)
 	profileEntity, err := s.profileRepository.Update(ctx, profileRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "profileRepository.Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	if err := s.UpdateImageList(ctx, profileEntity.SessionId, pr.Files); err != nil {
@@ -120,6 +134,8 @@ func (s *ProfileService) UpdateProfile(
 		latitude := *pr.Latitude
 		navigatorResponse, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
+			errorMessage := s.getErrorMessage("UpdateProfile", "updateNavigator")
+			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
@@ -127,6 +143,8 @@ func (s *ProfileService) UpdateProfile(
 	filterRequest := filterMapper.MapProfileToUpdateRequest(pr)
 	filterEntity, err := s.filterRepository.Update(ctx, filterRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "filterRepository.Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	filterResponse := filterMapper.MapToResponse(filterEntity)
@@ -134,6 +152,8 @@ func (s *ProfileService) UpdateProfile(
 	telegramRequest := telegramMapper.MapToUpdateRequest(pr)
 	telegramEntity, err := s.telegramRepository.Update(ctx, telegramRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "telegramRepository.Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
@@ -148,34 +168,39 @@ func (s *ProfileService) DeleteProfile(
 	ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error) {
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "checkUserExists")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToDeleteRequest(sessionId)
 	_, err := s.profileRepository.Delete(ctx, profileRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "profileRepository.Delete")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	navigatorMapper := &mapper.NavigatorMapper{}
-	navigatorRequest := navigatorMapper.MapToDeleteRequest(sessionId)
-	_, err = s.navigatorRepository.Delete(ctx, navigatorRequest)
-	if err != nil {
+	profileResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return profileResponse, err
+}
+
+func (s *ProfileService) RestoreProfile(
+	ctx context.Context, pr *request.ProfileRestoreRequestDto) (*response.ResponseDto, error) {
+	sessionId := pr.SessionId
+	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		errorMessage := s.getErrorMessage("RestoreProfile", "checkUserExists")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	err = s.DeleteImageList(ctx, sessionId)
+	profileMapper := &mapper.ProfileMapper{}
+	profileRequest := profileMapper.MapToRestoreRequest(sessionId)
+	_, err := s.profileRepository.Restore(ctx, profileRequest)
 	if err != nil {
-		return nil, err
-	}
-	filterMapper := &mapper.FilterMapper{}
-	filterRequest := filterMapper.MapToDeleteRequest(sessionId)
-	_, err = s.filterRepository.Delete(ctx, filterRequest)
-	if err != nil {
-		return nil, err
-	}
-	telegramMapper := &mapper.TelegramMapper{}
-	telegramRequest := telegramMapper.MapToDeleteRequest(sessionId)
-	_, err = s.telegramRepository.Delete(ctx, telegramRequest)
-	if err != nil {
+		errorMessage := s.getErrorMessage("RestoreProfile",
+			"profileRepository.Restore")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileResponse := &response.ResponseDto{
@@ -198,11 +223,17 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 		latitude := *pr.Latitude
 		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
+			errorMessage := s.getErrorMessage("GetProfileBySessionId",
+				"updateNavigator")
+			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
 	profileEntity, err := s.profileRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileBySessionId",
+			"profileRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	navigatorEntity, _ := s.navigatorRepository.FindBySessionId(ctx, sessionId)
@@ -216,11 +247,17 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	filterMapper := &mapper.FilterMapper{}
 	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileBySessionId",
+			"filterRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	filterResponse := filterMapper.MapToResponse(filterEntity)
 	telegramEntity, err := s.telegramRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileBySessionId",
+			"telegramRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	telegramMapper := &mapper.TelegramMapper{}
@@ -228,6 +265,9 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
 	imageEntityList, err := s.imageRepository.SelectListBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileBySessionId",
+			"imageRepository.SelectListBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
@@ -244,6 +284,8 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 	}
 	err := s.updateLastOnline(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail", "updateLastOnline")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	if pr.Longitude != nil && pr.Latitude != nil {
@@ -251,12 +293,17 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 		latitude := *pr.Latitude
 		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
+			errorMessage := s.getErrorMessage("GetProfileDetail", "updateNavigator")
+			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileEntity, err := s.profileRepository.FindBySessionId(ctx, viewedSessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail",
+			"profileRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	navigatorMapper := &mapper.NavigatorMapper{}
@@ -266,6 +313,9 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 	if navigatorEntity != nil && navigatorViewedEntity != nil {
 		navigatorDistanceResponse, err := s.navigatorRepository.FindDistance(ctx, navigatorEntity, navigatorViewedEntity)
 		if err != nil {
+			errorMessage := s.getErrorMessage("GetProfileDetail",
+				"navigatorRepository.FindDistance")
+			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 		distance := navigatorDistanceResponse.Distance
@@ -278,24 +328,36 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 			latitude := *pr.Latitude
 			_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 			if err != nil {
+				errorMessage := s.getErrorMessage("GetProfileDetail",
+					"updateNavigator")
+				s.logger.Debug(errorMessage, zap.Error(err))
 				return nil, err
 			}
 		}
 	}
 	blockEntity, err := s.blockRepository.Find(ctx, sessionId, viewedSessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail",
+			"blockRepository.Find")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	blockMapper := mapper.BlockMapper{}
 	blockResponse := blockMapper.MapToResponse(blockEntity)
 	likeEntity, err := s.likeRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail",
+			"likeRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeResponse := likeMapper.MapToResponse(likeEntity)
 	telegramEntity, err := s.telegramRepository.FindBySessionId(ctx, viewedSessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail",
+			"telegramRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	telegramMapper := &mapper.TelegramMapper{}
@@ -303,6 +365,9 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
 	imageEntityList, err := s.imageRepository.SelectListBySessionId(ctx, viewedSessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail",
+			"imageRepository.SelectListBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileResponse := profileMapper.MapToDetailResponse(
@@ -317,6 +382,8 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 	}
 	err := s.updateLastOnline(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileShortInfo", "updateLastOnline")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	if pr.Longitude != nil && pr.Latitude != nil {
@@ -324,16 +391,24 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 		latitude := *pr.Latitude
 		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
+			errorMessage := s.getErrorMessage("GetProfileShortInfo", "updateNavigator")
+			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileEntity, err := s.profileRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileShortInfo",
+			"profileRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	lastImage, err := s.imageRepository.FindLastBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileShortInfo",
+			"imageRepository.FindLastBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileResponse := profileMapper.MapToShortInfoResponse(profileEntity, lastImage.Url)
@@ -348,6 +423,8 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 	}
 	err := s.updateLastOnline(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileList", "updateLastOnline")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	if pr.Longitude != nil && pr.Latitude != nil {
@@ -355,11 +432,16 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 		latitude := *pr.Latitude
 		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
+			errorMessage := s.getErrorMessage("GetProfileList", "updateNavigator")
+			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
 	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileList",
+			"filterRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
@@ -367,6 +449,9 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 	var paginationProfileEntityList *response.ProfileListResponseRepositoryDto
 	paginationProfileEntityList, err = s.profileRepository.SelectListBySessionId(ctx, profileRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileList",
+			"profileRepository.SelectListBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileContentResponse := make([]*response.ProfileListItemResponseDto, 0)
@@ -374,6 +459,9 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 		for _, profileEntity := range paginationProfileEntityList.Content {
 			lastImage, err := s.imageRepository.FindLastBySessionId(ctx, profileEntity.SessionId)
 			if err != nil {
+				errorMessage := s.getErrorMessage("GetProfileList",
+					"imageRepository.FindLastBySessionId")
+				s.logger.Debug(errorMessage, zap.Error(err))
 				return nil, err
 			}
 			lastOnline := profileEntity.LastOnline
@@ -400,6 +488,8 @@ func (s *ProfileService) AddImageList(ctx context.Context, sessionId string, fil
 		for _, file := range files {
 			_, err := s.AddImage(ctx, sessionId, file)
 			if err != nil {
+				errorMessage := s.getErrorMessage("AddImageList", "AddImage")
+				s.logger.Debug(errorMessage, zap.Error(err))
 				return err
 			}
 		}
@@ -425,12 +515,17 @@ func (s *ProfileService) UpdateImageList(ctx context.Context, sessionId string, 
 func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) error {
 	imageList, err := s.imageRepository.SelectListBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteImageList",
+			"imageRepository.SelectListBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
 	if len(imageList) > 0 {
 		for _, image := range imageList {
 			_, err := s.deleteImageById(ctx, image.Id)
 			if err != nil {
+				errorMessage := s.getErrorMessage("DeleteImageList", "deleteImageById")
+				s.logger.Debug(errorMessage, zap.Error(err))
 				return err
 			}
 		}
@@ -461,6 +556,9 @@ func (s *ProfileService) GetImageById(ctx context.Context, imageId uint64) (*ent
 func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entity.ImageEntity, error) {
 	image, err := s.imageRepository.FindById(ctx, id)
 	if err != nil {
+		errorMessage := s.getErrorMessage("deleteImageById",
+			"imageRepository.FindById")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	// Удаление из файловой системы
@@ -485,6 +583,8 @@ func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entit
 func (s *ProfileService) DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error) {
 	_, err := s.deleteImageById(ctx, id)
 	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteImage", "deleteImageById")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	responseDto := &response.ResponseDto{
@@ -500,6 +600,8 @@ func (s *ProfileService) GetFilterBySessionId(
 	}
 	err := s.updateLastOnline(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetFilterBySessionId", "updateLastOnline")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	if fr.Longitude != nil && fr.Latitude != nil {
@@ -507,11 +609,17 @@ func (s *ProfileService) GetFilterBySessionId(
 		latitude := *fr.Latitude
 		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
 		if err != nil {
+			errorMessage := s.getErrorMessage("GetFilterBySessionId",
+				"updateNavigator")
+			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
 	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("GetFilterBySessionId",
+			"filterRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	filterMapper := &mapper.FilterMapper{}
@@ -523,12 +631,16 @@ func (s *ProfileService) UpdateFilter(
 	sessionId := fr.SessionId
 	err := s.updateLastOnline(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateFilter", "updateLastOnline")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapToUpdateRequest(fr)
 	filterEntity, err := s.filterRepository.Update(ctx, filterRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateFilter", "filterRepository.Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	filterResponse := filterMapper.MapToResponse(filterEntity)
@@ -558,6 +670,8 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, file *enti
 	}
 	newFileName, newFilePath, newFileSize, err := s.convertImage(sessionId, directoryPath, filePath, filenameWithoutSpaces)
 	if err != nil {
+		errorMessage := s.getErrorMessage("uploadImageToFileSystem", "convertImage")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	imageConverted := &request.ImageAddRequestRepositoryDto{
@@ -671,6 +785,8 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddReque
 	blockForTwoUserRequest := blockMapper.MapToAddRequest(prForTwoUser)
 	_, err := s.blockRepository.Add(ctx, blockForTwoUserRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddBlock", "blockRepository.Add")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	return s.blockRepository.Add(ctx, blockRequest)
@@ -684,14 +800,23 @@ func (s *ProfileService) AddLike(
 	}
 	telegramProfile, err := s.telegramRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddLike",
+			"telegramRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	lastImageProfile, err := s.imageRepository.FindLastBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddLike",
+			"imageRepository.FindLastBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likedTelegramProfile, err := s.telegramRepository.FindBySessionId(ctx, pr.LikedSessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddLike",
+			"telegramRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	hc := &entity.HubContent{
@@ -722,6 +847,9 @@ func (s *ProfileService) AddLike(
 	likeRequest := likeMapper.MapToAddRequest(pr)
 	likeAdded, err := s.likeRepository.Add(ctx, likeRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("AddLike",
+			"likeRepository.Add")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likeResponse := likeMapper.MapToResponse(likeAdded)
@@ -732,12 +860,16 @@ func (s *ProfileService) UpdateLike(
 	ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.LikeResponseDto, error) {
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		errorMessage := s.getErrorMessage("UpdateLike", "checkUserExists")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToUpdateRequest(pr)
 	likeUpdated, err := s.likeRepository.Update(ctx, likeRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateLike", "likeRepository.Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likeResponse := likeMapper.MapToResponse(likeUpdated)
@@ -764,6 +896,9 @@ func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string)
 	updateLastOnlineRequest := updateLastOnlineMapper.MapToAddRequest(sessionId)
 	err := s.profileRepository.UpdateLastOnline(ctx, updateLastOnlineRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("updateLastOnline",
+			"profileRepository.UpdateLastOnline")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
 	return nil
@@ -772,11 +907,13 @@ func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string)
 func (s *ProfileService) updateNavigator(
 	ctx context.Context,
 	sessionId string, longitude float64, latitude float64) (*response.NavigatorResponseDto, error) {
-	fmt.Println("updateNavigator latitude", latitude)
 	navigatorMapper := &mapper.NavigatorMapper{}
 	navigatorRequest := navigatorMapper.MapToUpdateRequest(sessionId, longitude, latitude)
 	navigatorUpdated, err := s.navigatorRepository.Update(ctx, navigatorRequest)
 	if err != nil {
+		errorMessage := s.getErrorMessage("updateNavigator",
+			"navigatorRepository.Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	navigatorResponse := navigatorMapper.MapToResponse(sessionId, navigatorUpdated.Location.Longitude,
@@ -837,6 +974,9 @@ func (s *ProfileService) GetMessageLike(locale string) string {
 func (s *ProfileService) checkUserExists(ctx context.Context, sessionId string) error {
 	p, err := s.profileRepository.FindBySessionId(ctx, sessionId)
 	if err != nil {
+		errorMessage := s.getErrorMessage("checkUserExists",
+			"profileRepository.FindBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
 	isDeleted := p.IsDeleted

@@ -13,7 +13,6 @@ type FilterAddRequestRepositoryDto struct {
 	Distance     float64   `json:"distance"`
 	Page         uint64    `json:"page"`
 	Size         uint64    `json:"size"`
-	IsDeleted    bool      `json:"isDeleted"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 }

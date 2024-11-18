@@ -80,6 +80,8 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 		profileRequest := profileMapper.MapToAddRequest(req, fileList)
 		resp, err := pc.proto.AddProfile(ctx, profileRequest)
 		if err != nil {
+			errorMessage := pc.getErrorMessage("AddProfile", "proto.AddProfile")
+			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, resp)
@@ -148,6 +150,30 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 		profileResponse, err := pc.proto.DeleteProfile(ctx, profileRequest)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("DeleteProfile", "proto.DeleteProfile")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) RestoreProfile() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("POST /gateway/api/v1/profiles/restore")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.ProfileRestoreRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("RestoreProfile", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileMapper := &mapper.ProfileMapper{}
+		profileRequest := profileMapper.MapToRestoreRequest(req)
+		profileResponse, err := pc.proto.RestoreProfile(ctx, profileRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("RestoreProfile",
+				"proto.RestoreProfile")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}

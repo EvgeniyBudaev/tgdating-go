@@ -109,6 +109,26 @@ func (r *ProfileRepository) Delete(
 	return r.FindBySessionId(ctx, p.SessionId)
 }
 
+func (r *ProfileRepository) Restore(
+	ctx context.Context, p *request.ProfileRestoreRequestRepositoryDto) (*entity.ProfileEntity, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		errorMessage := r.getErrorMessage("Restore", "Begin")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
+	query := "UPDATE profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
+	_, err = r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
+	if err != nil {
+		errorMessage := r.getErrorMessage("Restore", "ExecContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	tx.Commit()
+	return r.FindBySessionId(ctx, p.SessionId)
+}
+
 func (r *ProfileRepository) FindById(ctx context.Context, id uint64) (*entity.ProfileEntity, error) {
 	p := &entity.ProfileEntity{}
 	query := "SELECT id, session_id, display_name, birthday, gender, location, description, height, weight," +

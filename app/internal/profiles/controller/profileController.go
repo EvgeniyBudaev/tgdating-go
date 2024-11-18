@@ -93,6 +93,21 @@ func (pc *ProfileController) DeleteProfile(
 	}, nil
 }
 
+func (pc *ProfileController) RestoreProfile(
+	ctx context.Context, in *pb.ProfileRestoreRequest) (*pb.ProfileRestoreResponse, error) {
+	pc.logger.Info("POST /gateway/api/v1/profiles/restore")
+	req := &request.ProfileRestoreRequestDto{
+		SessionId: in.SessionId,
+	}
+	profileDeleted, err := pc.service.RestoreProfile(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ProfileRestoreResponse{
+		Success: profileDeleted.Success,
+	}, nil
+}
+
 func (pc *ProfileController) GetProfileBySessionId(
 	ctx context.Context, in *pb.ProfileGetBySessionIdRequest) (*pb.ProfileBySessionIdResponse, error) {
 	pc.logger.Info("GET /gateway/api/v1/profiles/session/:sessionId")

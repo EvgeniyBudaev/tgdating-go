@@ -143,6 +143,14 @@ message ProfileDeleteResponse {
   bool success = 1; // успешно удалено да/нет
 }
 
+message ProfileRestoreRequest {
+  string sessionId = 1; // id сессии
+}
+
+message ProfileRestoreResponse {
+  bool success = 1; // успешно удалено да/нет
+}
+
 message ProfileGetBySessionIdRequest {
   string sessionId = 1; // id сессии
   optional double latitude = 2; // широта
@@ -353,9 +361,8 @@ message ComplaintAddResponse {
   string sessionId = 2; // id сессии
   string criminalSessionId = 3; // id сессии мошенника
   string reason = 4; // причина жалобы
-  bool isDeleted = 5; // удалена жалоба да/нет
-  google.protobuf.Timestamp createdAt = 6; // дата создания
-  google.protobuf.Timestamp updatedAt = 7; // дата обновления
+  google.protobuf.Timestamp createdAt = 5; // дата создания
+  google.protobuf.Timestamp updatedAt = 6; // дата обновления
 }
 
 message NavigatorUpdateRequest {
@@ -376,6 +383,7 @@ service Profile {
   rpc AddProfile(ProfileAddRequest) returns (ProfileAddResponse); // добавление нового пользователя
   rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileBySessionIdResponse); // обновление данных пользователя
   rpc DeleteProfile(ProfileDeleteRequest) returns (ProfileDeleteResponse); // удаление пользователя
+  rpc RestoreProfile(ProfileRestoreRequest) returns (ProfileRestoreResponse); // восстановление пользователя
   rpc GetProfileBySessionId(ProfileGetBySessionIdRequest) returns (ProfileBySessionIdResponse); // получение профиля по id сессии
   rpc GetProfileDetail(ProfileGetDetailRequest) returns (ProfileDetailResponse); // получение карточки профиля
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю

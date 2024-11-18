@@ -14,7 +14,6 @@ func (pm *ComplaintMapper) MapToAddRequest(
 		SessionId:         pr.SessionId,
 		CriminalSessionId: pr.CriminalSessionId,
 		Reason:            pr.Reason,
-		IsDeleted:         false,
 		CreatedAt:         time.Now(),
 		UpdatedAt:         time.Now(),
 	}

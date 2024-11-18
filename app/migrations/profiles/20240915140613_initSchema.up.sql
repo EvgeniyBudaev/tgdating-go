@@ -42,7 +42,6 @@ CREATE TABLE IF NOT EXISTS profile_navigators
     id         BIGSERIAL NOT NULL PRIMARY KEY,
     session_id VARCHAR   NOT NULL,
     location   geometry(Point, 4326),
-    is_deleted BOOL      NOT NULL DEFAULT false,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL,
     CONSTRAINT fk_profile_navigators_session_id FOREIGN KEY (session_id) REFERENCES profiles (session_id)
@@ -59,7 +58,6 @@ CREATE TABLE IF NOT EXISTS profile_filters
     distance      REAL,
     page          INTEGER,
     size          INTEGER,
-    is_deleted    BOOL      NOT NULL DEFAULT false,
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP NULL,
     CONSTRAINT fk_profile_filters_session_id FOREIGN KEY (session_id) REFERENCES profiles (session_id)
@@ -76,7 +74,6 @@ CREATE TABLE IF NOT EXISTS profile_telegrams
     language_code      VARCHAR,
     allows_write_to_pm BOOL,
     query_id           TEXT,
-    is_deleted         BOOL         NOT NULL DEFAULT false,
     created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at         TIMESTAMP    NULL,
     CONSTRAINT fk_profile_telegram_session_id FOREIGN KEY (session_id) REFERENCES profiles (session_id)
@@ -88,7 +85,6 @@ CREATE TABLE IF NOT EXISTS profile_likes
     session_id       VARCHAR   NOT NULL,
     liked_session_id VARCHAR   NOT NULL,
     is_liked         BOOL      NOT NULL DEFAULT false,
-    is_deleted       BOOL      NOT NULL DEFAULT false,
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NULL,
     CONSTRAINT fk_profile_likes_profile_id FOREIGN KEY (session_id) REFERENCES profiles (session_id)
@@ -111,7 +107,6 @@ CREATE TABLE IF NOT EXISTS profile_complaints
     session_id          VARCHAR   NOT NULL,
     criminal_session_id VARCHAR   NOT NULL,
     reason              TEXT,
-    is_deleted          BOOL      NOT NULL DEFAULT false,
     created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP NULL,
     CONSTRAINT fk_profile_complaints_session_id FOREIGN KEY (session_id) REFERENCES profiles (session_id)

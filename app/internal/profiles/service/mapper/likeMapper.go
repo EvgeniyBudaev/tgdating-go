@@ -31,7 +31,6 @@ func (pm *LikeMapper) MapToAddRequest(
 		SessionId:      pr.SessionId,
 		LikedSessionId: pr.LikedSessionId,
 		IsLiked:        true,
-		IsDeleted:      false,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}

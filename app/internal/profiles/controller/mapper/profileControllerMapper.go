@@ -374,7 +374,6 @@ func (pm *ProfileControllerMapper) MapControllerToComplaintAddResponse(
 		SessionId:         r.SessionId,
 		CriminalSessionId: r.CriminalSessionId,
 		Reason:            r.Reason,
-		IsDeleted:         r.IsDeleted,
 		CreatedAt:         createdAtTimestamp,
 		UpdatedAt:         updatedAtTimestamp,
 	}

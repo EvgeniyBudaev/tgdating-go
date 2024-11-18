@@ -80,6 +80,12 @@ func (pm *ProfileMapper) MapToDeleteRequest(r *request.ProfileDeleteRequestDto) 
 	}
 }
 
+func (pm *ProfileMapper) MapToRestoreRequest(r *request.ProfileRestoreRequestDto) *pb.ProfileRestoreRequest {
+	return &pb.ProfileRestoreRequest{
+		SessionId: r.SessionId,
+	}
+}
+
 func (pm *ProfileMapper) MapToGetBySessionIdRequest(
 	r *request.ProfileGetBySessionIdRequestDto, sessionId string) *pb.ProfileGetBySessionIdRequest {
 	return &pb.ProfileGetBySessionIdRequest{
@@ -396,7 +402,6 @@ func (pm *ProfileMapper) MapToComplaintAddResponse(r *pb.ComplaintAddResponse) *
 		SessionId:         r.SessionId,
 		CriminalSessionId: r.CriminalSessionId,
 		Reason:            r.Reason,
-		IsDeleted:         r.IsDeleted,
 		CreatedAt:         r.CreatedAt.AsTime(),
 		UpdatedAt:         r.UpdatedAt.AsTime(),
 	}

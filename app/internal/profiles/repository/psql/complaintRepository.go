@@ -28,11 +28,10 @@ func NewComplaintRepository(l logger.Logger, db *sql.DB) *ComplaintRepository {
 
 func (r *ComplaintRepository) Add(
 	ctx context.Context, p *request.ComplaintAddRequestRepositoryDto) (*entity.ComplaintEntity, error) {
-	query := "INSERT INTO profile_complaints (session_id, criminal_session_id, reason, is_deleted, created_at, updated_at)" +
-		" VALUES ($1, $2, $3, $4, $5, $6)" +
+	query := "INSERT INTO profile_complaints (session_id, criminal_session_id, reason, created_at, updated_at)" +
+		" VALUES ($1, $2, $3, $4, $5)" +
 		" RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.CriminalSessionId, &p.Reason, &p.IsDeleted, &p.IsDeleted,
-		&p.CreatedAt, &p.UpdatedAt)
+	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.CriminalSessionId, &p.Reason, p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -45,11 +44,11 @@ func (r *ComplaintRepository) Add(
 
 func (r *ComplaintRepository) FindById(ctx context.Context, id uint64) (*entity.ComplaintEntity, error) {
 	p := &entity.ComplaintEntity{}
-	query := "SELECT id, session_id, criminal_session_id, reason, is_deleted, created_at, updated_at " +
+	query := "SELECT id, session_id, criminal_session_id, reason, created_at, updated_at " +
 		" FROM profile_complaints" +
 		" WHERE id=$1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	err := row.Scan(&p.Id, &p.SessionId, &p.CriminalSessionId, &p.Reason, &p.IsDeleted, &p.CreatedAt, &p.UpdatedAt)
+	err := row.Scan(&p.Id, &p.SessionId, &p.CriminalSessionId, &p.Reason, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))

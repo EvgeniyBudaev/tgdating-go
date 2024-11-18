@@ -14,14 +14,14 @@ func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileContr
 	router.Get("/profiles/short/:sessionId", profileController.GetProfileShortInfo())
 	router.Get("/profiles/list", profileController.GetProfileList())
 	router.Get("/profiles/filter/:sessionId", profileController.GetFilterBySessionId())
-	//router.Get("/profiles/:sessionId/images/:fileName", profileController.GetImageBySessionId()) // not used
 }
 
 func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileController) {
 	router := app.Group(prefix)
 	router.Post("/profiles", profileController.AddProfile())
 	router.Put("/profiles", profileController.UpdateProfile())
-	//router.Delete("/profiles", profileController.DeleteProfile()) // not used
+	router.Delete("/profiles", profileController.DeleteProfile())
+	router.Post("/profiles/restore", profileController.RestoreProfile())
 	router.Delete("/profiles/images/:id", profileController.DeleteImage())
 	router.Put("/profiles/filters", profileController.UpdateFilter())
 	router.Put("/profiles/navigators", profileController.UpdateCoordinates())

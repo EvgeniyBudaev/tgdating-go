@@ -11,6 +11,7 @@ type ProfileService interface {
 	AddProfile(ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
 	UpdateProfile(ctx context.Context, pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error)
 	DeleteProfile(ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
+	RestoreProfile(ctx context.Context, pr *request.ProfileRestoreRequestDto) (*response.ResponseDto, error)
 	GetProfileBySessionId(ctx context.Context, sessionId string,
 		pr *request.ProfileGetBySessionIdRequestDto) (*response.ProfileResponseDto, error)
 	GetProfileDetail(ctx context.Context, sessionId string,

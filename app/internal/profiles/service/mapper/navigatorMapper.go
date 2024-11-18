@@ -44,7 +44,6 @@ func (pm *NavigatorMapper) MapToAddRequest(
 	return &request.NavigatorAddRequestRepositoryDto{
 		SessionId: sessionId,
 		Location:  point,
-		IsDeleted: false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -56,14 +55,6 @@ func (pm *NavigatorMapper) MapToUpdateRequest(
 		SessionId: sessionId,
 		Longitude: longitude,
 		Latitude:  latitude,
-		UpdatedAt: time.Now().UTC(),
-	}
-}
-
-func (pm *NavigatorMapper) MapToDeleteRequest(sessionId string) *request.NavigatorDeleteRequestRepositoryDto {
-	return &request.NavigatorDeleteRequestRepositoryDto{
-		SessionId: sessionId,
-		IsDeleted: true,
 		UpdatedAt: time.Now().UTC(),
 	}
 }

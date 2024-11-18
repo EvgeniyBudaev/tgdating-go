@@ -131,6 +131,15 @@ func (pm *ProfileMapper) MapToDeleteRequest(sessionId string) *request.ProfileDe
 	}
 }
 
+func (pm *ProfileMapper) MapToRestoreRequest(sessionId string) *request.ProfileRestoreRequestRepositoryDto {
+	return &request.ProfileRestoreRequestRepositoryDto{
+		SessionId:  sessionId,
+		IsDeleted:  false,
+		UpdatedAt:  time.Now().UTC(),
+		LastOnline: time.Now().UTC(),
+	}
+}
+
 func (pm *ProfileMapper) MapToListRequest(
 	pr *entity.FilterEntity) *request.ProfileGetListRequestRepositoryDto {
 	return &request.ProfileGetListRequestRepositoryDto{
