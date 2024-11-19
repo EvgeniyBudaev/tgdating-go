@@ -56,6 +56,7 @@ func (pm *FilterMapper) MapProfileToUpdateRequest(
 	return &request.FilterUpdateRequestRepositoryDto{
 		SessionId:    pr.SessionId,
 		SearchGender: pr.SearchGender,
+		LookingFor:   pr.LookingFor,
 		AgeFrom:      pr.AgeFrom,
 		AgeTo:        pr.AgeTo,
 		UpdatedAt:    time.Now(),

@@ -272,7 +272,8 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		return v1.ResponseOk(ctf, profileShortInfo)
+		profileResponse := profileMapper.MapToShortInfoResponse(profileShortInfo)
+		return v1.ResponseOk(ctf, profileResponse)
 	}
 }
 

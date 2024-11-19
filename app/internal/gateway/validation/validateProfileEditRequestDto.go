@@ -53,13 +53,28 @@ func ValidateProfileEditRequestDto(ctf *fiber.Ctx, req *request.ProfileUpdateReq
 			errorMessages.GetNotEmpty(locale))
 	}
 
-	if req.Gender != "" && req.Gender != "man" && req.Gender != "woman" {
+	if req.Gender != "" && !req.Gender.IsValid() {
 		fieldErrorsLanguages["gender"] = append(fieldErrorsLanguages["gender"],
 			errorMessages.GetBadRequest(locale))
 	}
 
-	if req.SearchGender != "" && req.SearchGender != "man" && req.SearchGender != "woman" && req.SearchGender != "all" {
+	if req.SearchGender == "" {
 		fieldErrorsLanguages["searchGender"] = append(fieldErrorsLanguages["searchGender"],
+			errorMessages.GetNotEmpty(locale))
+	}
+
+	if req.SearchGender != "" && !req.SearchGender.IsValid() {
+		fieldErrorsLanguages["searchGender"] = append(fieldErrorsLanguages["searchGender"],
+			errorMessages.GetBadRequest(locale))
+	}
+
+	if req.LookingFor == "" {
+		fieldErrorsLanguages["lookingFor"] = append(fieldErrorsLanguages["lookingFor"],
+			errorMessages.GetNotEmpty(locale))
+	}
+
+	if req.LookingFor != "" && !req.LookingFor.IsValid() {
+		fieldErrorsLanguages["lookingFor"] = append(fieldErrorsLanguages["lookingFor"],
 			errorMessages.GetBadRequest(locale))
 	}
 

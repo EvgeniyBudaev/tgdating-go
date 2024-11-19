@@ -18,12 +18,13 @@ func (pm *ProfileMapper) MapToAddRequest(
 		SessionId:               r.SessionId,
 		DisplayName:             r.DisplayName,
 		Birthday:                newTimestampBirthday,
-		Gender:                  r.Gender,
-		SearchGender:            r.SearchGender,
+		Gender:                  string(r.Gender),
+		SearchGender:            string(r.SearchGender),
 		Location:                r.Location,
 		Description:             r.Description,
 		Height:                  r.Height,
 		Weight:                  r.Weight,
+		LookingFor:              string(r.LookingFor),
 		TelegramUserId:          r.TelegramUserId,
 		TelegramUsername:        r.TelegramUsername,
 		TelegramFirstName:       r.TelegramFirstName,
@@ -49,12 +50,13 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 		SessionId:               r.SessionId,
 		DisplayName:             r.DisplayName,
 		Birthday:                newTimestampBirthday,
-		Gender:                  r.Gender,
-		SearchGender:            r.SearchGender,
+		Gender:                  string(r.Gender),
+		SearchGender:            string(r.SearchGender),
 		Location:                r.Location,
 		Description:             r.Description,
 		Height:                  r.Height,
 		Weight:                  r.Weight,
+		LookingFor:              string(r.LookingFor),
 		TelegramUserId:          r.TelegramUserId,
 		TelegramUsername:        r.TelegramUsername,
 		TelegramFirstName:       r.TelegramFirstName,
@@ -165,6 +167,15 @@ func (pm *ProfileMapper) MapToBySessionIdResponse(r *pb.ProfileBySessionIdRespon
 			QueryId:         r.Telegram.QueryId,
 		},
 		Images: images,
+	}
+}
+
+func (pm *ProfileMapper) MapToShortInfoResponse(r *pb.ProfileShortInfoResponse) *response.ProfileShortInfoResponseDto {
+	return &response.ProfileShortInfoResponseDto{
+		SessionId: r.SessionId,
+		ImageUrl:  r.ImageUrl,
+		IsDeleted: r.IsDeleted,
+		IsBlocked: r.IsBlocked,
 	}
 }
 
