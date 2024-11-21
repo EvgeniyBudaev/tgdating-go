@@ -8,6 +8,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -53,6 +54,10 @@ func New() *App {
 		ReadBufferSize: 256 << 8,
 		BodyLimit:      50 * 1024 * 1024, // 50 MB
 	})
+
+	// Rate limiter to prevent DDOS attacks
+	// https://docs.gofiber.io/api/middleware/limiter/
+	f.Use(limiter.New())
 
 	// CORS
 	f.Use(cors.New(cors.Config{
