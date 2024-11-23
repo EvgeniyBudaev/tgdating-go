@@ -29,7 +29,8 @@ func NewBlockRepository(l logger.Logger, db *sql.DB) *BlockRepository {
 
 func (r *BlockRepository) Add(
 	ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*entity.BlockEntity, error) {
-	query := "INSERT INTO profile_blocks (session_id, blocked_user_session_id, is_blocked, created_at, updated_at)" +
+	query := "INSERT INTO dating.profile_blocks (session_id, blocked_user_session_id, is_blocked, created_at," +
+		" updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5)" +
 		" RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.BlockedUserSessionId, &p.IsBlocked, &p.CreatedAt,
@@ -52,7 +53,7 @@ func (r *BlockRepository) Add(
 func (r *BlockRepository) Find(ctx context.Context, sessionId, blockedUserSessionId string) (*entity.BlockEntity, error) {
 	p := &entity.BlockEntity{}
 	query := "SELECT id, session_id, blocked_user_session_id, is_blocked, created_at, updated_at " +
-		" FROM profile_blocks" +
+		" FROM dating.profile_blocks" +
 		" WHERE session_id=$1 AND blocked_user_session_id=$2"
 	row := r.db.QueryRowContext(ctx, query, sessionId, blockedUserSessionId)
 	err := row.Scan(&p.Id, &p.SessionId, &p.BlockedUserSessionId, &p.IsBlocked, &p.CreatedAt, &p.UpdatedAt)
@@ -70,7 +71,7 @@ func (r *BlockRepository) Find(ctx context.Context, sessionId, blockedUserSessio
 func (r *BlockRepository) FindById(ctx context.Context, id uint64) (*entity.BlockEntity, error) {
 	p := &entity.BlockEntity{}
 	query := "SELECT id, session_id, blocked_user_session_id, is_blocked, created_at, updated_at " +
-		" FROM profile_blocks" +
+		" FROM dating.profile_blocks" +
 		" WHERE id=$1"
 	row := r.db.QueryRowContext(ctx, query, id)
 	err := row.Scan(&p.Id, &p.SessionId, &p.BlockedUserSessionId, &p.IsBlocked, &p.CreatedAt, &p.UpdatedAt)

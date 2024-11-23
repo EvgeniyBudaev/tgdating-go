@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS dating.profiles
     is_premium       BOOL         NOT NULL DEFAULT false,
     is_show_distance BOOL         NOT NULL DEFAULT true,
     is_invisible     BOOL         NOT NULL DEFAULT false,
-    created_at       TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    updated_at       TIMESTAMP    NULL,
-    last_online      TIMESTAMP             DEFAULT CURRENT_TIMESTAMP CHECK (last_online >= created_at)
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_online      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP CHECK (last_online >= created_at)
 );
 
 CREATE TABLE IF NOT EXISTS dating.profile_images
@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS dating.profile_images
     is_blocked BOOL         NOT NULL DEFAULT false,
     is_primary BOOL         NOT NULL DEFAULT false,
     is_private BOOL         NOT NULL DEFAULT false,
-    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP    NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_images_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id)
 );
 
@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS dating.profile_navigators
     id         BIGSERIAL    NOT NULL PRIMARY KEY,
     session_id VARCHAR(255) NOT NULL,
     location   geometry(Point, 4326),
-    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP    NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_navigators_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id)
 );
 
@@ -60,8 +60,8 @@ CREATE TABLE IF NOT EXISTS dating.profile_filters
     distance      REAL         NOT NULL DEFAULT 0,
     page          INTEGER      NOT NULL DEFAULT 1,
     size          INTEGER      NOT NULL DEFAULT 1,
-    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP    NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_filters_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id)
 );
 
@@ -76,8 +76,8 @@ CREATE TABLE IF NOT EXISTS dating.profile_telegrams
     language_code      VARCHAR(255),
     allows_write_to_pm BOOL                  DEFAULT false,
     query_id           TEXT,
-    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at         TIMESTAMP    NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_telegram_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id)
 );
 
@@ -87,8 +87,8 @@ CREATE TABLE IF NOT EXISTS dating.profile_likes
     session_id       VARCHAR(255) NOT NULL,
     liked_session_id VARCHAR(255) NOT NULL,
     is_liked         BOOL         NOT NULL DEFAULT false,
-    created_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at       TIMESTAMP    NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_likes_profile_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id)
 );
 
@@ -98,8 +98,8 @@ CREATE TABLE IF NOT EXISTS dating.profile_blocks
     session_id              VARCHAR(255) NOT NULL,
     blocked_user_session_id VARCHAR(255) NOT NULL,
     is_blocked              BOOL         NOT NULL DEFAULT false,
-    created_at              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at              TIMESTAMP    NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_blocks_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id)
 );
 
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_complaints
     session_id          VARCHAR(255) NOT NULL,
     criminal_session_id VARCHAR(255) NOT NULL,
     reason              VARCHAR(255) NOT NULL,
-    created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMP    NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_complaints_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id)
 );

@@ -30,7 +30,7 @@ func NewNavigatorRepository(l logger.Logger, db *sql.DB) *NavigatorRepository {
 
 func (r *NavigatorRepository) Add(
 	ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*entity.NavigatorEntity, error) {
-	query := "INSERT INTO profile_navigators (session_id, location, created_at, updated_at)" +
+	query := "INSERT INTO dating.profile_navigators (session_id, location, created_at, updated_at)" +
 		" VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3),  4326), $4, $5) RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.Location.Longitude, &p.Location.Latitude,
 		&p.CreatedAt, &p.UpdatedAt)
@@ -53,7 +53,7 @@ func (r *NavigatorRepository) Update(
 		return nil, err
 	}
 	defer tx.Rollback()
-	query := "UPDATE profile_navigators SET location=ST_SetSRID(ST_MakePoint($1, $2),  4326), updated_at=$3" +
+	query := "UPDATE dating.profile_navigators SET location=ST_SetSRID(ST_MakePoint($1, $2),  4326), updated_at=$3" +
 		" WHERE session_id=$4"
 	_, err = r.db.ExecContext(ctx, query, &p.Longitude, &p.Latitude, &p.UpdatedAt, &p.SessionId)
 	if err != nil {
@@ -72,7 +72,7 @@ func (r *NavigatorRepository) FindById(
 	var latitude sql.NullFloat64
 	query := "SELECT id, session_id, ST_X(location) as longitude, ST_Y(location) as latitude, created_at," +
 		" updated_at" +
-		" FROM profile_navigators" +
+		" FROM dating.profile_navigators" +
 		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
 	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.CreatedAt, &p.UpdatedAt)
@@ -98,7 +98,7 @@ func (r *NavigatorRepository) FindBySessionId(
 	var latitude sql.NullFloat64
 	query := "SELECT id, session_id, ST_X(location) as longitude, ST_Y(location) as latitude, created_at," +
 		" updated_at" +
-		" FROM profile_navigators" +
+		" FROM dating.profile_navigators" +
 		" WHERE session_id = $1"
 	row := r.db.QueryRowContext(ctx, query, sessionId)
 	err := row.Scan(&p.Id, &p.SessionId, &longitude, &latitude, &p.CreatedAt, &p.UpdatedAt)
@@ -134,7 +134,7 @@ func (r *NavigatorRepository) FindDistance(ctx context.Context, pe *entity.Navig
 		" updated_at," +
 		" ST_DistanceSphere(ST_SetSRID(ST_MakePoint($4, $5),  4326)," +
 		" ST_SetSRID(ST_MakePoint($2, $3),  4326)) as distance" +
-		" FROM profile_navigators" +
+		" FROM dating.profile_navigators" +
 		" WHERE session_id = $1"
 	row := r.db.QueryRowContext(ctx, query, sessionId, longitudeSession, latitudeSession, longitudeViewed,
 		latitudeViewed)

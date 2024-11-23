@@ -38,7 +38,7 @@ func NewProfileRepository(l logger.Logger, db *sql.DB) *ProfileRepository {
 func (r *ProfileRepository) Add(
 	ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*entity.ProfileEntity, error) {
 	birthday := p.Birthday.Format("2006-01-02")
-	query := "INSERT INTO profiles (session_id, display_name, birthday, gender, location, description," +
+	query := "INSERT INTO dating.profiles (session_id, display_name, birthday, gender, location, description," +
 		" height, weight, is_deleted, is_blocked, is_premium, is_show_distance, is_invisible," +
 		" created_at, updated_at, last_online)" +
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)" +
@@ -75,7 +75,7 @@ func (r *ProfileRepository) Update(
 		return nil, err
 	}
 	defer tx.Rollback()
-	query := "UPDATE profiles SET display_name=$1, birthday=$2, gender=$3, location=$4," +
+	query := "UPDATE dating.profiles SET display_name=$1, birthday=$2, gender=$3, location=$4," +
 		" description=$5, height=$6, weight=$7, updated_at=$8, last_online=$9" +
 		" WHERE session_id=$10"
 	_, err = r.db.ExecContext(ctx, query, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
@@ -98,7 +98,7 @@ func (r *ProfileRepository) Delete(
 		return nil, err
 	}
 	defer tx.Rollback()
-	query := "UPDATE profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
+	query := "UPDATE dating.profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
 	_, err = r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Delete", "ExecContext")
@@ -118,7 +118,7 @@ func (r *ProfileRepository) Restore(
 		return nil, err
 	}
 	defer tx.Rollback()
-	query := "UPDATE profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
+	query := "UPDATE dating.profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
 	_, err = r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Restore", "ExecContext")
@@ -133,7 +133,7 @@ func (r *ProfileRepository) FindById(ctx context.Context, id uint64) (*entity.Pr
 	p := &entity.ProfileEntity{}
 	query := "SELECT id, session_id, display_name, birthday, gender, location, description, height, weight," +
 		" is_deleted, is_blocked, is_premium, is_show_distance, is_invisible, created_at, updated_at, last_online" +
-		" FROM profiles" +
+		" FROM dating.profiles" +
 		" WHERE id=$1"
 	row := r.db.QueryRowContext(ctx, query, id)
 	if row == nil {
@@ -162,7 +162,7 @@ func (r *ProfileRepository) FindBySessionId(
 	p := &entity.ProfileEntity{}
 	query := "SELECT id, session_id, display_name, birthday, gender, location, description, height, weight," +
 		" is_deleted, is_blocked, is_premium, is_show_distance, is_invisible, created_at, updated_at, last_online" +
-		" FROM profiles" +
+		" FROM dating.profiles" +
 		" WHERE session_id=$1"
 	row := r.db.QueryRowContext(ctx, query, sessionId)
 	if row == nil {
@@ -210,15 +210,16 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 		" )), 4326)::geography)," +
 		" NULL::numeric" +
 		" ) AS distance" +
-		" FROM profiles p" +
+		" FROM dating.profiles p" +
 		" LEFT JOIN profile_navigators pn ON p.session_id = pn.session_id" +
 		" WHERE p.is_deleted = false AND p.is_blocked = false AND" +
 		" (EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) BETWEEN $3 AND $4) AND" +
 		" ($2 = 'all' OR gender = $2) AND p.session_id <> $1 AND" +
-		" NOT EXISTS (SELECT 1 FROM profile_blocks WHERE session_id = $1 AND blocked_user_session_id = p.session_id)" +
+		" NOT EXISTS (SELECT 1 FROM dating.profile_blocks" +
+		" WHERE session_id = $1 AND blocked_user_session_id = p.session_id)" +
 		" )" +
 		" SELECT *" +
-		" FROM filtered_profiles" +
+		" FROM dating.filtered_profiles" +
 		" WHERE distance IS NULL OR (distance < $5 AND distance IS NOT NULL)" +
 		" ORDER BY CASE WHEN distance IS NULL THEN 1 ELSE 0 END, distance ASC, last_online DESC" +
 		" LIMIT $6 OFFSET $7"
@@ -258,7 +259,7 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 func (r *ProfileRepository) getTotalEntities(
 	ctx context.Context, sessionId, searchGender string, ageFrom, ageTo uint64) (uint64, error) {
 	query := "SELECT COUNT(*)" +
-		" FROM profiles" +
+		" FROM dating.profiles" +
 		" WHERE is_deleted=false AND is_blocked=false AND" +
 		" (EXTRACT(YEAR FROM AGE(NOW(), birthday)) BETWEEN $3 AND $4) AND" +
 		" ($2 = 'all' OR gender = $2) AND session_id <> $1"
