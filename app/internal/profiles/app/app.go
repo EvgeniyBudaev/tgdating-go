@@ -69,7 +69,9 @@ func New() *App {
 	}
 
 	// Auto migrate
-	driver, err := postgres.WithInstance(database.psql, &postgres.Config{})
+	driver, err := postgres.WithInstance(database.psql, &postgres.Config{
+		SchemaName: cfg.DBSchema,
+	})
 	if err != nil {
 		errorMessage := getErrorMessage("New", "WithInstance", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
@@ -82,7 +84,8 @@ func New() *App {
 	migrationsPath := fmt.Sprintf("file://%s/migrations/profiles", dir)
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationsPath,
-		"postgres", driver)
+		cfg.DBName,
+		driver)
 	if err != nil {
 		errorMessage := getErrorMessage("New", "NewWithDatabaseInstance",
 			errorFilePathApp)

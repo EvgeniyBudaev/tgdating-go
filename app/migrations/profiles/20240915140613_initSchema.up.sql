@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_images
     CONSTRAINT fk_profile_images_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id) ON DELETE CASCADE
 );
 
-CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS postgis SCHEMA dating;
 
 CREATE TABLE IF NOT EXISTS dating.profile_navigators
 (

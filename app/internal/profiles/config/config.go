@@ -17,6 +17,7 @@ type Config struct {
 	DBPassword           string `envconfig:"POSTGRES_PASSWORD"`
 	DBName               string `envconfig:"POSTGRES_NAME"`
 	DBSSlMode            string `envconfig:"POSTGRES_SSLMODE"`
+	DBSchema             string `envconfig:"POSTGRES_SCHEMA"`
 	TelegramBotToken     string `envconfig:"TELEGRAM_BOT_TOKEN"`
 	S3AccessKey          string `envconfig:"S3_ACCESS_KEY"`
 	S3SecretKey          string `envconfig:"S3_SECRET_KEY"`
