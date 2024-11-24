@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS dating.profiles;
+DROP TABLE IF EXISTS dating.profiles CASCADE;
