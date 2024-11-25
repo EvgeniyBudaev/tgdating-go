@@ -9,7 +9,6 @@ import (
 type Config struct {
 	GatewayPort      string `envconfig:"GATEWAY_PORT"`
 	ProfilesPort     string `envconfig:"PROFILES_PORT"`
-	Domain           string `envconfig:"DOMAIN"`
 	LoggerLevel      string `envconfig:"LOGGER_LEVEL"`
 	CryptoSecretKey  string `envconfig:"CRYPTO_SECRET_KEY"`
 	TelegramBotToken string `envconfig:"TELEGRAM_BOT_TOKEN"`

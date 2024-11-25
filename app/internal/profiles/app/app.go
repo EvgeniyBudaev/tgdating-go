@@ -69,8 +69,15 @@ func New() *App {
 	}
 
 	// Auto migrate
+	// Create schema
+	_, err = database.psql.Exec("CREATE SCHEMA IF NOT EXISTS dating;")
+	if err != nil {
+		errorMessage := getErrorMessage("New", "CREATE SCHEMA", errorFilePathApp)
+		defaultLogger.Fatal(errorMessage, zap.Error(err))
+	}
 	driver, err := postgres.WithInstance(database.psql, &postgres.Config{
-		SchemaName: cfg.DBSchema,
+		DatabaseName: cfg.DBName,
+		SchemaName:   cfg.DBSchema,
 	})
 	if err != nil {
 		errorMessage := getErrorMessage("New", "WithInstance", errorFilePathApp)
@@ -81,7 +88,7 @@ func New() *App {
 		errorMessage := getErrorMessage("New", "os.Getwd", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
-	migrationsPath := fmt.Sprintf("file://%s/migrations/profiles", dir)
+	migrationsPath := fmt.Sprintf("file://%s/migrations", dir)
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationsPath,
 		cfg.DBName,

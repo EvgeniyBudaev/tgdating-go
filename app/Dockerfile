@@ -12,16 +12,28 @@ RUN go mod download
 
 # build
 COPY . .
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/app ./cmd/gateway
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/app ./cmd/profiles
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/app ./cmd/telegram
 
-FROM alpine:latest
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/telegram ./cmd/telegram
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/profiles ./cmd/profiles
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o ./bin/gateway ./cmd/gateway
 
+FROM alpine:latest as telegram
 WORKDIR /app
-
 RUN apk --no-cache add vips
-
 COPY --from=builder /app/.env .env
-COPY --from=builder /app/bin/app .
-CMD ["./app"]
+COPY --from=builder /app/bin/telegram ./telegram
+ENTRYPOINT ["./telegram"]
+
+FROM alpine:latest as profiles
+WORKDIR /app
+RUN apk --no-cache add vips
+COPY --from=builder /app/.env .env
+COPY --from=builder /app/bin/profiles ./profiles
+ENTRYPOINT ["./profiles"]
+
+FROM alpine:latest as gateway
+WORKDIR /app
+RUN apk --no-cache add vips
+COPY --from=builder /app/.env .env
+COPY --from=builder /app/bin/gateway ./gateway
+ENTRYPOINT ["./gateway"]

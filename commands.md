@@ -7,6 +7,18 @@ sudo lsof -i :80
 sudo kill PID_number
 ```
 
+Решение чтобы при запуске через docker-compose Postgres запускался первым
+https://geshan.com.np/blog/2024/02/docker-compose-depends-on/#example-with-depends_on-and-service_healthy-condition
+
+PostGIS
+```
+pg_config --version // PostgreSQL 14.10 (Ubuntu 14.10-0ubuntu0.22.04.1) 
+sudo apt-get update
+sudo apt install postgis postgresql-14-postgis-3
+sudo -u postgres psql -c "CREATE EXTENSION postgis;" tgbot
+sudo systemctl restart postgresql
+```
+
 Инициализация зависимостей
 ```
 go mod init github.com/EvgeniyBudaev/tgdating-go/app
@@ -118,7 +130,7 @@ migrate -path migrations -database "postgres://localhost:5432/tgbot?sslmode=disa
 
 Если ошибка Dirty database version 1. Fix and force version
 ```
-migrate create -ext sql -dir migrations initSchema force 20240410053939
+migrate create -ext sql -dir migrations initSchema force 20241125085712
 ```
 
 Create Let’s Encrypt Wildcard Certificates in NGINX

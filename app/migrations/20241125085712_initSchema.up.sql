@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS dating.profiles
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_online      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP CHECK (last_online >= created_at)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS dating.profile_images
 (
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_images
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_images_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id) ON DELETE CASCADE
-);
+    );
 
 CREATE EXTENSION IF NOT EXISTS postgis SCHEMA dating;
 
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_navigators
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_navigators_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id) ON DELETE CASCADE
-);
+    );
 
 CREATE TABLE IF NOT EXISTS dating.profile_filters
 (
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_filters
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_filters_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id) ON DELETE CASCADE
-);
+    );
 
 CREATE TABLE IF NOT EXISTS dating.profile_telegrams
 (
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_telegrams
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_telegram_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id) ON DELETE CASCADE
-);
+    );
 
 CREATE TABLE IF NOT EXISTS dating.profile_likes
 (
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_likes
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_likes_profile_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id) ON DELETE CASCADE
-);
+    );
 
 CREATE TABLE IF NOT EXISTS dating.profile_blocks
 (
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_blocks
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_blocks_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id) ON DELETE CASCADE
-);
+    );
 
 CREATE TABLE IF NOT EXISTS dating.profile_complaints
 (
@@ -112,4 +112,4 @@ CREATE TABLE IF NOT EXISTS dating.profile_complaints
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_profile_complaints_session_id FOREIGN KEY (session_id) REFERENCES dating.profiles (session_id) ON DELETE CASCADE
-);
+    );

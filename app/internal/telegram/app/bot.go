@@ -54,6 +54,7 @@ func (app *App) StartBot(ctx context.Context) error {
 		return err
 	}
 	bot.Debug = true
+	app.Logger.Info("Starting Telegram service")
 	app.Logger.Info("Authorized on account:", zap.String("username", bot.Self.UserName))
 	//updateConfig := tgbotapi.NewUpdate(0)
 	//updateConfig.Timeout = UpdateConfigTimeout

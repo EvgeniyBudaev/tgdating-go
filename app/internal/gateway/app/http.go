@@ -19,6 +19,7 @@ func (app *App) StartHTTPServer(ctx context.Context, proto proto.ProfileClient) 
 		app.fiber, app.config, app.Logger, profileController, InitPublicRoutes, InitProtectedRoutes)
 	go func() {
 		port := ":" + app.config.GatewayPort
+		app.Logger.Info("Starting Gateway service on port: ", zap.String("port", port))
 		if err := app.fiber.Listen(port); err != nil {
 			errorMessage := getErrorMessage("StartHTTPServer", "Listen",
 				errorFilePathHttp)

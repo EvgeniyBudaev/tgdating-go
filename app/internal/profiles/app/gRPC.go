@@ -33,6 +33,7 @@ func (app *App) StartServer(ctx context.Context) error {
 	pb.RegisterProfileServer(app.gRPCServer, profileController)
 	go func() {
 		port := ":" + app.config.ProfilesPort
+		app.Logger.Info("Starting Profile service on port: ", zap.String("port", port))
 		listen, err := net.Listen("tcp", port)
 		if err != nil {
 			errorMessage := getErrorMessage("StartServer", "net.Listen",
