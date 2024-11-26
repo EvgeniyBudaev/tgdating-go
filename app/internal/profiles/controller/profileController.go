@@ -34,7 +34,7 @@ func NewProfileController(l logger.Logger, ps ProfileService) *ProfileController
 }
 
 func (pc *ProfileController) AddProfile(ctx context.Context, in *pb.ProfileAddRequest) (*pb.ProfileAddResponse, error) {
-	pc.logger.Info("POST /gateway/api/v1/profiles")
+	pc.logger.Info("POST /api/v1/profiles")
 	fileList := make([]*entity.FileMetadata, 0)
 	if len(in.Files) > 0 {
 		for _, file := range in.Files {
@@ -57,7 +57,7 @@ func (pc *ProfileController) AddProfile(ctx context.Context, in *pb.ProfileAddRe
 
 func (pc *ProfileController) UpdateProfile(
 	ctx context.Context, in *pb.ProfileUpdateRequest) (*pb.ProfileBySessionIdResponse, error) {
-	pc.logger.Info("PUT /gateway/api/v1/profiles")
+	pc.logger.Info("PUT /api/v1/profiles")
 	fileList := make([]*entity.FileMetadata, 0)
 	if len(in.Files) > 0 {
 		for _, file := range in.Files {
@@ -81,7 +81,7 @@ func (pc *ProfileController) UpdateProfile(
 
 func (pc *ProfileController) DeleteProfile(
 	ctx context.Context, in *pb.ProfileDeleteRequest) (*pb.ProfileDeleteResponse, error) {
-	pc.logger.Info("DELETE /gateway/api/v1/profiles")
+	pc.logger.Info("DELETE /api/v1/profiles")
 	req := &request.ProfileDeleteRequestDto{
 		SessionId: in.SessionId,
 	}
@@ -96,7 +96,7 @@ func (pc *ProfileController) DeleteProfile(
 
 func (pc *ProfileController) RestoreProfile(
 	ctx context.Context, in *pb.ProfileRestoreRequest) (*pb.ProfileRestoreResponse, error) {
-	pc.logger.Info("POST /gateway/api/v1/profiles/restore")
+	pc.logger.Info("POST /api/v1/profiles/restore")
 	req := &request.ProfileRestoreRequestDto{
 		SessionId: in.SessionId,
 	}
@@ -111,7 +111,7 @@ func (pc *ProfileController) RestoreProfile(
 
 func (pc *ProfileController) GetProfileBySessionId(
 	ctx context.Context, in *pb.ProfileGetBySessionIdRequest) (*pb.ProfileBySessionIdResponse, error) {
-	pc.logger.Info("GET /gateway/api/v1/profiles/session/:sessionId")
+	pc.logger.Info("GET /api/v1/profiles/session/:sessionId")
 	sessionId := in.SessionId
 	req := &request.ProfileGetBySessionIdRequestDto{
 		Latitude:  in.Latitude,
@@ -131,7 +131,7 @@ func (pc *ProfileController) GetProfileBySessionId(
 
 func (pc *ProfileController) GetProfileDetail(
 	ctx context.Context, in *pb.ProfileGetDetailRequest) (*pb.ProfileDetailResponse, error) {
-	pc.logger.Info("GET /gateway/api/v1/profiles/detail/:viewedSessionId")
+	pc.logger.Info("GET /api/v1/profiles/detail/:viewedSessionId")
 	req := &request.ProfileGetDetailRequestDto{
 		SessionId: in.SessionId,
 		Latitude:  in.Latitude,
@@ -152,7 +152,7 @@ func (pc *ProfileController) GetProfileDetail(
 
 func (pc *ProfileController) GetProfileShortInfo(
 	ctx context.Context, in *pb.ProfileGetShortInfoRequest) (*pb.ProfileShortInfoResponse, error) {
-	pc.logger.Info("GET /gateway/api/v1/profiles/short/:sessionId")
+	pc.logger.Info("GET /api/v1/profiles/short/:sessionId")
 	req := &request.ProfileGetShortInfoRequestDto{
 		Latitude:  in.Latitude,
 		Longitude: in.Longitude,
@@ -172,7 +172,7 @@ func (pc *ProfileController) GetProfileShortInfo(
 
 func (pc *ProfileController) GetProfileList(
 	ctx context.Context, in *pb.ProfileGetListRequest) (*pb.ProfileListResponse, error) {
-	pc.logger.Info("GET /gateway/api/v1/profiles/list")
+	pc.logger.Info("GET api/v1/profiles/list")
 	req := &request.ProfileGetListRequestDto{
 		SessionId: in.SessionId,
 		Latitude:  in.Latitude,
@@ -195,7 +195,7 @@ func (pc *ProfileController) GetProfileList(
 
 func (pc *ProfileController) GetImageBySessionId(
 	ctx context.Context, in *pb.GetImageBySessionIdRequest) (*pb.ImageBySessionIdResponse, error) {
-	pc.logger.Info("GET /gateway/api/v1/profiles/:sessionId/images/:fileName")
+	pc.logger.Info("GET /api/v1/profiles/:sessionId/images/:fileName")
 	sessionId := in.SessionId
 	fileName := in.FileName
 	file, err := pc.service.GetImageBySessionId(ctx, sessionId, fileName)
@@ -221,7 +221,7 @@ func (pc *ProfileController) GetImageById(ctx context.Context, in *pb.GetImageBy
 
 func (pc *ProfileController) DeleteImage(
 	ctx context.Context, in *pb.ImageDeleteRequest) (*pb.ImageDeleteResponse, error) {
-	pc.logger.Info("DELETE /gateway/api/v1/profiles/images/:id")
+	pc.logger.Info("DELETE /api/v1/profiles/images/:id")
 	req := &request.ImageDeleteRequestDto{
 		Id: in.Id,
 	}
@@ -237,7 +237,7 @@ func (pc *ProfileController) DeleteImage(
 
 func (pc *ProfileController) GetFilterBySessionId(
 	ctx context.Context, in *pb.FilterGetRequest) (*pb.FilterGetResponse, error) {
-	pc.logger.Info("GET /gateway/api/v1/profiles/filter/:sessionId")
+	pc.logger.Info("GET /api/v1/profiles/filter/:sessionId")
 	req := &request.FilterGetRequestDto{
 		Latitude:  in.Latitude,
 		Longitude: in.Longitude,
@@ -257,7 +257,7 @@ func (pc *ProfileController) GetFilterBySessionId(
 
 func (pc *ProfileController) UpdateFilter(
 	ctx context.Context, in *pb.FilterUpdateRequest) (*pb.FilterUpdateResponse, error) {
-	pc.logger.Info("PUT /gateway/api/v1/profiles/filters")
+	pc.logger.Info("PUT /api/v1/profiles/filters")
 	req := &request.FilterUpdateRequestDto{
 		SessionId:    in.SessionId,
 		SearchGender: in.SearchGender,
@@ -274,7 +274,7 @@ func (pc *ProfileController) UpdateFilter(
 }
 
 func (pc *ProfileController) AddBlock(ctx context.Context, in *pb.BlockAddRequest) (*pb.BlockAddResponse, error) {
-	pc.logger.Info("POST /gateway/api/v1/profiles/blocks")
+	pc.logger.Info("POST /api/v1/profiles/blocks")
 	req := &request.BlockAddRequestDto{
 		SessionId:            in.SessionId,
 		BlockedUserSessionId: in.BlockedUserSessionId,
@@ -289,7 +289,7 @@ func (pc *ProfileController) AddBlock(ctx context.Context, in *pb.BlockAddReques
 }
 
 func (pc *ProfileController) AddLike(ctx context.Context, in *pb.LikeAddRequest) (*pb.LikeAddResponse, error) {
-	pc.logger.Info("POST /gateway/api/v1/profiles/likes")
+	pc.logger.Info("POST /api/v1/profiles/likes")
 	req := &request.LikeAddRequestDto{
 		SessionId:      in.SessionId,
 		LikedSessionId: in.LikedSessionId,
@@ -305,8 +305,12 @@ func (pc *ProfileController) AddLike(ctx context.Context, in *pb.LikeAddRequest)
 }
 
 func (pc *ProfileController) UpdateLike(ctx context.Context, in *pb.LikeUpdateRequest) (*pb.LikeUpdateResponse, error) {
-	pc.logger.Info("PUT /gateway/api/v1/profiles/likes")
-	req := &request.LikeUpdateRequestDto{}
+	pc.logger.Info("PUT /api/v1/profiles/likes")
+	req := &request.LikeUpdateRequestDto{
+		Id:        in.Id,
+		SessionId: in.SessionId,
+		IsLiked:   in.IsLiked,
+	}
 	likeUpdated, err := pc.service.UpdateLike(ctx, req)
 	if err != nil {
 		return nil, err
@@ -318,7 +322,7 @@ func (pc *ProfileController) UpdateLike(ctx context.Context, in *pb.LikeUpdateRe
 
 func (pc *ProfileController) AddComplaint(
 	ctx context.Context, in *pb.ComplaintAddRequest) (*pb.ComplaintAddResponse, error) {
-	pc.logger.Info("POST /gateway/api/v1/profiles/complaints")
+	pc.logger.Info("POST /api/v1/profiles/complaints")
 	req := &request.ComplaintAddRequestDto{
 		SessionId:         in.SessionId,
 		CriminalSessionId: in.CriminalSessionId,
@@ -335,7 +339,7 @@ func (pc *ProfileController) AddComplaint(
 
 func (pc *ProfileController) UpdateCoordinates(
 	ctx context.Context, in *pb.NavigatorUpdateRequest) (*pb.NavigatorUpdateResponse, error) {
-	pc.logger.Info("PUT /gateway/api/v1/profiles/navigators")
+	pc.logger.Info("PUT /api/v1/profiles/navigators")
 	req := &request.NavigatorUpdateRequestDto{
 		SessionId: in.SessionId,
 		Latitude:  in.Latitude,

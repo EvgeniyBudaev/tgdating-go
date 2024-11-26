@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var prefix = "/gateway/api/v1"
+var prefix = "/api/v1"
 
 func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileController) {
 	router := app.Group(prefix)

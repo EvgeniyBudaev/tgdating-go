@@ -16,6 +16,7 @@ pg_config --version // PostgreSQL 14.10 (Ubuntu 14.10-0ubuntu0.22.04.1)
 sudo apt-get update
 sudo apt install postgis postgresql-14-postgis-3
 sudo -u postgres psql -c "CREATE EXTENSION postgis;" tgbot
+sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS postgis SCHEMA dating;" tgbot
 sudo systemctl restart postgresql
 ```
 
@@ -61,15 +62,6 @@ go get -u github.com/pkg/errors
 Драйвер для Postgres
 ```
 go get -u github.com/lib/pq
-```
-
-PostGIS
-```
-pg_config --version // PostgreSQL 14.10 (Ubuntu 14.10-0ubuntu0.22.04.1)
-sudo apt-get update
-sudo apt install postgis postgresql-14-postgis-3
-sudo -u postgres psql -c "CREATE EXTENSION postgis;" tgbot
-sudo systemctl restart postgresql
 ```
 
 Fiber

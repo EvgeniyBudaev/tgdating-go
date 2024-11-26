@@ -4,7 +4,7 @@ package protobuf;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/EvgeniyBudaev/tgdating-go/app/proto";
+option go_package = "github.com/EvgeniyBudaev/tgdating-go/app/contracts/proto/profiles";
 
 message FileMetadata {
   string filename = 1; // Имя файла
@@ -22,8 +22,8 @@ message Image {
   bool isBlocked = 7; // заблокировано изображение да/нет
   bool isPrimary = 8; // изображение является основным да/нет
   bool isPrivate = 9; // изображение является приватным да/нет
-  google.protobuf.Timestamp createdAt = 15; // дата создания
-  google.protobuf.Timestamp updatedAt = 16; // дата обновления
+  google.protobuf.Timestamp createdAt = 10; // дата создания
+  google.protobuf.Timestamp updatedAt = 11; // дата обновления
 }
 
 message Point {

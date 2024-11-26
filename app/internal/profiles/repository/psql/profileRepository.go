@@ -203,15 +203,15 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 		" EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) AS age," +
 		" COALESCE(" +
 		" ST_Distance(" +
-		" (SELECT location FROM profile_navigators WHERE session_id = p.session_id)::geography," +
+		" (SELECT location FROM dating.profile_navigators WHERE session_id = p.session_id)::geography," +
 		" ST_SetSRID(ST_Force2D(ST_MakePoint(" +
-		"(SELECT ST_X(location) FROM profile_navigators WHERE session_id = $1)," +
-		" (SELECT ST_Y(location) FROM profile_navigators WHERE session_id = $1)" +
+		"(SELECT ST_X(location) FROM dating.profile_navigators WHERE session_id = $1)," +
+		" (SELECT ST_Y(location) FROM dating.profile_navigators WHERE session_id = $1)" +
 		" )), 4326)::geography)," +
 		" NULL::numeric" +
 		" ) AS distance" +
 		" FROM dating.profiles p" +
-		" LEFT JOIN profile_navigators pn ON p.session_id = pn.session_id" +
+		" LEFT JOIN dating.profile_navigators pn ON p.session_id = pn.session_id" +
 		" WHERE p.is_deleted = false AND p.is_blocked = false AND" +
 		" (EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) BETWEEN $3 AND $4) AND" +
 		" ($2 = 'all' OR gender = $2) AND p.session_id <> $1 AND" +
@@ -219,7 +219,7 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 		" WHERE session_id = $1 AND blocked_user_session_id = p.session_id)" +
 		" )" +
 		" SELECT *" +
-		" FROM dating.filtered_profiles" +
+		" FROM filtered_profiles" +
 		" WHERE distance IS NULL OR (distance < $5 AND distance IS NOT NULL)" +
 		" ORDER BY CASE WHEN distance IS NULL THEN 1 ELSE 0 END, distance ASC, last_online DESC" +
 		" LIMIT $6 OFFSET $7"
@@ -281,7 +281,7 @@ func (r *ProfileRepository) UpdateLastOnline(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
-	query := "UPDATE profiles SET last_online=$1 WHERE session_id=$2"
+	query := "UPDATE dating.profiles SET last_online=$1 WHERE session_id=$2"
 	_, err = r.db.ExecContext(ctx, query, &p.LastOnline, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("UpdateLastOnline", "ExecContext")

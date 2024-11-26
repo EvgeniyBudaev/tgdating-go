@@ -82,11 +82,11 @@ func (s *ProfileService) AddProfile(
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
 		_, err = s.AddNavigator(ctx, pr.SessionId, longitude, latitude)
-	}
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddProfile", "AddNavigator")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
+		if err != nil {
+			errorMessage := s.getErrorMessage("AddProfile", "AddNavigator")
+			s.logger.Debug(errorMessage, zap.Error(err))
+			return nil, err
+		}
 	}
 	profileResponse := profileMapper.MapToAddResponse(profileCreated)
 	if err := s.AddImageList(ctx, profileCreated.SessionId, pr.Files); err != nil {
@@ -796,6 +796,8 @@ func (s *ProfileService) AddLike(
 	ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error) {
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		errorMessage := s.getErrorMessage("AddLike", "checkUserExists")
+		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	telegramProfile, err := s.telegramRepository.FindBySessionId(ctx, sessionId)

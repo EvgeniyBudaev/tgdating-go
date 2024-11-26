@@ -183,6 +183,7 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 		likeCreatedAtTimestamp := timestamppb.New(r.Like.CreatedAt)
 		likeUpdatedAtTimestamp := timestamppb.New(r.Like.UpdatedAt)
 		likeResponse = &pb.LikeResponse{
+			Id:             r.Like.Id,
 			SessionId:      r.Like.SessionId,
 			LikedSessionId: r.Like.LikedSessionId,
 			IsLiked:        r.Like.IsLiked,

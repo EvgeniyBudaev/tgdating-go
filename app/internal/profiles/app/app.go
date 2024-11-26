@@ -15,6 +15,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"os"
+	"strings"
 )
 
 const (
@@ -88,7 +89,7 @@ func New() *App {
 		errorMessage := getErrorMessage("New", "os.Getwd", errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
-	migrationsPath := fmt.Sprintf("file://%s/migrations", dir)
+	migrationsPath := fmt.Sprintf("file://%s/migrations/", dir)
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationsPath,
 		cfg.DBName,
@@ -98,7 +99,11 @@ func New() *App {
 			errorFilePathApp)
 		defaultLogger.Fatal(errorMessage, zap.Error(err))
 	}
-	m.Up()
+	err = m.Up()
+	if err != nil && !strings.Contains(err.Error(), "no change") {
+		errorMessage := getErrorMessage("New", "m.Up", errorFilePathApp)
+		defaultLogger.Fatal(errorMessage, zap.Error(err))
+	}
 
 	// gRPC-сервер
 	s := grpc.NewServer()

@@ -7,11 +7,12 @@ import (
 )
 
 type Config struct {
-	GatewayPort      string `envconfig:"GATEWAY_PORT"`
-	ProfilesPort     string `envconfig:"PROFILES_PORT"`
-	LoggerLevel      string `envconfig:"LOGGER_LEVEL"`
-	CryptoSecretKey  string `envconfig:"CRYPTO_SECRET_KEY"`
-	TelegramBotToken string `envconfig:"TELEGRAM_BOT_TOKEN"`
+	GatewayPort        string `envconfig:"GATEWAY_PORT"`
+	ProfilesPort       string `envconfig:"PROFILES_PORT"`
+	ProfilesClientName string `envconfig:"PROFILES_CLIENT_NAME"`
+	LoggerLevel        string `envconfig:"LOGGER_LEVEL"`
+	CryptoSecretKey    string `envconfig:"CRYPTO_SECRET_KEY"`
+	TelegramBotToken   string `envconfig:"TELEGRAM_BOT_TOKEN"`
 }
 
 func Load(l logger.Logger) (*Config, error) {

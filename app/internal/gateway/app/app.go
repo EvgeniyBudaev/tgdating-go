@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"sync"
+	"time"
 )
 
 const (
@@ -57,7 +58,10 @@ func New() *App {
 
 	// Rate limiter to prevent DDOS attacks
 	// https://docs.gofiber.io/api/middleware/limiter/
-	f.Use(limiter.New())
+	f.Use(limiter.New(limiter.Config{
+		Max:        60,
+		Expiration: 60 * time.Second,
+	}))
 
 	// CORS
 	f.Use(cors.New(cors.Config{
@@ -76,7 +80,7 @@ func New() *App {
 // Run launches the application
 func (app *App) Run(ctx context.Context) {
 	app.Logger.Info("Listening gRPC server on port: ", zap.String("port", app.config.ProfilesPort))
-	addr := fmt.Sprintf("%s:%s", "profiles", app.config.ProfilesPort)
+	addr := fmt.Sprintf("%s:%s", app.config.ProfilesClientName, app.config.ProfilesPort)
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		errorMessage := getErrorMessage("New", "grpc.NewClient", errorFilePathApp)

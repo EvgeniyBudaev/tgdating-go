@@ -205,6 +205,7 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 	var likeResponse *response.LikeResponseDto
 	if r.Like != nil {
 		likeResponse = &response.LikeResponseDto{
+			Id:             r.Like.Id,
 			SessionId:      r.Like.SessionId,
 			LikedSessionId: r.Like.LikedSessionId,
 			IsLiked:        r.Like.IsLiked,
