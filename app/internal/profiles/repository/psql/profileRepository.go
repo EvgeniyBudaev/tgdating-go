@@ -68,64 +68,40 @@ func (r *ProfileRepository) Add(
 
 func (r *ProfileRepository) Update(
 	ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*entity.ProfileEntity, error) {
-	tx, err := r.db.Begin()
-	if err != nil {
-		errorMessage := r.getErrorMessage("Update", "Begin")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
 	query := "UPDATE dating.profiles SET display_name=$1, birthday=$2, gender=$3, location=$4," +
 		" description=$5, height=$6, weight=$7, updated_at=$8, last_online=$9" +
 		" WHERE session_id=$10"
-	_, err = r.db.ExecContext(ctx, query, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
+	_, err := r.db.ExecContext(ctx, query, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
 		&p.Description, &p.Height, &p.Weight, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	tx.Commit()
 	return r.FindBySessionId(ctx, p.SessionId)
 }
 
 func (r *ProfileRepository) Delete(
 	ctx context.Context, p *request.ProfileDeleteRequestRepositoryDto) (*entity.ProfileEntity, error) {
-	tx, err := r.db.Begin()
-	if err != nil {
-		errorMessage := r.getErrorMessage("Delete", "Begin")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
 	query := "UPDATE dating.profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
-	_, err = r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
+	_, err := r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Delete", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	tx.Commit()
 	return r.FindBySessionId(ctx, p.SessionId)
 }
 
 func (r *ProfileRepository) Restore(
 	ctx context.Context, p *request.ProfileRestoreRequestRepositoryDto) (*entity.ProfileEntity, error) {
-	tx, err := r.db.Begin()
-	if err != nil {
-		errorMessage := r.getErrorMessage("Restore", "Begin")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
 	query := "UPDATE dating.profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
-	_, err = r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
+	_, err := r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Restore", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	tx.Commit()
 	return r.FindBySessionId(ctx, p.SessionId)
 }
 
@@ -275,21 +251,13 @@ func (r *ProfileRepository) getTotalEntities(
 
 func (r *ProfileRepository) UpdateLastOnline(
 	ctx context.Context, p *request.ProfileUpdateLastOnlineRequestRepositoryDto) error {
-	tx, err := r.db.Begin()
-	if err != nil {
-		errorMessage := r.getErrorMessage("UpdateLastOnline", "Begin")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return err
-	}
 	query := "UPDATE dating.profiles SET last_online=$1 WHERE session_id=$2"
-	_, err = r.db.ExecContext(ctx, query, &p.LastOnline, &p.SessionId)
+	_, err := r.db.ExecContext(ctx, query, &p.LastOnline, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("UpdateLastOnline", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
-	tx.Commit()
-	defer tx.Rollback()
 	return nil
 }
 

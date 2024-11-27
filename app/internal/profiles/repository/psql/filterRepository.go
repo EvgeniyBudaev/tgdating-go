@@ -45,23 +45,15 @@ func (r *FilterRepository) Add(
 
 func (r *FilterRepository) Update(
 	ctx context.Context, p *request.FilterUpdateRequestRepositoryDto) (*entity.FilterEntity, error) {
-	tx, err := r.db.Begin()
-	if err != nil {
-		errorMessage := r.getErrorMessage("Update", "Begin")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
 	query := "UPDATE dating.profile_filters SET search_gender=$1, looking_for=$2, age_from=$3, age_to=$4," +
 		" updated_at=$5" +
 		" WHERE session_id=$6"
-	_, err = r.db.ExecContext(ctx, query, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo, &p.UpdatedAt, &p.SessionId)
+	_, err := r.db.ExecContext(ctx, query, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo, &p.UpdatedAt, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	tx.Commit()
 	return r.FindBySessionId(ctx, p.SessionId)
 }
 

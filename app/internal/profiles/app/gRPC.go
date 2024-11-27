@@ -26,9 +26,9 @@ func (app *App) StartServer(ctx context.Context) error {
 	blockRepository := psql.NewBlockRepository(app.Logger, app.db.psql)
 	complaintRepository := psql.NewComplaintRepository(app.Logger, app.db.psql)
 	profileRepository := psql.NewProfileRepository(app.Logger, app.db.psql)
-	profileService := service.NewProfileService(app.Logger, app.config, app.kafkaWriter, s3Client, profileRepository,
-		navigatorRepository, filterRepository, telegramRepository, imageRepository, likeRepository, blockRepository,
-		complaintRepository)
+	profileService := service.NewProfileService(app.Logger, app.db.psql, app.config, app.kafkaWriter, s3Client,
+		profileRepository, navigatorRepository, filterRepository, telegramRepository, imageRepository, likeRepository,
+		blockRepository, complaintRepository)
 	profileController := controller.NewProfileController(app.Logger, profileService)
 	pb.RegisterProfileServer(app.gRPCServer, profileController)
 	go func() {

@@ -45,22 +45,14 @@ func (r *LikeRepository) Add(
 
 func (r *LikeRepository) Update(
 	ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*entity.LikeEntity, error) {
-	tx, err := r.db.Begin()
-	if err != nil {
-		errorMessage := r.getErrorMessage("Update", "Begin")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
 	query := "UPDATE dating.profile_likes SET is_liked=$1, updated_at=$2" +
 		" WHERE id=$3"
-	_, err = r.db.ExecContext(ctx, query, &p.IsLiked, &p.UpdatedAt, &p.Id)
+	_, err := r.db.ExecContext(ctx, query, &p.IsLiked, &p.UpdatedAt, &p.Id)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	tx.Commit()
 	return r.FindById(ctx, p.Id)
 }
 

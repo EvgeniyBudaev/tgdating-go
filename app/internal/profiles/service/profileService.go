@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/config"
@@ -29,6 +30,7 @@ const (
 
 type ProfileService struct {
 	logger              logger.Logger
+	db                  *sql.DB
 	config              *config.Config
 	kafkaWriter         *kafka.Writer
 	s3                  *config.S3
@@ -44,6 +46,7 @@ type ProfileService struct {
 
 func NewProfileService(
 	l logger.Logger,
+	db *sql.DB,
 	cfg *config.Config,
 	kw *kafka.Writer,
 	s3 *config.S3,
@@ -54,6 +57,7 @@ func NewProfileService(
 	ir ImageRepository, lr LikeRepository, br BlockRepository, cr ComplaintRepository) *ProfileService {
 	return &ProfileService{
 		logger:              l,
+		db:                  db,
 		config:              cfg,
 		kafkaWriter:         kw,
 		s3:                  s3,
@@ -70,6 +74,13 @@ func NewProfileService(
 
 func (s *ProfileService) AddProfile(
 	ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToAddRequest(pr)
 	profileCreated, err := s.profileRepository.Add(ctx, profileRequest)
@@ -106,11 +117,19 @@ func (s *ProfileService) AddProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	tx.Commit()
 	return profileResponse, err
 }
 
 func (s *ProfileService) UpdateProfile(
 	ctx context.Context, pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile", "checkUserExists")
@@ -161,11 +180,19 @@ func (s *ProfileService) UpdateProfile(
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
 	profileResponse := profileMapper.MapToResponse(profileEntity, navigatorResponse, filterResponse, telegramResponse,
 		imageEntityList, isOnline)
+	tx.Commit()
 	return profileResponse, nil
 }
 
 func (s *ProfileService) DeleteProfile(
 	ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("DeleteProfile", "checkUserExists")
@@ -174,7 +201,7 @@ func (s *ProfileService) DeleteProfile(
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToDeleteRequest(sessionId)
-	_, err := s.profileRepository.Delete(ctx, profileRequest)
+	_, err = s.profileRepository.Delete(ctx, profileRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("DeleteProfile", "profileRepository.Delete")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -183,11 +210,19 @@ func (s *ProfileService) DeleteProfile(
 	profileResponse := &response.ResponseDto{
 		Success: true,
 	}
+	tx.Commit()
 	return profileResponse, err
 }
 
 func (s *ProfileService) RestoreProfile(
 	ctx context.Context, pr *request.ProfileRestoreRequestDto) (*response.ResponseDto, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("RestoreProfile", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("RestoreProfile", "checkUserExists")
@@ -196,7 +231,7 @@ func (s *ProfileService) RestoreProfile(
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToRestoreRequest(sessionId)
-	_, err := s.profileRepository.Restore(ctx, profileRequest)
+	_, err = s.profileRepository.Restore(ctx, profileRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("RestoreProfile",
 			"profileRepository.Restore")
@@ -206,6 +241,7 @@ func (s *ProfileService) RestoreProfile(
 	profileResponse := &response.ResponseDto{
 		Success: true,
 	}
+	tx.Commit()
 	return profileResponse, err
 }
 
@@ -628,8 +664,15 @@ func (s *ProfileService) GetFilterBySessionId(
 }
 func (s *ProfileService) UpdateFilter(
 	ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateFilter", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	sessionId := fr.SessionId
-	err := s.updateLastOnline(ctx, sessionId)
+	err = s.updateLastOnline(ctx, sessionId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateFilter", "updateLastOnline")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -644,6 +687,7 @@ func (s *ProfileService) UpdateFilter(
 		return nil, err
 	}
 	filterResponse := filterMapper.MapToResponse(filterEntity)
+	tx.Commit()
 	return filterResponse, nil
 }
 
@@ -776,6 +820,13 @@ func (s *ProfileService) AddTelegram(
 }
 
 func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*entity.BlockEntity, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddBlock", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	blockMapper := &mapper.BlockMapper{}
 	blockRequest := blockMapper.MapToAddRequest(pr)
 	prForTwoUser := &request.BlockAddRequestDto{
@@ -783,17 +834,25 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddReque
 		BlockedUserSessionId: pr.SessionId,
 	}
 	blockForTwoUserRequest := blockMapper.MapToAddRequest(prForTwoUser)
-	_, err := s.blockRepository.Add(ctx, blockForTwoUserRequest)
+	_, err = s.blockRepository.Add(ctx, blockForTwoUserRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddBlock", "blockRepository.Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	tx.Commit()
 	return s.blockRepository.Add(ctx, blockRequest)
 }
 
 func (s *ProfileService) AddLike(
 	ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddLike", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("AddLike", "checkUserExists")
@@ -855,11 +914,19 @@ func (s *ProfileService) AddLike(
 		return nil, err
 	}
 	likeResponse := likeMapper.MapToResponse(likeAdded)
+	tx.Commit()
 	return likeResponse, nil
 }
 
 func (s *ProfileService) UpdateLike(
 	ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.LikeResponseDto, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateLike", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("UpdateLike", "checkUserExists")
@@ -875,34 +942,59 @@ func (s *ProfileService) UpdateLike(
 		return nil, err
 	}
 	likeResponse := likeMapper.MapToResponse(likeUpdated)
+	tx.Commit()
 	return likeResponse, nil
 }
 
 func (s *ProfileService) AddComplaint(
 	ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddComplaint", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	complaintMapper := &mapper.ComplaintMapper{}
 	complaintRequest := complaintMapper.MapToAddRequest(pr)
+	tx.Commit()
 	return s.complaintRepository.Add(ctx, complaintRequest)
 }
 
 func (s *ProfileService) UpdateCoordinates(
 	ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateCoordinates", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	sessionId := pr.SessionId
 	longitude := pr.Longitude
 	latitude := pr.Latitude
+	tx.Commit()
 	return s.updateNavigator(ctx, sessionId, longitude, latitude)
 }
 
 func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("updateLastOnline", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return err
+	}
+	defer tx.Rollback()
 	updateLastOnlineMapper := &mapper.ProfileUpdateLastOnlineMapper{}
 	updateLastOnlineRequest := updateLastOnlineMapper.MapToAddRequest(sessionId)
-	err := s.profileRepository.UpdateLastOnline(ctx, updateLastOnlineRequest)
+	err = s.profileRepository.UpdateLastOnline(ctx, updateLastOnlineRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("updateLastOnline",
 			"profileRepository.UpdateLastOnline")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
+	tx.Commit()
 	return nil
 }
 
