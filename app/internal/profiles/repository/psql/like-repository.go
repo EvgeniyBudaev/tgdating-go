@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	errorFilePathILike = "internal/repository/psql/likeRepository.go"
+	errorFilePathILike = "internal/repository/psql/like-repository.go"
 )
 
 type LikeRepository struct {

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	errorFilePathComplaint = "internal/repository/psql/complaintRepository.go"
+	errorFilePathComplaint = "internal/repository/psql/complaint-repository.go"
 )
 
 type ComplaintRepository struct {

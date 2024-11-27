@@ -8,7 +8,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller"
 	v1 "github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller/http/api/v1"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/logger"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/shared/enums"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/shared/enum"
 	"github.com/Luzifer/go-openssl/v4"
 	"github.com/gofiber/fiber/v2"
 	initdata "github.com/telegram-mini-apps/init-data-golang"
@@ -67,7 +67,7 @@ func successHandler(c *fiber.Ctx, config *config.Config, logger logger.Logger) e
 	}
 	// Save to context
 	var ctx = c.UserContext()
-	var contextWithClaims = context.WithValue(ctx, enums.ContextKeyTelegram, telegramInitData)
+	var contextWithClaims = context.WithValue(ctx, enum.ContextKeyTelegram, telegramInitData)
 	c.SetUserContext(contextWithClaims)
 	return c.Next()
 }

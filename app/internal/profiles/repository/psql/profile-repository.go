@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	errorFilePath          = "internal/repository/psql/profileRepository.go"
+	errorFilePath          = "internal/repository/psql/profile-repository.go"
 	ErrNotRowsFoundMessage = "profiles not found"
 	ErrNotRowFoundMessage  = "profile not found"
 )

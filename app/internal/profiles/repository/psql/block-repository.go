@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	errorFilePathBlock = "internal/repository/psql/blockRepository.go"
+	errorFilePathBlock = "internal/repository/psql/block-repository.go"
 )
 
 type BlockRepository struct {

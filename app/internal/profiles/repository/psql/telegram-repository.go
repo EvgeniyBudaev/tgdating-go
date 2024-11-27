@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	errorFilePathTelegram = "internal/repository/psql/telegramRepository.go"
+	errorFilePathTelegram = "internal/repository/psql/telegram-repository.go"
 )
 
 type TelegramRepository struct {

@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	errorFilePath = "internal/profiles/controller/profileController.go"
+	errorFilePath = "internal/profiles/controller/profile-controller.go"
 )
 
 type ProfileController struct {

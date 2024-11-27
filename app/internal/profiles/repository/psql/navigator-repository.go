@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	errorFilePathNavigator = "internal/repository/psql/navigatorRepository.go"
+	errorFilePathNavigator = "internal/repository/psql/navigator-repository.go"
 )
 
 type NavigatorRepository struct {

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	errorFilePathFilter = "internal/repository/psql/filterRepository.go"
+	errorFilePathFilter = "internal/repository/psql/filter-repository.go"
 )
 
 type FilterRepository struct {

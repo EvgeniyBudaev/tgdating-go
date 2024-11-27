@@ -9,7 +9,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller/mapper"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/logger"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/shared/enums"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/shared/enum"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/validation"
 	"github.com/gofiber/fiber/v2"
 	initdata "github.com/telegram-mini-apps/init-data-golang"
@@ -25,7 +25,7 @@ import (
 
 const (
 	defaultLocale   = "ru"
-	errorFilePath   = "internal/gateway/controller/profileController.go"
+	errorFilePath   = "internal/gateway/controller/profile-controller.go"
 	timeoutDuration = 30 * time.Second
 )
 
@@ -584,7 +584,7 @@ func (pc *ProfileController) getErrorMessage(repositoryMethodName string, callMe
 }
 
 func (pc *ProfileController) validateAuthUser(ctf *fiber.Ctx, sessionId string) error {
-	telegramInitData, ok := ctf.UserContext().Value(enums.ContextKeyTelegram).(initdata.InitData)
+	telegramInitData, ok := ctf.UserContext().Value(enum.ContextKeyTelegram).(initdata.InitData)
 	if !ok {
 		err := errors.New("missing telegram data in context")
 		return err

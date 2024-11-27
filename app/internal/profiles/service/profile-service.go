@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	errorFilePath = "internal/profiles/service/profileService.go"
+	errorFilePath = "internal/profiles/service/profile-service.go"
 	minDistance   = 100
 )
 

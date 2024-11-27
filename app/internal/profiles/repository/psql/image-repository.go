@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	errorFilePathImage = "internal/repository/psql/imageRepository.go"
+	errorFilePathImage = "internal/repository/psql/image-repository.go"
 )
 
 type ImageRepository struct {
