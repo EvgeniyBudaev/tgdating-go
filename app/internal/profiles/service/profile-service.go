@@ -1029,17 +1029,9 @@ func (s *ProfileService) AddComplaint(
 
 func (s *ProfileService) UpdateCoordinates(
 	ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateCoordinates", "Begin")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
 	sessionId := pr.SessionId
 	longitude := pr.Longitude
 	latitude := pr.Latitude
-	tx.Commit()
 	return s.updateNavigator(ctx, sessionId, longitude, latitude)
 }
 
@@ -1067,6 +1059,13 @@ func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string)
 func (s *ProfileService) updateNavigator(
 	ctx context.Context,
 	sessionId string, longitude float64, latitude float64) (*response.NavigatorResponseDto, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		errorMessage := s.getErrorMessage("updateNavigator", "Begin")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer tx.Rollback()
 	navigatorMapper := &mapper.NavigatorMapper{}
 	navigatorRequest := navigatorMapper.MapToUpdateRequest(sessionId, longitude, latitude)
 	navigatorUpdated, err := s.navigatorRepository.Update(ctx, navigatorRequest)
@@ -1078,6 +1077,7 @@ func (s *ProfileService) updateNavigator(
 	}
 	navigatorResponse := navigatorMapper.MapToResponse(sessionId, navigatorUpdated.Location.Longitude,
 		navigatorUpdated.Location.Latitude)
+	tx.Commit()
 	return navigatorResponse, nil
 }
 
