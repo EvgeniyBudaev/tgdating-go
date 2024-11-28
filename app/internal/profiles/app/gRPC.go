@@ -18,6 +18,7 @@ const (
 func (app *App) StartServer(ctx context.Context) error {
 	app.fiber.Static("/static", "./static")
 	s3Client := config.NewS3(app.config)
+	ufw := service.NewUnitOfWorkFactory(app.Logger, app.db.psql)
 	navigatorRepository := psql.NewNavigatorRepository(app.Logger, app.db.psql)
 	filterRepository := psql.NewFilterRepository(app.Logger, app.db.psql)
 	telegramRepository := psql.NewTelegramRepository(app.Logger, app.db.psql)
@@ -26,7 +27,7 @@ func (app *App) StartServer(ctx context.Context) error {
 	blockRepository := psql.NewBlockRepository(app.Logger, app.db.psql)
 	complaintRepository := psql.NewComplaintRepository(app.Logger, app.db.psql)
 	profileRepository := psql.NewProfileRepository(app.Logger, app.db.psql)
-	profileService := service.NewProfileService(app.Logger, app.db.psql, app.config, app.kafkaWriter, s3Client,
+	profileService := service.NewProfileService(app.Logger, app.db.psql, app.config, app.kafkaWriter, s3Client, ufw,
 		profileRepository, navigatorRepository, filterRepository, telegramRepository, imageRepository, likeRepository,
 		blockRepository, complaintRepository)
 	profileController := controller.NewProfileController(app.Logger, profileService)

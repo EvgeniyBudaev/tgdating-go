@@ -68,13 +68,3 @@ type ComplaintRepository interface {
 	Add(ctx context.Context, p *request.ComplaintAddRequestRepositoryDto) (*entity.ComplaintEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.ComplaintEntity, error)
 }
-
-type UnitOfWork interface {
-	ProfileRepository() ProfileRepository
-	Commit() error
-	Rollback() error
-}
-
-type UnitOfWorkFactory interface {
-	CreateUnit() UnitOfWork
-}

@@ -34,6 +34,7 @@ type ProfileService struct {
 	config              *config.Config
 	kafkaWriter         *kafka.Writer
 	s3                  *config.S3
+	uwf                 *UnitOfWorkFactory
 	profileRepository   ProfileRepository
 	navigatorRepository NavigatorRepository
 	filterRepository    FilterRepository
@@ -50,6 +51,7 @@ func NewProfileService(
 	cfg *config.Config,
 	kw *kafka.Writer,
 	s3 *config.S3,
+	uwf *UnitOfWorkFactory,
 	pr ProfileRepository,
 	nr NavigatorRepository,
 	fr FilterRepository,
@@ -61,6 +63,7 @@ func NewProfileService(
 		config:              cfg,
 		kafkaWriter:         kw,
 		s3:                  s3,
+		uwf:                 uwf,
 		profileRepository:   pr,
 		navigatorRepository: nr,
 		telegramRepository:  tr,
@@ -74,62 +77,69 @@ func NewProfileService(
 
 func (s *ProfileService) AddProfile(
 	ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddProfile", "Begin")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
+	unitOfWork := s.uwf.CreateUnit()
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToAddRequest(pr)
-	profileCreated, err := s.profileRepository.Add(ctx, profileRequest)
+	profileCreated, err := unitOfWork.ProfileRepository().Add(ctx, profileRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("AddProfile", "Add")
+		errorMessage := s.getErrorMessage("AddProfile", "ProfileRepository().Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	if pr.Longitude != nil && pr.Latitude != nil {
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
-		_, err = s.AddNavigator(ctx, pr.SessionId, longitude, latitude)
+		navigatorMapper := &mapper.NavigatorMapper{}
+		navigatorRequest := navigatorMapper.MapToAddRequest(pr.SessionId, longitude, latitude)
+		_, err = unitOfWork.NavigatorRepository().Add(ctx, navigatorRequest)
 		if err != nil {
-			errorMessage := s.getErrorMessage("AddProfile", "AddNavigator")
+			errorMessage := s.getErrorMessage("AddProfile",
+				"NavigatorRepository().Add")
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
 	profileResponse := profileMapper.MapToAddResponse(profileCreated)
-	if err := s.AddImageList(ctx, profileCreated.SessionId, pr.Files); err != nil {
+	if err := s.AddImageList(ctx, unitOfWork, profileCreated.SessionId, pr.Files); err != nil {
 		errorMessage := s.getErrorMessage("AddProfile", "AddImageList")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	_, err = s.AddFilter(ctx, pr)
+	filterMapper := &mapper.FilterMapper{}
+	filterRequest := filterMapper.MapToAddRequest(pr)
+	_, err = unitOfWork.FilterRepository().Add(ctx, filterRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("AddProfile", "AddFilter")
+		errorMessage := s.getErrorMessage("AddProfile", "FilterRepository().Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	_, err = s.AddTelegram(ctx, pr)
+	telegramMapper := &mapper.TelegramMapper{}
+	telegramRequest := telegramMapper.MapToAddRequest(pr)
+	_, err = unitOfWork.TelegramRepository().Add(ctx, telegramRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("AddProfile", "AddTelegram")
+		errorMessage := s.getErrorMessage("AddProfile", "TelegramRepository().Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	tx.Commit()
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("AddProfile", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("AddProfile", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	return profileResponse, err
 }
 
 func (s *ProfileService) UpdateProfile(
 	ctx context.Context, pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateProfile", "Begin")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
+	unitOfWork := s.uwf.CreateUnit()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile", "checkUserExists")
@@ -138,13 +148,14 @@ func (s *ProfileService) UpdateProfile(
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToUpdateRequest(pr)
-	profileEntity, err := s.profileRepository.Update(ctx, profileRequest)
+	profileEntity, err := unitOfWork.ProfileRepository().Update(ctx, profileRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateProfile", "profileRepository.Update")
+		errorMessage := s.getErrorMessage("UpdateProfile",
+			"ProfileRepository().Update")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	if err := s.UpdateImageList(ctx, profileEntity.SessionId, pr.Files); err != nil {
+	if err := s.UpdateImageList(ctx, unitOfWork, profileEntity.SessionId, pr.Files); err != nil {
 		return nil, err
 	}
 	var navigatorResponse *response.NavigatorResponseDto
@@ -160,39 +171,53 @@ func (s *ProfileService) UpdateProfile(
 	}
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapProfileToUpdateRequest(pr)
-	filterEntity, err := s.filterRepository.Update(ctx, filterRequest)
+	filterEntity, err := unitOfWork.FilterRepository().Update(ctx, filterRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateProfile", "filterRepository.Update")
+		errorMessage := s.getErrorMessage("UpdateProfile",
+			"FilterRepository().Update")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	filterResponse := filterMapper.MapToResponse(filterEntity)
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramRequest := telegramMapper.MapToUpdateRequest(pr)
-	telegramEntity, err := s.telegramRepository.Update(ctx, telegramRequest)
+	telegramEntity, err := unitOfWork.TelegramRepository().Update(ctx, telegramRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateProfile", "telegramRepository.Update")
+		errorMessage := s.getErrorMessage("UpdateProfile",
+			"telegramRepository.Update")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
-	imageEntityList, err := s.imageRepository.SelectListBySessionId(ctx, sessionId)
+	imageEntityList, err := unitOfWork.ImageRepository().SelectListBySessionId(ctx, sessionId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile",
+			"ImageRepository().SelectListBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
 	profileResponse := profileMapper.MapToResponse(profileEntity, navigatorResponse, filterResponse, telegramResponse,
 		imageEntityList, isOnline)
-	tx.Commit()
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("UpdateProfile", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	return profileResponse, nil
 }
 
 func (s *ProfileService) DeleteProfile(
 	ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		errorMessage := s.getErrorMessage("DeleteProfile", "Begin")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
+	unitOfWork := s.uwf.CreateUnit()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("DeleteProfile", "checkUserExists")
@@ -201,28 +226,35 @@ func (s *ProfileService) DeleteProfile(
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToDeleteRequest(sessionId)
-	_, err = s.profileRepository.Delete(ctx, profileRequest)
+	_, err := unitOfWork.ProfileRepository().Delete(ctx, profileRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("DeleteProfile", "profileRepository.Delete")
+		errorMessage := s.getErrorMessage("DeleteProfile",
+			"ProfileRepository().Delete")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileResponse := &response.ResponseDto{
 		Success: true,
 	}
-	tx.Commit()
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("DeleteProfile", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	return profileResponse, err
 }
 
 func (s *ProfileService) RestoreProfile(
 	ctx context.Context, pr *request.ProfileRestoreRequestDto) (*response.ResponseDto, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		errorMessage := s.getErrorMessage("RestoreProfile", "Begin")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
+	unitOfWork := s.uwf.CreateUnit()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("RestoreProfile", "checkUserExists")
@@ -231,7 +263,7 @@ func (s *ProfileService) RestoreProfile(
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToRestoreRequest(sessionId)
-	_, err = s.profileRepository.Restore(ctx, profileRequest)
+	_, err := unitOfWork.ProfileRepository().Restore(ctx, profileRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("RestoreProfile",
 			"profileRepository.Restore")
@@ -241,7 +273,19 @@ func (s *ProfileService) RestoreProfile(
 	profileResponse := &response.ResponseDto{
 		Success: true,
 	}
-	tx.Commit()
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("RestoreProfile", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("RestoreProfile", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	return profileResponse, err
 }
 
@@ -519,10 +563,11 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 	return profileListResponse, err
 }
 
-func (s *ProfileService) AddImageList(ctx context.Context, sessionId string, files []*entity.FileMetadata) error {
+func (s *ProfileService) AddImageList(
+	ctx context.Context, unitOfWork *UnitOfWork, sessionId string, files []*entity.FileMetadata) error {
 	if len(files) > 0 {
 		for _, file := range files {
-			_, err := s.AddImage(ctx, sessionId, file)
+			_, err := s.AddImage(ctx, unitOfWork, sessionId, file)
 			if err != nil {
 				errorMessage := s.getErrorMessage("AddImageList", "AddImage")
 				s.logger.Debug(errorMessage, zap.Error(err))
@@ -533,7 +578,7 @@ func (s *ProfileService) AddImageList(ctx context.Context, sessionId string, fil
 	return nil
 }
 
-func (s *ProfileService) AddImage(ctx context.Context, sessionId string,
+func (s *ProfileService) AddImage(ctx context.Context, unitOfWork *UnitOfWork, sessionId string,
 	file *entity.FileMetadata) (*entity.ImageEntity, error) {
 	imageConverted, err := s.uploadImageToFileSystem(ctx, file, sessionId)
 	if err != nil {
@@ -541,14 +586,15 @@ func (s *ProfileService) AddImage(ctx context.Context, sessionId string,
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return s.imageRepository.Add(ctx, imageConverted)
+	return unitOfWork.ImageRepository().Add(ctx, imageConverted)
 }
 
-func (s *ProfileService) UpdateImageList(ctx context.Context, sessionId string, files []*entity.FileMetadata) error {
-	return s.AddImageList(ctx, sessionId, files)
+func (s *ProfileService) UpdateImageList(
+	ctx context.Context, unitOfWork *UnitOfWork, sessionId string, files []*entity.FileMetadata) error {
+	return s.AddImageList(ctx, unitOfWork, sessionId, files)
 }
 
-func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) error {
+func (s *ProfileService) DeleteImageList(ctx context.Context, unitOfWork *UnitOfWork, sessionId string) error {
 	imageList, err := s.imageRepository.SelectListBySessionId(ctx, sessionId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("DeleteImageList",
@@ -558,7 +604,7 @@ func (s *ProfileService) DeleteImageList(ctx context.Context, sessionId string) 
 	}
 	if len(imageList) > 0 {
 		for _, image := range imageList {
-			_, err := s.deleteImageById(ctx, image.Id)
+			_, err := s.deleteImageById(ctx, unitOfWork, image.Id)
 			if err != nil {
 				errorMessage := s.getErrorMessage("DeleteImageList", "deleteImageById")
 				s.logger.Debug(errorMessage, zap.Error(err))
@@ -589,7 +635,8 @@ func (s *ProfileService) GetImageById(ctx context.Context, imageId uint64) (*ent
 	return s.imageRepository.FindById(ctx, imageId)
 }
 
-func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entity.ImageEntity, error) {
+func (s *ProfileService) deleteImageById(
+	ctx context.Context, unitOfWork *UnitOfWork, id uint64) (*entity.ImageEntity, error) {
 	image, err := s.imageRepository.FindById(ctx, id)
 	if err != nil {
 		errorMessage := s.getErrorMessage("deleteImageById",
@@ -613,11 +660,13 @@ func (s *ProfileService) deleteImageById(ctx context.Context, id uint64) (*entit
 	}
 	imageMapper := &mapper.ImageMapper{}
 	imageRequest := imageMapper.MapToDeleteRequest(image.Id)
-	return s.imageRepository.Delete(ctx, imageRequest)
+	return unitOfWork.ImageRepository().Delete(ctx, imageRequest)
 }
 
-func (s *ProfileService) DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error) {
-	_, err := s.deleteImageById(ctx, id)
+func (s *ProfileService) DeleteImage(
+	ctx context.Context, id uint64) (*response.ResponseDto, error) {
+	unitOfWork := s.uwf.CreateUnit()
+	_, err := s.deleteImageById(ctx, unitOfWork, id)
 	if err != nil {
 		errorMessage := s.getErrorMessage("DeleteImage", "deleteImageById")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -625,6 +674,19 @@ func (s *ProfileService) DeleteImage(ctx context.Context, id uint64) (*response.
 	}
 	responseDto := &response.ResponseDto{
 		Success: true,
+	}
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("DeleteImage", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("DeleteImage", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
 	}
 	return responseDto, err
 }
@@ -798,27 +860,6 @@ func (s *ProfileService) deleteFile(filePath string) error {
 	return os.Remove(filePath)
 }
 
-func (s *ProfileService) AddNavigator(
-	ctx context.Context, sessionId string, longitude, latitude float64) (*entity.NavigatorEntity, error) {
-	navigatorMapper := &mapper.NavigatorMapper{}
-	navigatorRequest := navigatorMapper.MapToAddRequest(sessionId, longitude, latitude)
-	return s.navigatorRepository.Add(ctx, navigatorRequest)
-}
-
-func (s *ProfileService) AddFilter(
-	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.FilterEntity, error) {
-	filterMapper := &mapper.FilterMapper{}
-	filterRequest := filterMapper.MapToAddRequest(pr)
-	return s.filterRepository.Add(ctx, filterRequest)
-}
-
-func (s *ProfileService) AddTelegram(
-	ctx context.Context, pr *request.ProfileAddRequestDto) (*entity.TelegramEntity, error) {
-	telegramMapper := &mapper.TelegramMapper{}
-	telegramRequest := telegramMapper.MapToAddRequest(pr)
-	return s.telegramRepository.Add(ctx, telegramRequest)
-}
-
 func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*entity.BlockEntity, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
@@ -846,13 +887,7 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddReque
 
 func (s *ProfileService) AddLike(
 	ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddLike", "Begin")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
+	unitOfWork := s.uwf.CreateUnit()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("AddLike", "checkUserExists")
@@ -906,27 +941,33 @@ func (s *ProfileService) AddLike(
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToAddRequest(pr)
-	likeAdded, err := s.likeRepository.Add(ctx, likeRequest)
+	likeAdded, err := unitOfWork.LikeRepository().Add(ctx, likeRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddLike",
-			"likeRepository.Add")
+			"LikeRepository().Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likeResponse := likeMapper.MapToResponse(likeAdded)
-	tx.Commit()
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("AddLike", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("AddLike", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	return likeResponse, nil
 }
 
 func (s *ProfileService) UpdateLike(
 	ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.LikeResponseDto, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateLike", "Begin")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
+	unitOfWork := s.uwf.CreateUnit()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
 		errorMessage := s.getErrorMessage("UpdateLike", "checkUserExists")
@@ -935,30 +976,55 @@ func (s *ProfileService) UpdateLike(
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToUpdateRequest(pr)
-	likeUpdated, err := s.likeRepository.Update(ctx, likeRequest)
+	likeUpdated, err := unitOfWork.LikeRepository().Update(ctx, likeRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateLike", "likeRepository.Update")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likeResponse := likeMapper.MapToResponse(likeUpdated)
-	tx.Commit()
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("UpdateLike", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("UpdateLike", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	return likeResponse, nil
 }
 
 func (s *ProfileService) AddComplaint(
 	ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error) {
-	tx, err := s.db.Begin()
+	unitOfWork := s.uwf.CreateUnit()
+	complaintMapper := &mapper.ComplaintMapper{}
+	complaintRequest := complaintMapper.MapToAddRequest(pr)
+	complaintResponse, err := unitOfWork.ComplaintRepository().Add(ctx, complaintRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("AddComplaint", "Begin")
+		errorMessage := s.getErrorMessage("AddComplaint",
+			"ComplaintRepository().Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	defer tx.Rollback()
-	complaintMapper := &mapper.ComplaintMapper{}
-	complaintRequest := complaintMapper.MapToAddRequest(pr)
-	tx.Commit()
-	return s.complaintRepository.Add(ctx, complaintRequest)
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("AddComplaint", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("AddComplaint", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return complaintResponse, nil
 }
 
 func (s *ProfileService) UpdateCoordinates(
