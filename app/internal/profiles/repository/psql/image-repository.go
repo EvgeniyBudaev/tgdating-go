@@ -106,7 +106,7 @@ func (r *ImageRepository) FindLastBySessionId(ctx context.Context, sessionId str
 	query := "SELECT id, session_id, name, url, size, is_deleted, is_blocked, is_primary," +
 		" is_private, created_at, updated_at" +
 		" FROM dating.profile_images" +
-		" WHERE session_id = $1" +
+		" WHERE session_id = $1 AND is_deleted=false AND is_blocked=false AND is_private=false" +
 		" ORDER BY id DESC" +
 		" LIMIT 1"
 	row := r.db.QueryRowContext(ctx, query, sessionId)

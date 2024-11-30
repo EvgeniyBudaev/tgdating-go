@@ -69,7 +69,6 @@ func (pc *ProfileController) UpdateProfile(
 		}
 	}
 	profileMapper := &mapper.ProfileControllerMapper{}
-	fmt.Println("in.LookingFor", in.LookingFor)
 	profileRequest := profileMapper.MapControllerToUpdateRequest(in, fileList)
 	profileUpdated, err := pc.service.UpdateProfile(ctx, profileRequest)
 	if err != nil {

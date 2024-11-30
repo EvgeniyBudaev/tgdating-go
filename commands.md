@@ -211,3 +211,55 @@ https://github.com/segmentio/kafka-go
 ```
 go get github.com/segmentio/kafka-go
 ```
+
+Docker
+```
+psql -U postgres -d tgbot
+SELECT * FROM dating.profiles;
+CREATE EXTENSION pg_stat_statements;
+```
+
+pg_stat_statements
+```
+psql -U postgres -d tgbot
+
+CREATE EXTENSION pg_stat_statements;
+
+SELECT *
+FROM pg_available_extensions
+WHERE
+name = 'pg_stat_statements' and
+installed_version is not null;
+```
+
+Найдите идентификатор своей базы данных с помощью запроса:
+```
+SELECT oid, datname FROM pg_database;
+```
+
+Чтобы найти наиболее медленные запросы
+```
+SELECT query,
+calls,
+total_exec_time,
+min_exec_time,
+max_exec_time,
+mean_exec_time,
+rows
+FROM pg_stat_statements
+WHERE dbid = 16384 ORDER BY total_exec_time DESC
+LIMIT 5;
+
+SELECT
+query,
+ROUND(mean_exec_time::numeric,2),
+ROUND(total_exec_time::numeric,2),
+ROUND(min_exec_time::numeric,2),
+ROUND(max_exec_time::numeric,2),
+calls,
+rows
+FROM pg_stat_statements
+-- Подставьте своё значение dbid.
+WHERE dbid = 16384 ORDER BY mean_exec_time DESC
+LIMIT 5;
+```
