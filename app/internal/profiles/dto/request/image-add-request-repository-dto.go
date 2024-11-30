@@ -9,7 +9,6 @@ type ImageAddRequestRepositoryDto struct {
 	Name      string    `json:"name"`
 	Url       string    `json:"url"`
 	Size      int64     `json:"size"`
-	IsDeleted bool      `json:"isDeleted"`
 	IsBlocked bool      `json:"isBlocked"`
 	IsPrimary bool      `json:"isPrimary"`
 	IsPrivate bool      `json:"isPrivate"`

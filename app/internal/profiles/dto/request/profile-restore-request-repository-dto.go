@@ -4,7 +4,7 @@ import "time"
 
 type ProfileRestoreRequestRepositoryDto struct {
 	SessionId  string    `json:"sessionId"`
-	IsDeleted  bool      `json:"isDeleted"`
+	IsFrozen   bool      `json:"isFrozen"`
 	UpdatedAt  time.Time `json:"updatedAt"`
 	LastOnline time.Time `json:"lastOnline"`
 }

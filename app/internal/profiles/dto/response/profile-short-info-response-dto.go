@@ -3,6 +3,6 @@ package response
 type ProfileShortInfoResponseDto struct {
 	SessionId string `json:"sessionId"`
 	ImageUrl  string `json:"imageUrl"`
-	IsDeleted bool   `json:"isDeleted"`
+	IsFrozen  bool   `json:"isFrozen"`
 	IsBlocked bool   `json:"isBlocked"`
 }

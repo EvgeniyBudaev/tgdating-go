@@ -23,7 +23,7 @@ func (pm *ProfileMapper) MapToResponse(
 		Description:    pe.Description,
 		Height:         pe.Height,
 		Weight:         pe.Weight,
-		IsDeleted:      pe.IsDeleted,
+		IsFrozen:       pe.IsFrozen,
 		IsBlocked:      pe.IsBlocked,
 		IsPremium:      pe.IsPremium,
 		IsShowDistance: pe.IsShowDistance,
@@ -52,7 +52,7 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		Description:    pe.Description,
 		Height:         pe.Height,
 		Weight:         pe.Weight,
-		IsDeleted:      pe.IsDeleted,
+		IsFrozen:       pe.IsFrozen,
 		IsBlocked:      pe.IsBlocked,
 		IsPremium:      pe.IsPremium,
 		IsShowDistance: pe.IsShowDistance,
@@ -73,7 +73,7 @@ func (pm *ProfileMapper) MapToShortInfoResponse(pe *entity.ProfileEntity, imageU
 	return &response.ProfileShortInfoResponseDto{
 		SessionId: pe.SessionId,
 		ImageUrl:  imageUrl,
-		IsDeleted: pe.IsDeleted,
+		IsFrozen:  pe.IsFrozen,
 		IsBlocked: pe.IsBlocked,
 	}
 }
@@ -95,7 +95,7 @@ func (pm *ProfileMapper) MapToAddRequest(
 		Description:    pr.Description,
 		Height:         pr.Height,
 		Weight:         pr.Weight,
-		IsDeleted:      false,
+		IsFrozen:       false,
 		IsBlocked:      false,
 		IsPremium:      false,
 		IsShowDistance: true,
@@ -122,10 +122,10 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 	}
 }
 
-func (pm *ProfileMapper) MapToDeleteRequest(sessionId string) *request.ProfileDeleteRequestRepositoryDto {
-	return &request.ProfileDeleteRequestRepositoryDto{
+func (pm *ProfileMapper) MapToFreezeRequest(sessionId string) *request.ProfileFreezeRequestRepositoryDto {
+	return &request.ProfileFreezeRequestRepositoryDto{
 		SessionId:  sessionId,
-		IsDeleted:  true,
+		IsFrozen:   true,
 		UpdatedAt:  time.Now().UTC(),
 		LastOnline: time.Now().UTC(),
 	}
@@ -134,7 +134,7 @@ func (pm *ProfileMapper) MapToDeleteRequest(sessionId string) *request.ProfileDe
 func (pm *ProfileMapper) MapToRestoreRequest(sessionId string) *request.ProfileRestoreRequestRepositoryDto {
 	return &request.ProfileRestoreRequestRepositoryDto{
 		SessionId:  sessionId,
-		IsDeleted:  false,
+		IsFrozen:   false,
 		UpdatedAt:  time.Now().UTC(),
 		LastOnline: time.Now().UTC(),
 	}

@@ -10,8 +10,9 @@ import (
 type ProfileRepository interface {
 	Add(ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*entity.ProfileEntity, error)
 	Update(ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*entity.ProfileEntity, error)
-	Delete(ctx context.Context, p *request.ProfileDeleteRequestRepositoryDto) (*entity.ProfileEntity, error)
+	Freeze(ctx context.Context, p *request.ProfileFreezeRequestRepositoryDto) (*entity.ProfileEntity, error)
 	Restore(ctx context.Context, p *request.ProfileRestoreRequestRepositoryDto) (*entity.ProfileEntity, error)
+	Delete(ctx context.Context, p *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
 	FindById(ctx context.Context, id uint64) (*entity.ProfileEntity, error)
 	FindBySessionId(ctx context.Context, sessionId string) (*entity.ProfileEntity, error)
 	SelectListBySessionId(ctx context.Context,
@@ -44,9 +45,10 @@ type TelegramRepository interface {
 type ImageRepository interface {
 	Add(ctx context.Context, p *request.ImageAddRequestRepositoryDto) (*entity.ImageEntity, error)
 	Update(ctx context.Context, p *request.ImageUpdateRequestRepositoryDto) (*entity.ImageEntity, error)
-	Delete(ctx context.Context, p *request.ImageDeleteRequestRepositoryDto) (*entity.ImageEntity, error)
+	Delete(ctx context.Context, p *request.ImageDeleteRequestRepositoryDto) (*response.ResponseDto, error)
 	FindById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error)
 	FindLastBySessionId(ctx context.Context, sessionId string) (*entity.ImageEntity, error)
+	SelectListAllBySessionId(ctx context.Context, sessionId string) ([]*entity.ImageEntity, error)
 	SelectListPublicBySessionId(ctx context.Context, sessionId string) ([]*entity.ImageEntity, error)
 	SelectListBySessionId(ctx context.Context, sessionId string) ([]*entity.ImageEntity, error)
 }

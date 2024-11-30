@@ -2,9 +2,9 @@ package request
 
 import "time"
 
-type ProfileDeleteRequestRepositoryDto struct {
+type ProfileFreezeRequestRepositoryDto struct {
 	SessionId  string    `json:"sessionId"`
-	IsDeleted  bool      `json:"isDeleted"`
+	IsFrozen   bool      `json:"isFrozen"`
 	UpdatedAt  time.Time `json:"updatedAt"`
 	LastOnline time.Time `json:"lastOnline"`
 }

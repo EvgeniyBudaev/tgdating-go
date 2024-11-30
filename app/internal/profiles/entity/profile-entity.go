@@ -14,7 +14,7 @@ type ProfileEntity struct {
 	Description    string    `json:"description"`
 	Height         float64   `json:"height"`
 	Weight         float64   `json:"weight"`
-	IsDeleted      bool      `json:"isDeleted"`
+	IsFrozen       bool      `json:"isFrozen"`
 	IsBlocked      bool      `json:"isBlocked"`
 	IsPremium      bool      `json:"isPremium"`
 	IsShowDistance bool      `json:"isShowDistance"`

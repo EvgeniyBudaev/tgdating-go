@@ -134,22 +134,22 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 	}
 }
 
-func (pc *ProfileController) DeleteProfile() fiber.Handler {
+func (pc *ProfileController) FreezeProfile() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("DELETE /api/v1/profiles")
+		pc.logger.Info("POST /api/v1/profiles/freeze")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
-		req := &request.ProfileDeleteRequestDto{}
+		req := &request.ProfileFreezeRequestDto{}
 		if err := ctf.BodyParser(req); err != nil {
-			errorMessage := pc.getErrorMessage("DeleteProfile", "BodyParser")
+			errorMessage := pc.getErrorMessage("FreezeProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		profileMapper := &mapper.ProfileMapper{}
-		profileRequest := profileMapper.MapToDeleteRequest(req)
-		profileResponse, err := pc.proto.DeleteProfile(ctx, profileRequest)
+		profileRequest := profileMapper.MapToFreezeRequest(req)
+		profileResponse, err := pc.proto.FreezeProfile(ctx, profileRequest)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("DeleteProfile", "proto.DeleteProfile")
+			errorMessage := pc.getErrorMessage("FreezeProfile", "proto.FreezeProfile")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
@@ -174,6 +174,30 @@ func (pc *ProfileController) RestoreProfile() fiber.Handler {
 		if err != nil {
 			errorMessage := pc.getErrorMessage("RestoreProfile",
 				"proto.RestoreProfile")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, profileResponse)
+	}
+}
+
+func (pc *ProfileController) DeleteProfile() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("DELETE /api/v1/profiles")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.ProfileDeleteRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("DeleteProfile", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		profileMapper := &mapper.ProfileMapper{}
+		profileRequest := profileMapper.MapToDeleteRequest(req)
+		profileResponse, err := pc.proto.DeleteProfile(ctx, profileRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("DeleteProfile",
+				"proto.DeleteProfile")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}

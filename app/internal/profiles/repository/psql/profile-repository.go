@@ -39,12 +39,12 @@ func (r *ProfileRepository) Add(
 	ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*entity.ProfileEntity, error) {
 	birthday := p.Birthday.Format("2006-01-02")
 	query := "INSERT INTO dating.profiles (session_id, display_name, birthday, gender, location, description," +
-		" height, weight, is_deleted, is_blocked, is_premium, is_show_distance, is_invisible," +
+		" height, weight, is_frozen, is_blocked, is_premium, is_show_distance, is_invisible," +
 		" created_at, updated_at, last_online)" +
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)" +
 		" RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.DisplayName, &birthday, &p.Gender, &p.Location,
-		&p.Description, &p.Height, &p.Weight, p.IsDeleted, &p.IsBlocked, &p.IsPremium, &p.IsShowDistance,
+		&p.Description, &p.Height, &p.Weight, p.IsFrozen, &p.IsBlocked, &p.IsPremium, &p.IsShowDistance,
 		&p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if row == nil {
 		errorMessage := r.getErrorMessage("Add", "QueryRowContext")
@@ -81,12 +81,12 @@ func (r *ProfileRepository) Update(
 	return r.FindBySessionId(ctx, p.SessionId)
 }
 
-func (r *ProfileRepository) Delete(
-	ctx context.Context, p *request.ProfileDeleteRequestRepositoryDto) (*entity.ProfileEntity, error) {
-	query := "UPDATE dating.profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
-	_, err := r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
+func (r *ProfileRepository) Freeze(
+	ctx context.Context, p *request.ProfileFreezeRequestRepositoryDto) (*entity.ProfileEntity, error) {
+	query := "UPDATE dating.profiles SET is_frozen=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
+	_, err := r.db.ExecContext(ctx, query, &p.IsFrozen, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
 	if err != nil {
-		errorMessage := r.getErrorMessage("Delete", "ExecContext")
+		errorMessage := r.getErrorMessage("Freeze", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -95,8 +95,8 @@ func (r *ProfileRepository) Delete(
 
 func (r *ProfileRepository) Restore(
 	ctx context.Context, p *request.ProfileRestoreRequestRepositoryDto) (*entity.ProfileEntity, error) {
-	query := "UPDATE dating.profiles SET is_deleted=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
-	_, err := r.db.ExecContext(ctx, query, &p.IsDeleted, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
+	query := "UPDATE dating.profiles SET is_frozen=$1, updated_at=$2, last_online=$3 WHERE session_id=$4"
+	_, err := r.db.ExecContext(ctx, query, &p.IsFrozen, &p.UpdatedAt, &p.LastOnline, &p.SessionId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Restore", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -105,10 +105,25 @@ func (r *ProfileRepository) Restore(
 	return r.FindBySessionId(ctx, p.SessionId)
 }
 
+func (r *ProfileRepository) Delete(
+	ctx context.Context, p *request.ProfileDeleteRequestDto) (*response.ResponseDto, error) {
+	query := "DELETE FROM dating.profiles WHERE session_id=$1"
+	_, err := r.db.ExecContext(ctx, query, &p.SessionId)
+	if err != nil {
+		errorMessage := r.getErrorMessage("Delete", "ExecContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	profileResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return profileResponse, nil
+}
+
 func (r *ProfileRepository) FindById(ctx context.Context, id uint64) (*entity.ProfileEntity, error) {
 	p := &entity.ProfileEntity{}
 	query := "SELECT id, session_id, display_name, birthday, gender, location, description, height, weight," +
-		" is_deleted, is_blocked, is_premium, is_show_distance, is_invisible, created_at, updated_at, last_online" +
+		" is_frozen, is_blocked, is_premium, is_show_distance, is_invisible, created_at, updated_at, last_online" +
 		" FROM dating.profiles" +
 		" WHERE id=$1"
 	row := r.db.QueryRowContext(ctx, query, id)
@@ -118,7 +133,7 @@ func (r *ProfileRepository) FindById(ctx context.Context, id uint64) (*entity.Pr
 		return nil, ErrNotRowFound
 	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
-		&p.Description, &p.Height, &p.Weight, &p.IsDeleted, &p.IsBlocked, &p.IsPremium,
+		&p.Description, &p.Height, &p.Weight, &p.IsFrozen, &p.IsBlocked, &p.IsPremium,
 		&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("FindById", "Scan")
@@ -137,7 +152,7 @@ func (r *ProfileRepository) FindBySessionId(
 	ctx context.Context, sessionId string) (*entity.ProfileEntity, error) {
 	p := &entity.ProfileEntity{}
 	query := "SELECT id, session_id, display_name, birthday, gender, location, description, height, weight," +
-		" is_deleted, is_blocked, is_premium, is_show_distance, is_invisible, created_at, updated_at, last_online" +
+		" is_frozen, is_blocked, is_premium, is_show_distance, is_invisible, created_at, updated_at, last_online" +
 		" FROM dating.profiles" +
 		" WHERE session_id=$1"
 	row := r.db.QueryRowContext(ctx, query, sessionId)
@@ -147,7 +162,7 @@ func (r *ProfileRepository) FindBySessionId(
 		return nil, ErrNotRowFound
 	}
 	err := row.Scan(&p.Id, &p.SessionId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
-		&p.Description, &p.Height, &p.Weight, &p.IsDeleted, &p.IsBlocked, &p.IsPremium,
+		&p.Description, &p.Height, &p.Weight, &p.IsFrozen, &p.IsBlocked, &p.IsPremium,
 		&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
@@ -174,7 +189,7 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 	distance := pr.Distance * 1000
 	query := "WITH filtered_profiles AS (" +
 		" SELECT p.id, p.session_id, p.display_name, p.birthday, p.gender, p.location, p.description, p.height," +
-		" p.weight, p.is_deleted, p.is_blocked, p.is_premium, p.is_show_distance, p.is_invisible, p.created_at," +
+		" p.weight, p.is_frozen, p.is_blocked, p.is_premium, p.is_show_distance, p.is_invisible, p.created_at," +
 		" p.updated_at, p.last_online," +
 		" EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) AS age," +
 		" COALESCE(" +
@@ -188,7 +203,7 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 		" ) AS distance" +
 		" FROM dating.profiles p" +
 		" LEFT JOIN dating.profile_navigators pn ON p.session_id = pn.session_id" +
-		" WHERE p.is_deleted = false AND p.is_blocked = false AND" +
+		" WHERE p.is_frozen = false AND p.is_blocked = false AND" +
 		" (EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) BETWEEN $3 AND $4) AND" +
 		" ($2 = 'all' OR gender = $2) AND p.session_id <> $1 AND" +
 		" NOT EXISTS (SELECT 1 FROM dating.profile_blocks" +
@@ -211,7 +226,7 @@ func (r *ProfileRepository) SelectListBySessionId(ctx context.Context,
 	for rows.Next() {
 		p := response.ProfileListItemResponseRepositoryDto{}
 		err := rows.Scan(&p.Id, &p.SessionId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
-			&p.Description, &p.Height, &p.Weight, &p.IsDeleted, &p.IsBlocked, &p.IsPremium,
+			&p.Description, &p.Height, &p.Weight, &p.IsFrozen, &p.IsBlocked, &p.IsPremium,
 			&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline, &p.Age, &p.Distance)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectListBySessionId", "Scan")
@@ -236,7 +251,7 @@ func (r *ProfileRepository) getTotalEntities(
 	ctx context.Context, sessionId, searchGender string, ageFrom, ageTo uint64) (uint64, error) {
 	query := "SELECT COUNT(*)" +
 		" FROM dating.profiles" +
-		" WHERE is_deleted=false AND is_blocked=false AND" +
+		" WHERE is_frozen=false AND is_blocked=false AND" +
 		" (EXTRACT(YEAR FROM AGE(NOW(), birthday)) BETWEEN $3 AND $4) AND" +
 		" ($2 = 'all' OR gender = $2) AND session_id <> $1"
 	var totalEntities uint64

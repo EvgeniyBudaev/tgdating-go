@@ -18,12 +18,11 @@ message Image {
   string name = 3; // название файла
   string url = 4; // url файла
   int64 size = 5; // Размер файла в байтах
-  bool isDeleted = 6; // удалено изображение да/нет
-  bool isBlocked = 7; // заблокировано изображение да/нет
-  bool isPrimary = 8; // изображение является основным да/нет
-  bool isPrivate = 9; // изображение является приватным да/нет
-  google.protobuf.Timestamp createdAt = 10; // дата создания
-  google.protobuf.Timestamp updatedAt = 11; // дата обновления
+  bool isBlocked = 6; // заблокировано изображение да/нет
+  bool isPrimary = 7; // изображение является основным да/нет
+  bool isPrivate = 8; // изображение является приватным да/нет
+  google.protobuf.Timestamp createdAt = 9; // дата создания
+  google.protobuf.Timestamp updatedAt = 10; // дата обновления
 }
 
 message Point {
@@ -135,12 +134,12 @@ message ProfileUpdateRequest {
   repeated FileMetadata files = 26;
 }
 
-message ProfileDeleteRequest {
+message ProfileFreezeRequest {
   string sessionId = 1; // id сессии
 }
 
-message ProfileDeleteResponse {
-  bool success = 1; // успешно удалено да/нет
+message ProfileFreezeResponse {
+  bool success = 1; // успешно заморожен да/нет
 }
 
 message ProfileRestoreRequest {
@@ -148,6 +147,14 @@ message ProfileRestoreRequest {
 }
 
 message ProfileRestoreResponse {
+  bool success = 1; // успешно восстановлен да/нет
+}
+
+message ProfileDeleteRequest {
+  string sessionId = 1; // id сессии
+}
+
+message ProfileDeleteResponse {
   bool success = 1; // успешно удалено да/нет
 }
 
@@ -166,7 +173,7 @@ message ProfileBySessionIdResponse {
   string description = 6; // описание
   double height = 7; // рост
   double weight = 8; // вес
-  bool isDeleted = 9; // удален пользователь да/нет
+  bool isFrozen = 9; // заморожен пользователь да/нет
   bool isBlocked = 10; // заблокирован пользователь да/нет
   bool isPremium = 11; // наличие премиум аакаунта да/нет
   bool isShowDistance = 12; // показывать дистанцию до текущего пользваотеля да/нет
@@ -197,7 +204,7 @@ message ProfileDetailResponse {
   string description = 6; // описание
   double height = 7; // рост
   double weight = 8; // вес
-  bool isDeleted = 9; // удален пользователь да/нет
+  bool isFrozen = 9; // заморожен пользователь да/нет
   bool isBlocked = 10; // заблокирован пользователь да/нет
   bool isPremium = 11; // наличие премиум аакаунта да/нет
   bool isShowDistance = 12; // показывать дистанцию до текущего пользователя да/нет
@@ -222,7 +229,7 @@ message ProfileGetShortInfoRequest {
 message ProfileShortInfoResponse {
   string sessionId = 1; // id сессии
   string imageUrl = 2; // url освного изображения
-  bool isDeleted = 3; // удален пользователь да/нет
+  bool isFrozen = 3; // заморожен пользователь да/нет
   bool isBlocked = 4; // заблокирован пользователь да/нет
 }
 
@@ -382,8 +389,9 @@ message NavigatorUpdateResponse {
 service Profile {
   rpc AddProfile(ProfileAddRequest) returns (ProfileAddResponse); // добавление нового пользователя
   rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileBySessionIdResponse); // обновление данных пользователя
-  rpc DeleteProfile(ProfileDeleteRequest) returns (ProfileDeleteResponse); // удаление пользователя
+  rpc FreezeProfile(ProfileFreezeRequest) returns (ProfileFreezeResponse); // заморозка пользователя
   rpc RestoreProfile(ProfileRestoreRequest) returns (ProfileRestoreResponse); // восстановление пользователя
+  rpc DeleteProfile(ProfileDeleteRequest) returns (ProfileDeleteResponse); // удаление пользователя
   rpc GetProfileBySessionId(ProfileGetBySessionIdRequest) returns (ProfileBySessionIdResponse); // получение профиля по id сессии
   rpc GetProfileDetail(ProfileGetDetailRequest) returns (ProfileDetailResponse); // получение карточки профиля
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю

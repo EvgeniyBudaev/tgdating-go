@@ -155,7 +155,7 @@ func (s *ProfileService) UpdateProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	if err := s.UpdateImageList(ctx, unitOfWork, profileEntity.SessionId, pr.Files); err != nil {
+	if err := s.updateImageList(ctx, unitOfWork, profileEntity.SessionId, pr.Files); err != nil {
 		return nil, err
 	}
 	var navigatorResponse *response.NavigatorResponseDto
@@ -215,21 +215,21 @@ func (s *ProfileService) UpdateProfile(
 	return profileResponse, nil
 }
 
-func (s *ProfileService) DeleteProfile(
-	ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error) {
+func (s *ProfileService) FreezeProfile(
+	ctx context.Context, pr *request.ProfileFreezeRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
 	sessionId := pr.SessionId
 	if err := s.checkUserExists(ctx, sessionId); err != nil {
-		errorMessage := s.getErrorMessage("DeleteProfile", "checkUserExists")
+		errorMessage := s.getErrorMessage("FreezeProfile", "checkUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileRequest := profileMapper.MapToDeleteRequest(sessionId)
-	_, err := unitOfWork.ProfileRepository().Delete(ctx, profileRequest)
+	profileRequest := profileMapper.MapToFreezeRequest(sessionId)
+	_, err := unitOfWork.ProfileRepository().Freeze(ctx, profileRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("DeleteProfile",
-			"ProfileRepository().Delete")
+		errorMessage := s.getErrorMessage("FreezeProfile",
+			"ProfileRepository().Freeze")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -239,13 +239,13 @@ func (s *ProfileService) DeleteProfile(
 	defer func() {
 		if err != nil {
 			if err := unitOfWork.Rollback(ctx); err != nil {
-				errorMessage := s.getErrorMessage("DeleteProfile", "Rollback")
+				errorMessage := s.getErrorMessage("FreezeProfile", "Rollback")
 				s.logger.Debug(errorMessage, zap.Error(err))
 			}
 		}
 	}()
 	if err = unitOfWork.Commit(ctx); err != nil {
-		errorMessage := s.getErrorMessage("DeleteProfile", "Commit")
+		errorMessage := s.getErrorMessage("FreezeProfile", "Commit")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -283,6 +283,46 @@ func (s *ProfileService) RestoreProfile(
 	}()
 	if err = unitOfWork.Commit(ctx); err != nil {
 		errorMessage := s.getErrorMessage("RestoreProfile", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return profileResponse, err
+}
+
+func (s *ProfileService) DeleteProfile(
+	ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error) {
+	unitOfWork := s.uwf.CreateUnit()
+	sessionId := pr.SessionId
+	if err := s.checkUserExists(ctx, sessionId); err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "checkUserExists")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	if err := s.deleteImageListByS3(ctx, unitOfWork, sessionId); err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "deleteImageListByS3")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	_, err := unitOfWork.ProfileRepository().Delete(ctx, pr)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile",
+			"ProfileRepository().Delete")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	profileResponse := &response.ResponseDto{
+		Success: true,
+	}
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("DeleteProfile", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "Commit")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -589,32 +629,6 @@ func (s *ProfileService) AddImage(ctx context.Context, unitOfWork *UnitOfWork, s
 	return unitOfWork.ImageRepository().Add(ctx, imageConverted)
 }
 
-func (s *ProfileService) UpdateImageList(
-	ctx context.Context, unitOfWork *UnitOfWork, sessionId string, files []*entity.FileMetadata) error {
-	return s.AddImageList(ctx, unitOfWork, sessionId, files)
-}
-
-func (s *ProfileService) DeleteImageList(ctx context.Context, unitOfWork *UnitOfWork, sessionId string) error {
-	imageList, err := s.imageRepository.SelectListBySessionId(ctx, sessionId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("DeleteImageList",
-			"imageRepository.SelectListBySessionId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return err
-	}
-	if len(imageList) > 0 {
-		for _, image := range imageList {
-			_, err := s.deleteImageById(ctx, unitOfWork, image.Id)
-			if err != nil {
-				errorMessage := s.getErrorMessage("DeleteImageList", "deleteImageById")
-				s.logger.Debug(errorMessage, zap.Error(err))
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func (s *ProfileService) GetImageBySessionId(ctx context.Context, sessionId, fileName string) ([]byte, error) {
 	filePath := fmt.Sprintf("static/profiles/%s/images/%s", sessionId, fileName)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -635,11 +649,38 @@ func (s *ProfileService) GetImageById(ctx context.Context, imageId uint64) (*ent
 	return s.imageRepository.FindById(ctx, imageId)
 }
 
-func (s *ProfileService) deleteImageById(
-	ctx context.Context, unitOfWork *UnitOfWork, id uint64) (*entity.ImageEntity, error) {
+func (s *ProfileService) updateImageList(
+	ctx context.Context, unitOfWork *UnitOfWork, sessionId string, files []*entity.FileMetadata) error {
+	return s.AddImageList(ctx, unitOfWork, sessionId, files)
+}
+
+func (s *ProfileService) deleteImageListByS3(ctx context.Context, unitOfWork *UnitOfWork, sessionId string) error {
+	imageList, err := s.imageRepository.SelectListAllBySessionId(ctx, sessionId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("deleteImageListByS3",
+			"imageRepository.SelectListBySessionId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return err
+	}
+	if len(imageList) > 0 {
+		for _, image := range imageList {
+			_, err := s.deleteImageByS3(ctx, unitOfWork, image.Id)
+			if err != nil {
+				errorMessage := s.getErrorMessage("deleteImageListByS3",
+					"deleteImageByS3")
+				s.logger.Debug(errorMessage, zap.Error(err))
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (s *ProfileService) deleteImageByS3(
+	ctx context.Context, unitOfWork *UnitOfWork, id uint64) (*response.ResponseDto, error) {
 	image, err := s.imageRepository.FindById(ctx, id)
 	if err != nil {
-		errorMessage := s.getErrorMessage("deleteImageById",
+		errorMessage := s.getErrorMessage("deleteImageByS3",
 			"imageRepository.FindById")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -654,21 +695,34 @@ func (s *ProfileService) deleteImageById(
 	// Удаление из S3 хранилища
 	pathToS3 := fmt.Sprintf("/profiles/%s/images/%s", image.SessionId, image.Name)
 	if err := s.s3.Delete(pathToS3); err != nil {
-		errorMessage := s.getErrorMessage("deleteImageById", "s.s3.Delete")
+		errorMessage := s.getErrorMessage("deleteImageByS3", "s.s3.Delete")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	imageResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return imageResponse, nil
+}
+func (s *ProfileService) deleteImageByDB(
+	ctx context.Context, unitOfWork *UnitOfWork, id uint64) (*response.ResponseDto, error) {
 	imageMapper := &mapper.ImageMapper{}
-	imageRequest := imageMapper.MapToDeleteRequest(image.Id)
+	imageRequest := imageMapper.MapToDeleteRequest(id)
 	return unitOfWork.ImageRepository().Delete(ctx, imageRequest)
 }
 
 func (s *ProfileService) DeleteImage(
 	ctx context.Context, id uint64) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	_, err := s.deleteImageById(ctx, unitOfWork, id)
+	_, err := s.deleteImageByS3(ctx, unitOfWork, id)
 	if err != nil {
-		errorMessage := s.getErrorMessage("DeleteImage", "deleteImageById")
+		errorMessage := s.getErrorMessage("DeleteImage", "deleteImageByS3")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	_, err = s.deleteImageByDB(ctx, unitOfWork, id)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteImage", "deleteImageByDB")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -785,7 +839,6 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, file *enti
 		Name:      newFileName,
 		Url:       newFilePath,
 		Size:      newFileSize,
-		IsDeleted: false,
 		IsBlocked: false,
 		IsPrimary: false,
 		IsPrivate: false,
@@ -1139,9 +1192,9 @@ func (s *ProfileService) checkUserExists(ctx context.Context, sessionId string) 
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
-	isDeleted := p.IsDeleted
-	if isDeleted {
-		err := errors.Wrap(err, "user has already been deleted")
+	isFrozen := p.IsFrozen
+	if isFrozen {
+		err := errors.Wrap(err, "user has already been frozen")
 		return err
 	}
 	return nil

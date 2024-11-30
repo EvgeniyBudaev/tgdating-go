@@ -78,17 +78,17 @@ func (pc *ProfileController) UpdateProfile(
 	return profileResponse, nil
 }
 
-func (pc *ProfileController) DeleteProfile(
-	ctx context.Context, in *pb.ProfileDeleteRequest) (*pb.ProfileDeleteResponse, error) {
-	pc.logger.Info("DELETE /api/v1/profiles")
-	req := &request.ProfileDeleteRequestDto{
+func (pc *ProfileController) FreezeProfile(
+	ctx context.Context, in *pb.ProfileFreezeRequest) (*pb.ProfileFreezeResponse, error) {
+	pc.logger.Info("POST /api/v1/profiles/freeze")
+	req := &request.ProfileFreezeRequestDto{
 		SessionId: in.SessionId,
 	}
-	profileDeleted, err := pc.service.DeleteProfile(ctx, req)
+	profileDeleted, err := pc.service.FreezeProfile(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.ProfileDeleteResponse{
+	return &pb.ProfileFreezeResponse{
 		Success: profileDeleted.Success,
 	}, nil
 }
@@ -104,6 +104,21 @@ func (pc *ProfileController) RestoreProfile(
 		return nil, err
 	}
 	return &pb.ProfileRestoreResponse{
+		Success: profileDeleted.Success,
+	}, nil
+}
+
+func (pc *ProfileController) DeleteProfile(
+	ctx context.Context, in *pb.ProfileDeleteRequest) (*pb.ProfileDeleteResponse, error) {
+	pc.logger.Info("DELETE /api/v1/profiles")
+	req := &request.ProfileDeleteRequestDto{
+		SessionId: in.SessionId,
+	}
+	profileDeleted, err := pc.service.DeleteProfile(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ProfileDeleteResponse{
 		Success: profileDeleted.Success,
 	}, nil
 }

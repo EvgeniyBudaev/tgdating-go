@@ -76,14 +76,20 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 	}
 }
 
-func (pm *ProfileMapper) MapToDeleteRequest(r *request.ProfileDeleteRequestDto) *pb.ProfileDeleteRequest {
-	return &pb.ProfileDeleteRequest{
+func (pm *ProfileMapper) MapToFreezeRequest(r *request.ProfileFreezeRequestDto) *pb.ProfileFreezeRequest {
+	return &pb.ProfileFreezeRequest{
 		SessionId: r.SessionId,
 	}
 }
 
 func (pm *ProfileMapper) MapToRestoreRequest(r *request.ProfileRestoreRequestDto) *pb.ProfileRestoreRequest {
 	return &pb.ProfileRestoreRequest{
+		SessionId: r.SessionId,
+	}
+}
+
+func (pm *ProfileMapper) MapToDeleteRequest(r *request.ProfileDeleteRequestDto) *pb.ProfileDeleteRequest {
+	return &pb.ProfileDeleteRequest{
 		SessionId: r.SessionId,
 	}
 }
@@ -118,7 +124,6 @@ func (pm *ProfileMapper) MapToBySessionIdResponse(r *pb.ProfileBySessionIdRespon
 				Name:      image.Name,
 				Url:       image.Url,
 				Size:      image.Size,
-				IsDeleted: image.IsDeleted,
 				IsBlocked: image.IsBlocked,
 				IsPrimary: image.IsPrimary,
 				IsPrivate: image.IsPrivate,
@@ -136,7 +141,7 @@ func (pm *ProfileMapper) MapToBySessionIdResponse(r *pb.ProfileBySessionIdRespon
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		IsDeleted:      r.IsDeleted,
+		IsFrozen:       r.IsFrozen,
 		IsBlocked:      r.IsBlocked,
 		IsPremium:      r.IsPremium,
 		IsShowDistance: r.IsShowDistance,
@@ -174,7 +179,7 @@ func (pm *ProfileMapper) MapToShortInfoResponse(r *pb.ProfileShortInfoResponse) 
 	return &response.ProfileShortInfoResponseDto{
 		SessionId: r.SessionId,
 		ImageUrl:  r.ImageUrl,
-		IsDeleted: r.IsDeleted,
+		IsFrozen:  r.IsFrozen,
 		IsBlocked: r.IsBlocked,
 	}
 }
@@ -222,7 +227,6 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 				Name:      image.Name,
 				Url:       image.Url,
 				Size:      image.Size,
-				IsDeleted: image.IsDeleted,
 				IsBlocked: image.IsBlocked,
 				IsPrimary: image.IsPrimary,
 				IsPrivate: image.IsPrivate,
@@ -240,7 +244,7 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		IsDeleted:      r.IsDeleted,
+		IsFrozen:       r.IsFrozen,
 		IsBlocked:      r.IsBlocked,
 		IsPremium:      r.IsPremium,
 		IsShowDistance: r.IsShowDistance,
