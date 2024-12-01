@@ -14,7 +14,7 @@ message FileMetadata {
 
 message Image {
   uint64 id = 1; // id изображения
-  string sessionId = 2; // id сессии
+  string telegramUserId = 2; // id пользователя в телеграм
   string name = 3; // название файла
   string url = 4; // url файла
   int64 size = 5; // Размер файла в байтах
@@ -31,7 +31,7 @@ message Point {
 }
 
 message NavigatorResponse {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   Point location = 2; // объект с координатами
 }
 message NavigatorDetailResponse {
@@ -39,10 +39,10 @@ message NavigatorDetailResponse {
 }
 
 message FilterResponse {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   string searchGender = 2; // поиск по половому признаку
   string lookingFor = 3; // цель поиска
-  uint64 ageFrom = 4; // возраст от
+  uint64 ageFrom = 4; // возраст от`
   uint64 ageTo = 5; // возраст до
   double distance = 6; // дистанция
   uint64 page = 7; // номер текущей страницы
@@ -50,14 +50,13 @@ message FilterResponse {
 }
 
 message TelegramResponse {
-  string sessionId = 1; // id сессии
-  uint64 userId = 2; // id пользователя
-  string username = 3; // username пользователя
-  string firstName = 4; // имя пользователя
-  string lastName = 5; // фамилия пользователя
-  string languageCode = 6; // язык пользователя
-  bool allowsWriteToPm = 7; // true, если этот пользователь разрешил боту отправлять ему сообщения
-  string queryId = 8; // id чата
+  string userId = 1; // id пользователя
+  string username = 2; // username пользователя
+  string firstName = 3; // имя пользователя
+  string lastName = 4; // фамилия пользователя
+  string languageCode = 5; // язык пользователя
+  bool allowsWriteToPm = 6; // true, если этот пользователь разрешил боту отправлять ему сообщения
+  string queryId = 7; // id чата
 }
 
 message BlockResponse {
@@ -66,76 +65,74 @@ message BlockResponse {
 
 message LikeResponse {
   uint64 id = 1; // id лайка
-  string sessionId = 2; // id сессии
-  string likedSessionId = 3; // id сессии того, кого лайкнули
+  string telegramUserId = 2; // id пользователя в телеграме
+  string likedTelegramUserId = 3; // id сессии того, кого лайкнули
   bool isLiked = 4; // установлен лайк да/нет
   google.protobuf.Timestamp createdAt = 5; // дата создания
   google.protobuf.Timestamp updatedAt = 6; // дата обновления
 }
 
 message ProfileAddRequest {
-  string sessionId = 1; // id сессии
-  string displayName = 2; // Имя для отображения
-  google.protobuf.Timestamp birthday = 3; // дата для рождения
-  string gender = 4; // пол
-  string searchGender = 5; // поиск по половому признаку
-  string location = 6; // местоположение
-  string description = 7; // описание
-  double height = 8; // рост
-  double weight = 9; // вес
-  string lookingFor = 10; // цель поиска
-  uint64 telegramUserId = 11; // id пользователя в телеграм
-  string telegramUsername = 12; // username пользователя в телеграм
-  string telegramFirstName = 13; // имя пользователя в телеграм
-  string telegramLastName = 14; // фамилия пользователя в телеграм
-  string telegramLanguageCode = 15; // язык пользователя в телеграм
-  bool telegramAllowsWriteToPm = 16; // true, если этот пользователь разрешил боту отправлять ему сообщения
-  string telegramQueryId = 17; // id чата в телеграм
-  optional double latitude = 18; // широта
-  optional double longitude = 19; // долгота
-  uint64 ageFrom = 20; // возраст от
-  uint64 ageTo = 21; // возраст до
-  double distance = 22; // дистанция
-  uint64 page = 23; // номер текущей страницы
-  uint64 size = 24; // количество элементов на странице
-  repeated FileMetadata files = 25; // список файлов-изображений
+  string displayName = 1; // Имя для отображения
+  google.protobuf.Timestamp birthday = 2; // дата для рождения
+  string gender = 3; // пол
+  string searchGender = 4; // поиск по половому признаку
+  string location = 5; // местоположение
+  string description = 6; // описание
+  double height = 7; // рост
+  double weight = 8; // вес
+  string lookingFor = 9; // цель поиска
+  string telegramUserId = 10; // id пользователя в телеграм
+  string telegramUsername = 11; // username пользователя в телеграм
+  string telegramFirstName = 12; // имя пользователя в телеграм
+  string telegramLastName = 13; // фамилия пользователя в телеграм
+  string telegramLanguageCode = 14; // язык пользователя в телеграм
+  bool telegramAllowsWriteToPm = 15; // true, если этот пользователь разрешил боту отправлять ему сообщения
+  string telegramQueryId = 16; // id чата в телеграм
+  optional double latitude = 17; // широта
+  optional double longitude = 18; // долгота
+  uint64 ageFrom = 19; // возраст от
+  uint64 ageTo = 20; // возраст до
+  double distance = 21; // дистанция
+  uint64 page = 22; // номер текущей страницы
+  uint64 size = 23; // количество элементов на странице
+  repeated FileMetadata files = 24; // список файлов-изображений
 }
 
 message ProfileAddResponse {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
 }
 
 message ProfileUpdateRequest {
-  string sessionId = 1; // id сессии
-  string displayName = 2; // Имя для отображения
-  google.protobuf.Timestamp birthday = 3; // дата для рождения
-  string gender = 4; // пол
-  string searchGender = 5; // поиск по половому признаку
-  string location = 6; // местоположение
-  string description = 7; // описание
-  double height = 8; // рост
-  double weight = 9; // вес
-  string lookingFor = 10; // цель поиска
-  uint64 telegramUserId = 11; // id пользователя в телеграм
-  string telegramUsername = 12; // username пользователя в телеграм
-  string telegramFirstName = 13; // имя пользователя в телеграм
-  string telegramLastName = 14; // фамилия пользователя в телеграм
-  string telegramLanguageCode = 15; // язык пользователя в телеграм
-  bool telegramAllowsWriteToPm = 16; // true, если этот пользователь разрешил боту отправлять ему сообщения
-  string telegramQueryId = 17; // id чата в телеграм
-  optional double latitude = 18; // широта
-  optional double longitude = 19; // долгота
-  uint64 ageFrom = 20; // возраст от
-  uint64 ageTo = 21; // возраст до
-  double distance = 22; // дистанция
-  uint64 page = 23; // номер текущей страницы
-  uint64 size = 24; // количество элементов на странице
-  bool isImages = 25;
-  repeated FileMetadata files = 26;
+  string displayName = 1; // Имя для отображения
+  google.protobuf.Timestamp birthday = 2; // дата для рождения
+  string gender = 3; // пол
+  string searchGender = 4; // поиск по половому признаку
+  string location = 5; // местоположение
+  string description = 6; // описание
+  double height = 7; // рост
+  double weight = 8; // вес
+  string lookingFor = 9; // цель поиска
+  string telegramUserId = 10; // id пользователя в телеграм
+  string telegramUsername = 11; // username пользователя в телеграм
+  string telegramFirstName = 12; // имя пользователя в телеграм
+  string telegramLastName = 13; // фамилия пользователя в телеграм
+  string telegramLanguageCode = 14; // язык пользователя в телеграм
+  bool telegramAllowsWriteToPm = 15; // true, если этот пользователь разрешил боту отправлять ему сообщения
+  string telegramQueryId = 16; // id чата в телеграм
+  optional double latitude = 17; // широта
+  optional double longitude = 18; // долгота
+  uint64 ageFrom = 19; // возраст от
+  uint64 ageTo = 20; // возраст до
+  double distance = 21; // дистанция
+  uint64 page = 22; // номер текущей страницы
+  uint64 size = 23; // количество элементов на странице
+  bool isImages = 24; // наличие ранее сохранненых фотографий
+  repeated FileMetadata files = 25;
 }
 
 message ProfileFreezeRequest {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
 }
 
 message ProfileFreezeResponse {
@@ -143,7 +140,7 @@ message ProfileFreezeResponse {
 }
 
 message ProfileRestoreRequest {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
 }
 
 message ProfileRestoreResponse {
@@ -151,21 +148,21 @@ message ProfileRestoreResponse {
 }
 
 message ProfileDeleteRequest {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
 }
 
 message ProfileDeleteResponse {
   bool success = 1; // успешно удалено да/нет
 }
 
-message ProfileGetBySessionIdRequest {
-  string sessionId = 1; // id сессии
+message ProfileGetByTelegramUserIdRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
   optional double latitude = 2; // широта
   optional double longitude = 3; // долгота
 }
 
-message ProfileBySessionIdResponse {
-  string sessionId = 1; // id сессии
+message ProfileByTelegramUserIdResponse {
+  string telegramUserId = 1; // id пользователя в телеграм
   string displayName = 2; // Имя для отображения
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
@@ -189,14 +186,14 @@ message ProfileBySessionIdResponse {
 }
 
 message ProfileGetDetailRequest {
-  string sessionId = 1; // id сессии
-  string viewedSessionId = 2; // id сессии того, кого смотрим
+  string telegramUserId = 1; // id пользователя в телеграм
+  string viewedTelegramUserId = 2; // id сессии того, кого смотрим
   optional double latitude = 3; // широта
   optional double longitude = 4; // долгота
 }
 
 message ProfileDetailResponse {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   string displayName = 2; // Имя для отображения
   google.protobuf.Timestamp birthday = 3; // дата для рождения
   string gender = 4; // пол
@@ -221,26 +218,26 @@ message ProfileDetailResponse {
 }
 
 message ProfileGetShortInfoRequest {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   optional double latitude = 2; // широта
   optional double longitude = 3; // долгота
 }
 
 message ProfileShortInfoResponse {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   string imageUrl = 2; // url освного изображения
   bool isFrozen = 3; // заморожен пользователь да/нет
   bool isBlocked = 4; // заблокирован пользователь да/нет
 }
 
 message ProfileGetListRequest {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   optional double latitude = 2; // широта
   optional double longitude = 3; // долгота
 }
 
 message ProfileListItemResponse {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   optional double distance = 2; // дистанция
   string url = 3; // url изображения
   bool isOnline = 4; // пользователь онлайн да/нет
@@ -257,12 +254,12 @@ message ProfileListResponse {
   repeated ProfileListItemResponse content = 7; // список профилей
 }
 
-message GetImageBySessionIdRequest {
-  string sessionId = 1; // id сессии
+message GetImageByTelegramUserIdRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
   string fileName = 2; // название файла с расширением
 }
 
-message ImageBySessionIdResponse {
+message ImageByTelegramUserIdResponse {
   bytes file = 1; // файл
 }
 
@@ -279,13 +276,13 @@ message ImageDeleteResponse {
 }
 
 message FilterGetRequest {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   optional double latitude = 2; // широта
   optional double longitude = 3; // долгота
 }
 
 message FilterGetResponse {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   string searchGender = 2; // поиск по половому признаку
   string lookingFor = 3; // цель поиска
   uint64 ageFrom = 4; // возраст от
@@ -296,14 +293,14 @@ message FilterGetResponse {
 }
 
 message FilterUpdateRequest {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   string searchGender = 2; // поиск по половому признаку
   uint64 ageFrom = 3; // возраст от
   uint64 ageTo = 4; // возраст до
 }
 
 message FilterUpdateResponse {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   string searchGender = 2; // поиск по половому признаку
   string lookingFor = 3; // цель поиска
   uint64 ageFrom = 4; // возраст от
@@ -314,29 +311,29 @@ message FilterUpdateResponse {
 }
 
 message BlockAddRequest {
-  string sessionId = 1; // id сессии
-  string blockedUserSessionId = 2; // id сессии того, кого блокируем
+  string telegramUserId = 1; // id пользователя в телеграм
+  string blockedTelegramUserId = 2; // id того, кого блокируем
 }
 
 message BlockAddResponse {
   uint64 id = 1; // id блока
-  string sessionId = 2; // id сессии
-  string blockedUserSessionId = 3; // id сессии того, кого заблокировали
+  string telegramUserId = 2; // id пользователя в телеграм
+  string blockedTelegramUserId = 3; // id заблокированного пользователя
   bool isBlocked = 4; // заблокирован пользователь да/нет
   google.protobuf.Timestamp createdAt = 5; // дата создания
   google.protobuf.Timestamp updatedAt = 6; // дата обновления
 }
 
 message LikeAddRequest {
-  string sessionId = 1; // id сессии
-  string likedSessionId = 2; // id сессии того, кто понравился
+  string telegramUserId = 1; // id пользователя в телеграм
+  string likedTelegramUserId = 2; // id пользователя который понравился
   string locale = 3; // локаль пользователя
 }
 
 message LikeAddResponse {
   uint64 id = 1; // id блока
-  string sessionId = 2; // id сессии
-  string likedSessionId = 3; // id сессии того, кто понравился
+  string telegramUserId = 2; // id пользователя в телеграм
+  string likedTelegramUserId = 3; // id понравившегося пользователя
   bool isLiked = 4; // есть лайк да/нет
   google.protobuf.Timestamp createdAt = 5; // дата создания
   google.protobuf.Timestamp updatedAt = 6; // дата обновления
@@ -344,42 +341,42 @@ message LikeAddResponse {
 
 message LikeUpdateRequest {
   uint64 id = 1; // id блока
-  string sessionId = 2; // id сессии
+  string telegramUserId = 2; // id пользователя в телеграм
   bool isLiked = 3; // есть лайк да/нет
 }
 
 message LikeUpdateResponse {
   uint64 id = 1; // id блока
-  string sessionId = 2; // id сессии
-  string likedSessionId = 3; // id сессии того, кто понравился
+  string telegramUserId = 2; // id пользователя в телеграм
+  string likedTelegramUserId = 3; // id понравившегося пользователя
   bool isLiked = 4; // есть лайк да/нет
   google.protobuf.Timestamp createdAt = 5; // дата создания
   google.protobuf.Timestamp updatedAt = 6; // дата обновления
 }
 
 message ComplaintAddRequest {
-  string sessionId = 1; // id сессии
-  string criminalSessionId = 2; // id сессии мошенника
+  string telegramUserId = 1; // id пользователя в телеграм
+  string criminalTelegramUserId = 2; // id мошенника
   string reason = 3; // причина жалобы
 }
 
 message ComplaintAddResponse {
   uint64 id = 1; // id блока
-  string sessionId = 2; // id сессии
-  string criminalSessionId = 3; // id сессии мошенника
+  string telegramUserId = 2; // id пользователя в телеграм
+  string criminalTelegramUserId = 3; // id мошенника
   string reason = 4; // причина жалобы
   google.protobuf.Timestamp createdAt = 5; // дата создания
   google.protobuf.Timestamp updatedAt = 6; // дата обновления
 }
 
 message NavigatorUpdateRequest {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   double latitude = 2; // широта
   double longitude = 3; // долгота
 }
 
 message NavigatorUpdateResponse {
-  string sessionId = 1; // id сессии
+  string telegramUserId = 1; // id пользователя в телеграм
   Point location = 2; // объект с координатами
 }
 
@@ -388,18 +385,18 @@ message NavigatorUpdateResponse {
 */
 service Profile {
   rpc AddProfile(ProfileAddRequest) returns (ProfileAddResponse); // добавление нового пользователя
-  rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileBySessionIdResponse); // обновление данных пользователя
+  rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileByTelegramUserIdResponse); // обновление данных пользователя
   rpc FreezeProfile(ProfileFreezeRequest) returns (ProfileFreezeResponse); // заморозка пользователя
   rpc RestoreProfile(ProfileRestoreRequest) returns (ProfileRestoreResponse); // восстановление пользователя
   rpc DeleteProfile(ProfileDeleteRequest) returns (ProfileDeleteResponse); // удаление пользователя
-  rpc GetProfileBySessionId(ProfileGetBySessionIdRequest) returns (ProfileBySessionIdResponse); // получение профиля по id сессии
+  rpc GetProfileByTelegramUserId(ProfileGetByTelegramUserIdRequest) returns (ProfileByTelegramUserIdResponse); // получение профиля по id сессии
   rpc GetProfileDetail(ProfileGetDetailRequest) returns (ProfileDetailResponse); // получение карточки профиля
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю
   rpc GetProfileList(ProfileGetListRequest) returns (ProfileListResponse); // получение списка профилей
-  rpc GetImageBySessionId(GetImageBySessionIdRequest) returns (ImageBySessionIdResponse); // получение файла
+  rpc GetImageByTelegramUserId(GetImageByTelegramUserIdRequest) returns (ImageByTelegramUserIdResponse); // получение файла
   rpc GetImageById(GetImageByIdRequest) returns (Image); // получение изображения по id
   rpc DeleteImage(ImageDeleteRequest) returns (ImageDeleteResponse); // удаление файла
-  rpc GetFilterBySessionId(FilterGetRequest) returns (FilterGetResponse); // получение данных фильтра
+  rpc GetFilterByTelegramUserId(FilterGetRequest) returns (FilterGetResponse); // получение данных фильтра
   rpc UpdateFilter(FilterUpdateRequest) returns (FilterUpdateResponse); // получение данных фильтра
   rpc AddBlock(BlockAddRequest) returns (BlockAddResponse); // добавить пользователя в блок лист
   rpc AddLike(LikeAddRequest) returns (LikeAddResponse); // поставить лайк

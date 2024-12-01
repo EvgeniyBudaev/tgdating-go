@@ -13,11 +13,11 @@ type BlockMapper struct {
 func (pm *BlockMapper) MapToAddRequest(
 	pr *request.BlockAddRequestDto) *request.BlockAddRequestRepositoryDto {
 	return &request.BlockAddRequestRepositoryDto{
-		SessionId:            pr.SessionId,
-		BlockedUserSessionId: pr.BlockedUserSessionId,
-		IsBlocked:            true,
-		CreatedAt:            time.Now(),
-		UpdatedAt:            time.Now(),
+		TelegramUserId:        pr.TelegramUserId,
+		BlockedTelegramUserId: pr.BlockedTelegramUserId,
+		IsBlocked:             true,
+		CreatedAt:             time.Now(),
+		UpdatedAt:             time.Now(),
 	}
 }
 

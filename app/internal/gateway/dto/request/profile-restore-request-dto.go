@@ -1,5 +1,5 @@
 package request
 
 type ProfileRestoreRequestDto struct {
-	SessionId string `json:"sessionId"`
+	TelegramUserId string `json:"telegramUserId"`
 }

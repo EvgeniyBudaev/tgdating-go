@@ -29,10 +29,12 @@ func NewLikeRepository(l logger.Logger, db *sql.DB) *LikeRepository {
 
 func (r *LikeRepository) Add(
 	ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*entity.LikeEntity, error) {
-	query := "INSERT INTO dating.profile_likes (session_id, liked_session_id, is_liked, created_at, updated_at)" +
+	query := "INSERT INTO dating.profile_likes (telegram_user_id, liked_telegram_user_id, is_liked, created_at," +
+		" updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5)" +
 		" RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.LikedSessionId, &p.IsLiked, &p.CreatedAt, &p.UpdatedAt)
+	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.LikedTelegramUserId, &p.IsLiked, &p.CreatedAt,
+		&p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -45,8 +47,8 @@ func (r *LikeRepository) Add(
 
 func (r *LikeRepository) Update(
 	ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*entity.LikeEntity, error) {
-	query := "UPDATE dating.profile_likes SET is_liked=$1, updated_at=$2" +
-		" WHERE id=$3"
+	query := "UPDATE dating.profile_likes SET is_liked = $1, updated_at = $2" +
+		" WHERE id = $3"
 	_, err := r.db.ExecContext(ctx, query, &p.IsLiked, &p.UpdatedAt, &p.Id)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
@@ -58,11 +60,11 @@ func (r *LikeRepository) Update(
 
 func (r *LikeRepository) FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error) {
 	p := &entity.LikeEntity{}
-	query := "SELECT id, session_id, liked_session_id, is_liked, created_at, updated_at " +
+	query := "SELECT id, telegram_user_id, liked_telegram_user_id, is_liked, created_at, updated_at " +
 		" FROM dating.profile_likes" +
-		" WHERE id=$1"
+		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	err := row.Scan(&p.Id, &p.SessionId, &p.LikedSessionId, &p.IsLiked, &p.CreatedAt, &p.UpdatedAt)
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.LikedTelegramUserId, &p.IsLiked, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -74,18 +76,18 @@ func (r *LikeRepository) FindById(ctx context.Context, id uint64) (*entity.LikeE
 	return p, nil
 }
 
-func (r *LikeRepository) FindBySessionId(ctx context.Context, sessionId string) (*entity.LikeEntity, error) {
+func (r *LikeRepository) FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.LikeEntity, error) {
 	p := &entity.LikeEntity{}
-	query := "SELECT id, session_id, liked_session_id, is_liked, created_at, updated_at " +
+	query := "SELECT id, telegram_user_id, liked_telegram_user_id, is_liked, created_at, updated_at " +
 		" FROM dating.profile_likes" +
-		" WHERE session_id=$1"
-	row := r.db.QueryRowContext(ctx, query, sessionId)
-	err := row.Scan(&p.Id, &p.SessionId, &p.LikedSessionId, &p.IsLiked, &p.CreatedAt, &p.UpdatedAt)
+		" WHERE telegram_user_id = $1"
+	row := r.db.QueryRowContext(ctx, query, telegramUserId)
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.LikedTelegramUserId, &p.IsLiked, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
+		errorMessage := r.getErrorMessage("FindByTelegramUserId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, nil
 	}

@@ -7,7 +7,6 @@ import (
 )
 
 type ProfileUpdateRequestDto struct {
-	SessionId               string                 `json:"sessionId"`
 	DisplayName             string                 `json:"displayName"`
 	Birthday                time.Time              `json:"birthday"`
 	Gender                  enum.Gender            `json:"gender"`
@@ -17,7 +16,7 @@ type ProfileUpdateRequestDto struct {
 	Height                  float64                `json:"height"`
 	Weight                  float64                `json:"weight"`
 	LookingFor              enum.LookingFor        `json:"lookingFor"`
-	TelegramUserId          uint64                 `json:"telegramUserId"`
+	TelegramUserId          string                 `json:"telegramUserId"`
 	TelegramUsername        string                 `json:"telegramUsername"`
 	TelegramFirstName       string                 `json:"telegramFirstName"`
 	TelegramLastName        string                 `json:"telegramLastName"`

@@ -5,8 +5,7 @@ import (
 )
 
 type TelegramUpdateRequestRepositoryDto struct {
-	SessionId       string    `json:"sessionId"`
-	UserId          uint64    `json:"userId"`
+	UserId          string    `json:"userId"`
 	UserName        string    `json:"username"`
 	FirstName       string    `json:"firstName"`
 	LastName        string    `json:"lastName"`

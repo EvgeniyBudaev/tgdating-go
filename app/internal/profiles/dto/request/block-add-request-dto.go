@@ -1,6 +1,6 @@
 package request
 
 type BlockAddRequestDto struct {
-	SessionId            string `json:"sessionId"`
-	BlockedUserSessionId string `json:"blockedUserSessionId"`
+	TelegramUserId        string `json:"telegramUserId"`
+	BlockedTelegramUserId string `json:"blockedTelegramUserId"`
 }

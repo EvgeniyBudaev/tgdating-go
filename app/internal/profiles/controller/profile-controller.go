@@ -56,7 +56,7 @@ func (pc *ProfileController) AddProfile(ctx context.Context, in *pb.ProfileAddRe
 }
 
 func (pc *ProfileController) UpdateProfile(
-	ctx context.Context, in *pb.ProfileUpdateRequest) (*pb.ProfileBySessionIdResponse, error) {
+	ctx context.Context, in *pb.ProfileUpdateRequest) (*pb.ProfileByTelegramUserIdResponse, error) {
 	pc.logger.Info("PUT /api/v1/profiles")
 	fileList := make([]*entity.FileMetadata, 0)
 	if len(in.Files) > 0 {
@@ -74,7 +74,7 @@ func (pc *ProfileController) UpdateProfile(
 	if err != nil {
 		return nil, err
 	}
-	profileResponse := profileMapper.MapControllerToBySessionIdResponse(profileUpdated)
+	profileResponse := profileMapper.MapControllerToByTelegramUserIdResponse(profileUpdated)
 	return profileResponse, nil
 }
 
@@ -82,7 +82,7 @@ func (pc *ProfileController) FreezeProfile(
 	ctx context.Context, in *pb.ProfileFreezeRequest) (*pb.ProfileFreezeResponse, error) {
 	pc.logger.Info("POST /api/v1/profiles/freeze")
 	req := &request.ProfileFreezeRequestDto{
-		SessionId: in.SessionId,
+		TelegramUserId: in.TelegramUserId,
 	}
 	profileDeleted, err := pc.service.FreezeProfile(ctx, req)
 	if err != nil {
@@ -97,7 +97,7 @@ func (pc *ProfileController) RestoreProfile(
 	ctx context.Context, in *pb.ProfileRestoreRequest) (*pb.ProfileRestoreResponse, error) {
 	pc.logger.Info("POST /api/v1/profiles/restore")
 	req := &request.ProfileRestoreRequestDto{
-		SessionId: in.SessionId,
+		TelegramUserId: in.TelegramUserId,
 	}
 	profileDeleted, err := pc.service.RestoreProfile(ctx, req)
 	if err != nil {
@@ -112,7 +112,7 @@ func (pc *ProfileController) DeleteProfile(
 	ctx context.Context, in *pb.ProfileDeleteRequest) (*pb.ProfileDeleteResponse, error) {
 	pc.logger.Info("DELETE /api/v1/profiles")
 	req := &request.ProfileDeleteRequestDto{
-		SessionId: in.SessionId,
+		TelegramUserId: in.TelegramUserId,
 	}
 	profileDeleted, err := pc.service.DeleteProfile(ctx, req)
 	if err != nil {
@@ -123,15 +123,14 @@ func (pc *ProfileController) DeleteProfile(
 	}, nil
 }
 
-func (pc *ProfileController) GetProfileBySessionId(
-	ctx context.Context, in *pb.ProfileGetBySessionIdRequest) (*pb.ProfileBySessionIdResponse, error) {
-	pc.logger.Info("GET /api/v1/profiles/session/:sessionId")
-	sessionId := in.SessionId
-	req := &request.ProfileGetBySessionIdRequestDto{
+func (pc *ProfileController) GetProfileByTelegramUserId(
+	ctx context.Context, in *pb.ProfileGetByTelegramUserIdRequest) (*pb.ProfileByTelegramUserIdResponse, error) {
+	pc.logger.Info("GET /api/v1/profiles/telegram/:telegramUserId")
+	req := &request.ProfileGetByTelegramUserIdRequestDto{
 		Latitude:  in.Latitude,
 		Longitude: in.Longitude,
 	}
-	profileBySessionId, err := pc.service.GetProfileBySessionId(ctx, sessionId, req)
+	profileByTelegramUserId, err := pc.service.GetProfileByTelegramUserId(ctx, in.TelegramUserId, req)
 	if err != nil {
 		if errors.Is(err, psql.ErrNotRowFound) {
 			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
@@ -139,20 +138,19 @@ func (pc *ProfileController) GetProfileBySessionId(
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileControllerMapper{}
-	profileResponse := profileMapper.MapControllerToBySessionIdResponse(profileBySessionId)
+	profileResponse := profileMapper.MapControllerToByTelegramUserIdResponse(profileByTelegramUserId)
 	return profileResponse, nil
 }
 
 func (pc *ProfileController) GetProfileDetail(
 	ctx context.Context, in *pb.ProfileGetDetailRequest) (*pb.ProfileDetailResponse, error) {
-	pc.logger.Info("GET /api/v1/profiles/detail/:viewedSessionId")
+	pc.logger.Info("GET /api/v1/profiles/detail/:viewedTelegramUserId")
 	req := &request.ProfileGetDetailRequestDto{
-		SessionId: in.SessionId,
-		Latitude:  in.Latitude,
-		Longitude: in.Longitude,
+		TelegramUserId: in.TelegramUserId,
+		Latitude:       in.Latitude,
+		Longitude:      in.Longitude,
 	}
-	viewedSessionId := in.ViewedSessionId
-	profileDetail, err := pc.service.GetProfileDetail(ctx, viewedSessionId, req)
+	profileDetail, err := pc.service.GetProfileDetail(ctx, in.ViewedTelegramUserId, req)
 	if err != nil {
 		if errors.Is(err, psql.ErrNotRowFound) {
 			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
@@ -166,13 +164,12 @@ func (pc *ProfileController) GetProfileDetail(
 
 func (pc *ProfileController) GetProfileShortInfo(
 	ctx context.Context, in *pb.ProfileGetShortInfoRequest) (*pb.ProfileShortInfoResponse, error) {
-	pc.logger.Info("GET /api/v1/profiles/short/:sessionId")
+	pc.logger.Info("GET /api/v1/profiles/short/:telegramUserId")
 	req := &request.ProfileGetShortInfoRequestDto{
 		Latitude:  in.Latitude,
 		Longitude: in.Longitude,
 	}
-	sessionId := in.SessionId
-	profileShortInfo, err := pc.service.GetProfileShortInfo(ctx, sessionId, req)
+	profileShortInfo, err := pc.service.GetProfileShortInfo(ctx, in.TelegramUserId, req)
 	if err != nil {
 		if errors.Is(err, psql.ErrNotRowFound) {
 			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
@@ -188,9 +185,9 @@ func (pc *ProfileController) GetProfileList(
 	ctx context.Context, in *pb.ProfileGetListRequest) (*pb.ProfileListResponse, error) {
 	pc.logger.Info("GET api/v1/profiles/list")
 	req := &request.ProfileGetListRequestDto{
-		SessionId: in.SessionId,
-		Latitude:  in.Latitude,
-		Longitude: in.Longitude,
+		TelegramUserId: in.TelegramUserId,
+		Latitude:       in.Latitude,
+		Longitude:      in.Longitude,
 	}
 	profileList, err := pc.service.GetProfileList(ctx, req)
 	if err != nil {
@@ -207,23 +204,21 @@ func (pc *ProfileController) GetProfileList(
 	return profileResponse, nil
 }
 
-func (pc *ProfileController) GetImageBySessionId(
-	ctx context.Context, in *pb.GetImageBySessionIdRequest) (*pb.ImageBySessionIdResponse, error) {
-	pc.logger.Info("GET /api/v1/profiles/:sessionId/images/:fileName")
-	sessionId := in.SessionId
-	fileName := in.FileName
-	file, err := pc.service.GetImageBySessionId(ctx, sessionId, fileName)
+func (pc *ProfileController) GetImageByTelegramUserId(
+	ctx context.Context, in *pb.GetImageByTelegramUserIdRequest) (*pb.ImageByTelegramUserIdResponse, error) {
+	pc.logger.Info("GET /api/v1/profiles/:telegramUserId/images/:fileName")
+	file, err := pc.service.GetImageByTelegramUserId(ctx, in.TelegramUserId, in.FileName)
 	if err != nil {
 		return nil, err
 	}
-	fileResponse := &pb.ImageBySessionIdResponse{
+	fileResponse := &pb.ImageByTelegramUserIdResponse{
 		File: file,
 	}
 	return fileResponse, nil
 }
 
 func (pc *ProfileController) GetImageById(ctx context.Context, in *pb.GetImageByIdRequest) (*pb.Image, error) {
-	pc.logger.Info("GET image by id")
+	pc.logger.Info("GET /api/v1/profiles/images/:id")
 	imageById, err := pc.service.GetImageById(ctx, in.Id)
 	if err != nil {
 		return nil, err
@@ -249,15 +244,14 @@ func (pc *ProfileController) DeleteImage(
 	return fileResponse, nil
 }
 
-func (pc *ProfileController) GetFilterBySessionId(
+func (pc *ProfileController) GetFilterByTelegramUserId(
 	ctx context.Context, in *pb.FilterGetRequest) (*pb.FilterGetResponse, error) {
-	pc.logger.Info("GET /api/v1/profiles/filter/:sessionId")
+	pc.logger.Info("GET /api/v1/profiles/filter/:telegramUserId")
 	req := &request.FilterGetRequestDto{
 		Latitude:  in.Latitude,
 		Longitude: in.Longitude,
 	}
-	sessionId := in.SessionId
-	profileFilter, err := pc.service.GetFilterBySessionId(ctx, sessionId, req)
+	profileFilter, err := pc.service.GetFilterByTelegramUserId(ctx, in.TelegramUserId, req)
 	if err != nil {
 		if errors.Is(err, psql.ErrNotRowFound) {
 			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
@@ -273,10 +267,10 @@ func (pc *ProfileController) UpdateFilter(
 	ctx context.Context, in *pb.FilterUpdateRequest) (*pb.FilterUpdateResponse, error) {
 	pc.logger.Info("PUT /api/v1/profiles/filters")
 	req := &request.FilterUpdateRequestDto{
-		SessionId:    in.SessionId,
-		SearchGender: in.SearchGender,
-		AgeFrom:      in.AgeFrom,
-		AgeTo:        in.AgeTo,
+		TelegramUserId: in.TelegramUserId,
+		SearchGender:   in.SearchGender,
+		AgeFrom:        in.AgeFrom,
+		AgeTo:          in.AgeTo,
 	}
 	filterUpdated, err := pc.service.UpdateFilter(ctx, req)
 	if err != nil {
@@ -290,8 +284,8 @@ func (pc *ProfileController) UpdateFilter(
 func (pc *ProfileController) AddBlock(ctx context.Context, in *pb.BlockAddRequest) (*pb.BlockAddResponse, error) {
 	pc.logger.Info("POST /api/v1/profiles/blocks")
 	req := &request.BlockAddRequestDto{
-		SessionId:            in.SessionId,
-		BlockedUserSessionId: in.BlockedUserSessionId,
+		TelegramUserId:        in.TelegramUserId,
+		BlockedTelegramUserId: in.BlockedTelegramUserId,
 	}
 	block, err := pc.service.AddBlock(ctx, req)
 	if err != nil {
@@ -305,8 +299,8 @@ func (pc *ProfileController) AddBlock(ctx context.Context, in *pb.BlockAddReques
 func (pc *ProfileController) AddLike(ctx context.Context, in *pb.LikeAddRequest) (*pb.LikeAddResponse, error) {
 	pc.logger.Info("POST /api/v1/profiles/likes")
 	req := &request.LikeAddRequestDto{
-		SessionId:      in.SessionId,
-		LikedSessionId: in.LikedSessionId,
+		TelegramUserId:      in.TelegramUserId,
+		LikedTelegramUserId: in.LikedTelegramUserId,
 	}
 	locale := in.Locale
 	likeAdded, err := pc.service.AddLike(ctx, req, locale)
@@ -321,9 +315,9 @@ func (pc *ProfileController) AddLike(ctx context.Context, in *pb.LikeAddRequest)
 func (pc *ProfileController) UpdateLike(ctx context.Context, in *pb.LikeUpdateRequest) (*pb.LikeUpdateResponse, error) {
 	pc.logger.Info("PUT /api/v1/profiles/likes")
 	req := &request.LikeUpdateRequestDto{
-		Id:        in.Id,
-		SessionId: in.SessionId,
-		IsLiked:   in.IsLiked,
+		Id:             in.Id,
+		TelegramUserId: in.TelegramUserId,
+		IsLiked:        in.IsLiked,
 	}
 	likeUpdated, err := pc.service.UpdateLike(ctx, req)
 	if err != nil {
@@ -338,9 +332,9 @@ func (pc *ProfileController) AddComplaint(
 	ctx context.Context, in *pb.ComplaintAddRequest) (*pb.ComplaintAddResponse, error) {
 	pc.logger.Info("POST /api/v1/profiles/complaints")
 	req := &request.ComplaintAddRequestDto{
-		SessionId:         in.SessionId,
-		CriminalSessionId: in.CriminalSessionId,
-		Reason:            in.Reason,
+		TelegramUserId:         in.TelegramUserId,
+		CriminalTelegramUserId: in.CriminalTelegramUserId,
+		Reason:                 in.Reason,
 	}
 	complaintAdded, err := pc.service.AddComplaint(ctx, req)
 	if err != nil {
@@ -355,9 +349,9 @@ func (pc *ProfileController) UpdateCoordinates(
 	ctx context.Context, in *pb.NavigatorUpdateRequest) (*pb.NavigatorUpdateResponse, error) {
 	pc.logger.Info("PUT /api/v1/profiles/navigators")
 	req := &request.NavigatorUpdateRequestDto{
-		SessionId: in.SessionId,
-		Latitude:  in.Latitude,
-		Longitude: in.Longitude,
+		TelegramUserId: in.TelegramUserId,
+		Latitude:       in.Latitude,
+		Longitude:      in.Longitude,
 	}
 	updatedCoordinates, err := pc.service.UpdateCoordinates(ctx, req)
 	if err != nil {

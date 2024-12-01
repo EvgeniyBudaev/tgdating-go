@@ -1,6 +1,6 @@
 package request
 
 type LikeAddRequestDto struct {
-	SessionId      string `json:"sessionId"`
-	LikedSessionId string `json:"likedSessionId"`
+	TelegramUserId      string `json:"telegramUserId"`
+	LikedTelegramUserId string `json:"likedTelegramUserId"`
 }

@@ -28,10 +28,10 @@ func NewTelegramRepository(l logger.Logger, db *sql.DB) *TelegramRepository {
 
 func (r *TelegramRepository) Add(
 	ctx context.Context, p *request.TelegramAddRequestRepositoryDto) (*entity.TelegramEntity, error) {
-	query := "INSERT INTO dating.profile_telegrams (session_id, user_id, username, first_name, last_name," +
+	query := "INSERT INTO dating.profile_telegrams (user_id, username, first_name, last_name," +
 		" language_code, allows_write_to_pm, query_id, created_at, updated_at)" +
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName,
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
+	row := r.db.QueryRowContext(ctx, query, &p.UserId, &p.UserName, &p.FirstName, &p.LastName,
 		&p.LanguageCode, &p.AllowsWriteToPm, &p.QueryId, &p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
@@ -45,27 +45,27 @@ func (r *TelegramRepository) Add(
 
 func (r *TelegramRepository) Update(
 	ctx context.Context, p *request.TelegramUpdateRequestRepositoryDto) (*entity.TelegramEntity, error) {
-	query := "UPDATE dating.profile_telegrams SET user_id=$1, username=$2, first_name=$3, last_name=$4," +
-		" language_code=$5, allows_write_to_pm=$6, query_id=$7, updated_at=$8" +
-		" WHERE session_id=$9"
-	_, err := r.db.ExecContext(ctx, query, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
-		&p.AllowsWriteToPm, &p.QueryId, &p.UpdatedAt, &p.SessionId)
+	query := "UPDATE dating.profile_telegrams SET username=$1, first_name=$2, last_name=$3," +
+		" language_code=$4, allows_write_to_pm=$5, query_id=$6, updated_at=$7" +
+		" WHERE user_id=$8"
+	_, err := r.db.ExecContext(ctx, query, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
+		&p.AllowsWriteToPm, &p.QueryId, &p.UpdatedAt, &p.UserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindBySessionId(ctx, p.SessionId)
+	return r.FindByTelegramUserId(ctx, p.UserId)
 }
 
 func (r *TelegramRepository) FindById(ctx context.Context, id uint64) (*entity.TelegramEntity, error) {
 	p := &entity.TelegramEntity{}
-	query := "SELECT id, session_id, user_id, username, first_name, last_name, language_code, allows_write_to_pm," +
+	query := "SELECT id, user_id, username, first_name, last_name, language_code, allows_write_to_pm," +
 		" query_id, created_at, updated_at" +
 		" FROM dating.profile_telegrams" +
 		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	err := row.Scan(&p.Id, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
+	err := row.Scan(&p.Id, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
 		&p.AllowsWriteToPm, &p.QueryId, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindById", "Scan")
@@ -75,18 +75,18 @@ func (r *TelegramRepository) FindById(ctx context.Context, id uint64) (*entity.T
 	return p, nil
 }
 
-func (r *TelegramRepository) FindBySessionId(
-	ctx context.Context, sessionID string) (*entity.TelegramEntity, error) {
+func (r *TelegramRepository) FindByTelegramUserId(
+	ctx context.Context, telegramUserId string) (*entity.TelegramEntity, error) {
 	p := &entity.TelegramEntity{}
-	query := "SELECT id, session_id, user_id, username, first_name, last_name, language_code, allows_write_to_pm," +
+	query := "SELECT id, user_id, username, first_name, last_name, language_code, allows_write_to_pm," +
 		" query_id, created_at, updated_at" +
 		" FROM dating.profile_telegrams" +
-		" WHERE session_id = $1"
-	row := r.db.QueryRowContext(ctx, query, sessionID)
-	err := row.Scan(&p.Id, &p.SessionId, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
+		" WHERE user_id = $1"
+	row := r.db.QueryRowContext(ctx, query, telegramUserId)
+	err := row.Scan(&p.Id, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
 		&p.AllowsWriteToPm, &p.QueryId, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindBySessionId", "Scan")
+		errorMessage := r.getErrorMessage("FindByTelegramUserId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}

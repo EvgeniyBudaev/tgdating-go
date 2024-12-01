@@ -14,7 +14,6 @@ type ProfileControllerMapper struct {
 func (pm *ProfileControllerMapper) MapControllerToAddRequest(
 	in *pb.ProfileAddRequest, fileList []*entity.FileMetadata) *request.ProfileAddRequestDto {
 	return &request.ProfileAddRequestDto{
-		SessionId:               in.SessionId,
 		DisplayName:             in.DisplayName,
 		Birthday:                in.Birthday.AsTime(),
 		Gender:                  in.Gender,
@@ -44,14 +43,13 @@ func (pm *ProfileControllerMapper) MapControllerToAddRequest(
 
 func (pm *ProfileControllerMapper) MapControllerToAddResponse(r *response.ProfileAddResponseDto) *pb.ProfileAddResponse {
 	return &pb.ProfileAddResponse{
-		SessionId: r.SessionId,
+		TelegramUserId: r.TelegramUserId,
 	}
 }
 
 func (pm *ProfileControllerMapper) MapControllerToUpdateRequest(
 	in *pb.ProfileUpdateRequest, fileList []*entity.FileMetadata) *request.ProfileUpdateRequestDto {
 	return &request.ProfileUpdateRequestDto{
-		SessionId:               in.SessionId,
 		DisplayName:             in.DisplayName,
 		Birthday:                in.Birthday.AsTime(),
 		Gender:                  in.Gender,
@@ -80,8 +78,8 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateRequest(
 	}
 }
 
-func (pm *ProfileControllerMapper) MapControllerToBySessionIdResponse(
-	r *response.ProfileResponseDto) *pb.ProfileBySessionIdResponse {
+func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
+	r *response.ProfileResponseDto) *pb.ProfileByTelegramUserIdResponse {
 	birthdayTimestamp := timestamppb.New(r.Birthday)
 	createdAtTimestamp := timestamppb.New(r.CreatedAt)
 	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
@@ -93,8 +91,8 @@ func (pm *ProfileControllerMapper) MapControllerToBySessionIdResponse(
 			Longitude: r.Navigator.Location.Longitude,
 		}
 		navigatorResponse = &pb.NavigatorResponse{
-			SessionId: r.Navigator.SessionId,
-			Location:  location,
+			TelegramUserId: r.Navigator.TelegramUserId,
+			Location:       location,
 		}
 	}
 	images := make([]*pb.Image, 0)
@@ -103,21 +101,21 @@ func (pm *ProfileControllerMapper) MapControllerToBySessionIdResponse(
 			createdAtImageTimestamp := timestamppb.New(image.CreatedAt)
 			updatedAtImageTimestamp := timestamppb.New(image.UpdatedAt)
 			images = append(images, &pb.Image{
-				Id:        image.Id,
-				SessionId: image.SessionId,
-				Name:      image.Name,
-				Url:       image.Url,
-				Size:      image.Size,
-				IsBlocked: image.IsBlocked,
-				IsPrimary: image.IsPrimary,
-				IsPrivate: image.IsPrivate,
-				CreatedAt: createdAtImageTimestamp,
-				UpdatedAt: updatedAtImageTimestamp,
+				Id:             image.Id,
+				TelegramUserId: image.TelegramUserId,
+				Name:           image.Name,
+				Url:            image.Url,
+				Size:           image.Size,
+				IsBlocked:      image.IsBlocked,
+				IsPrimary:      image.IsPrimary,
+				IsPrivate:      image.IsPrivate,
+				CreatedAt:      createdAtImageTimestamp,
+				UpdatedAt:      updatedAtImageTimestamp,
 			})
 		}
 	}
-	return &pb.ProfileBySessionIdResponse{
-		SessionId:      r.SessionId,
+	return &pb.ProfileByTelegramUserIdResponse{
+		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
 		Birthday:       birthdayTimestamp,
 		Gender:         r.Gender,
@@ -136,17 +134,16 @@ func (pm *ProfileControllerMapper) MapControllerToBySessionIdResponse(
 		LastOnline:     lastOnlineTimestamp,
 		Navigator:      navigatorResponse,
 		Filter: &pb.FilterResponse{
-			SessionId:    r.Filter.SessionId,
-			SearchGender: r.Filter.SearchGender,
-			LookingFor:   r.Filter.LookingFor,
-			AgeFrom:      r.Filter.AgeFrom,
-			AgeTo:        r.Filter.AgeTo,
-			Distance:     r.Filter.Distance,
-			Page:         r.Filter.Page,
-			Size:         r.Filter.Size,
+			TelegramUserId: r.Filter.TelegramUserId,
+			SearchGender:   r.Filter.SearchGender,
+			LookingFor:     r.Filter.LookingFor,
+			AgeFrom:        r.Filter.AgeFrom,
+			AgeTo:          r.Filter.AgeTo,
+			Distance:       r.Filter.Distance,
+			Page:           r.Filter.Page,
+			Size:           r.Filter.Size,
 		},
 		Telegram: &pb.TelegramResponse{
-			SessionId:       r.Telegram.SessionId,
 			UserId:          r.Telegram.UserId,
 			Username:        r.Telegram.Username,
 			FirstName:       r.Telegram.FirstName,
@@ -182,12 +179,12 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 		likeCreatedAtTimestamp := timestamppb.New(r.Like.CreatedAt)
 		likeUpdatedAtTimestamp := timestamppb.New(r.Like.UpdatedAt)
 		likeResponse = &pb.LikeResponse{
-			Id:             r.Like.Id,
-			SessionId:      r.Like.SessionId,
-			LikedSessionId: r.Like.LikedSessionId,
-			IsLiked:        r.Like.IsLiked,
-			CreatedAt:      likeCreatedAtTimestamp,
-			UpdatedAt:      likeUpdatedAtTimestamp,
+			Id:                  r.Like.Id,
+			TelegramUserId:      r.Like.TelegramUserId,
+			LikedTelegramUserId: r.Like.LikedTelegramUserId,
+			IsLiked:             r.Like.IsLiked,
+			CreatedAt:           likeCreatedAtTimestamp,
+			UpdatedAt:           likeUpdatedAtTimestamp,
 		}
 	}
 	images := make([]*pb.Image, 0)
@@ -196,21 +193,21 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 			createdAtImageTimestamp := timestamppb.New(image.CreatedAt)
 			updatedAtImageTimestamp := timestamppb.New(image.UpdatedAt)
 			images = append(images, &pb.Image{
-				Id:        image.Id,
-				SessionId: image.SessionId,
-				Name:      image.Name,
-				Url:       image.Url,
-				Size:      image.Size,
-				IsBlocked: image.IsBlocked,
-				IsPrimary: image.IsPrimary,
-				IsPrivate: image.IsPrivate,
-				CreatedAt: createdAtImageTimestamp,
-				UpdatedAt: updatedAtImageTimestamp,
+				Id:             image.Id,
+				TelegramUserId: image.TelegramUserId,
+				Name:           image.Name,
+				Url:            image.Url,
+				Size:           image.Size,
+				IsBlocked:      image.IsBlocked,
+				IsPrimary:      image.IsPrimary,
+				IsPrivate:      image.IsPrivate,
+				CreatedAt:      createdAtImageTimestamp,
+				UpdatedAt:      updatedAtImageTimestamp,
 			})
 		}
 	}
 	return &pb.ProfileDetailResponse{
-		SessionId:      r.SessionId,
+		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
 		Birthday:       birthdayTimestamp,
 		Gender:         r.Gender,
@@ -229,7 +226,6 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 		LastOnline:     lastOnlineTimestamp,
 		Navigator:      navigatorResponse,
 		Telegram: &pb.TelegramResponse{
-			SessionId:       r.Telegram.SessionId,
 			UserId:          r.Telegram.UserId,
 			Username:        r.Telegram.Username,
 			FirstName:       r.Telegram.FirstName,
@@ -247,10 +243,10 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 func (pm *ProfileControllerMapper) MapControllerToShortInfoResponse(
 	r *response.ProfileShortInfoResponseDto) *pb.ProfileShortInfoResponse {
 	return &pb.ProfileShortInfoResponse{
-		SessionId: r.SessionId,
-		ImageUrl:  r.ImageUrl,
-		IsFrozen:  r.IsFrozen,
-		IsBlocked: r.IsBlocked,
+		TelegramUserId: r.TelegramUserId,
+		ImageUrl:       r.ImageUrl,
+		IsFrozen:       r.IsFrozen,
+		IsBlocked:      r.IsBlocked,
 	}
 }
 
@@ -261,11 +257,11 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 		for _, c := range r.Content {
 			lastOnlineTimestamp := timestamppb.New(c.LastOnline)
 			contentList = append(contentList, &pb.ProfileListItemResponse{
-				SessionId:  c.SessionId,
-				Distance:   c.Distance,
-				Url:        c.Url,
-				IsOnline:   c.IsOnline,
-				LastOnline: lastOnlineTimestamp,
+				TelegramUserId: c.TelegramUserId,
+				Distance:       c.Distance,
+				Url:            c.Url,
+				IsOnline:       c.IsOnline,
+				LastOnline:     lastOnlineTimestamp,
 			})
 		}
 	}
@@ -284,44 +280,44 @@ func (pm *ProfileControllerMapper) MapControllerToImageResponse(r *entity.ImageE
 	createdAtImageTimestamp := timestamppb.New(r.CreatedAt)
 	updatedAtImageTimestamp := timestamppb.New(r.UpdatedAt)
 	return &pb.Image{
-		Id:        r.Id,
-		SessionId: r.SessionId,
-		Name:      r.Name,
-		Url:       r.Url,
-		Size:      r.Size,
-		IsBlocked: r.IsBlocked,
-		IsPrimary: r.IsPrimary,
-		IsPrivate: r.IsPrivate,
-		CreatedAt: createdAtImageTimestamp,
-		UpdatedAt: updatedAtImageTimestamp,
+		Id:             r.Id,
+		TelegramUserId: r.TelegramUserId,
+		Name:           r.Name,
+		Url:            r.Url,
+		Size:           r.Size,
+		IsBlocked:      r.IsBlocked,
+		IsPrimary:      r.IsPrimary,
+		IsPrivate:      r.IsPrivate,
+		CreatedAt:      createdAtImageTimestamp,
+		UpdatedAt:      updatedAtImageTimestamp,
 	}
 }
 
 func (pm *ProfileControllerMapper) MapControllerToFilterResponse(
 	r *response.FilterResponseDto) *pb.FilterGetResponse {
 	return &pb.FilterGetResponse{
-		SessionId:    r.SessionId,
-		SearchGender: r.SearchGender,
-		LookingFor:   r.LookingFor,
-		AgeFrom:      r.AgeFrom,
-		AgeTo:        r.AgeTo,
-		Distance:     r.Distance,
-		Page:         r.Page,
-		Size:         r.Size,
+		TelegramUserId: r.TelegramUserId,
+		SearchGender:   r.SearchGender,
+		LookingFor:     r.LookingFor,
+		AgeFrom:        r.AgeFrom,
+		AgeTo:          r.AgeTo,
+		Distance:       r.Distance,
+		Page:           r.Page,
+		Size:           r.Size,
 	}
 }
 
 func (pm *ProfileControllerMapper) MapControllerToFilterUpdateResponse(
 	r *response.FilterResponseDto) *pb.FilterUpdateResponse {
 	return &pb.FilterUpdateResponse{
-		SessionId:    r.SessionId,
-		SearchGender: r.SearchGender,
-		LookingFor:   r.LookingFor,
-		AgeFrom:      r.AgeFrom,
-		AgeTo:        r.AgeTo,
-		Distance:     r.Distance,
-		Page:         r.Page,
-		Size:         r.Size,
+		TelegramUserId: r.TelegramUserId,
+		SearchGender:   r.SearchGender,
+		LookingFor:     r.LookingFor,
+		AgeFrom:        r.AgeFrom,
+		AgeTo:          r.AgeTo,
+		Distance:       r.Distance,
+		Page:           r.Page,
+		Size:           r.Size,
 	}
 }
 
@@ -329,12 +325,12 @@ func (pm *ProfileControllerMapper) MapControllerToBlockAddResponse(r *entity.Blo
 	createdAtTimestamp := timestamppb.New(r.CreatedAt)
 	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
 	return &pb.BlockAddResponse{
-		Id:                   r.Id,
-		SessionId:            r.SessionId,
-		BlockedUserSessionId: r.BlockedUserSessionId,
-		IsBlocked:            r.IsBlocked,
-		CreatedAt:            createdAtTimestamp,
-		UpdatedAt:            updatedAtTimestamp,
+		Id:                    r.Id,
+		TelegramUserId:        r.TelegramUserId,
+		BlockedTelegramUserId: r.BlockedTelegramUserId,
+		IsBlocked:             r.IsBlocked,
+		CreatedAt:             createdAtTimestamp,
+		UpdatedAt:             updatedAtTimestamp,
 	}
 }
 
@@ -342,12 +338,12 @@ func (pm *ProfileControllerMapper) MapControllerToLikeAddResponse(r *response.Li
 	createdAtTimestamp := timestamppb.New(r.CreatedAt)
 	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
 	return &pb.LikeAddResponse{
-		Id:             r.Id,
-		SessionId:      r.SessionId,
-		LikedSessionId: r.LikedSessionId,
-		IsLiked:        r.IsLiked,
-		CreatedAt:      createdAtTimestamp,
-		UpdatedAt:      updatedAtTimestamp,
+		Id:                  r.Id,
+		TelegramUserId:      r.TelegramUserId,
+		LikedTelegramUserId: r.LikedTelegramUserId,
+		IsLiked:             r.IsLiked,
+		CreatedAt:           createdAtTimestamp,
+		UpdatedAt:           updatedAtTimestamp,
 	}
 }
 
@@ -356,12 +352,12 @@ func (pm *ProfileControllerMapper) MapControllerToLikeUpdateResponse(
 	createdAtTimestamp := timestamppb.New(r.CreatedAt)
 	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
 	return &pb.LikeUpdateResponse{
-		Id:             r.Id,
-		SessionId:      r.SessionId,
-		LikedSessionId: r.LikedSessionId,
-		IsLiked:        r.IsLiked,
-		CreatedAt:      createdAtTimestamp,
-		UpdatedAt:      updatedAtTimestamp,
+		Id:                  r.Id,
+		TelegramUserId:      r.TelegramUserId,
+		LikedTelegramUserId: r.LikedTelegramUserId,
+		IsLiked:             r.IsLiked,
+		CreatedAt:           createdAtTimestamp,
+		UpdatedAt:           updatedAtTimestamp,
 	}
 }
 
@@ -370,12 +366,12 @@ func (pm *ProfileControllerMapper) MapControllerToComplaintAddResponse(
 	createdAtTimestamp := timestamppb.New(r.CreatedAt)
 	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
 	return &pb.ComplaintAddResponse{
-		Id:                r.Id,
-		SessionId:         r.SessionId,
-		CriminalSessionId: r.CriminalSessionId,
-		Reason:            r.Reason,
-		CreatedAt:         createdAtTimestamp,
-		UpdatedAt:         updatedAtTimestamp,
+		Id:                     r.Id,
+		TelegramUserId:         r.TelegramUserId,
+		CriminalTelegramUserId: r.CriminalTelegramUserId,
+		Reason:                 r.Reason,
+		CreatedAt:              createdAtTimestamp,
+		UpdatedAt:              updatedAtTimestamp,
 	}
 }
 
@@ -386,7 +382,7 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateCoordinatesResponse(
 		Longitude: r.Location.Longitude,
 	}
 	return &pb.NavigatorUpdateResponse{
-		SessionId: r.SessionId,
-		Location:  location,
+		TelegramUserId: r.TelegramUserId,
+		Location:       location,
 	}
 }

@@ -6,7 +6,7 @@ import (
 )
 
 type ProfileResponseDto struct {
-	SessionId      string                `json:"sessionId"`
+	TelegramUserId string                `json:"telegramUserId"`
 	DisplayName    string                `json:"displayName"`
 	Birthday       time.Time             `json:"birthday"`
 	Gender         string                `json:"gender"`

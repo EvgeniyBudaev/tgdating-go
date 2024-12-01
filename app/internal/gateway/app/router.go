@@ -9,11 +9,11 @@ var prefix = "/api/v1"
 
 func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileController) {
 	router := app.Group(prefix)
-	router.Get("/profiles/session/:sessionId", profileController.GetProfileBySessionId())
-	router.Get("/profiles/detail/:viewedSessionId", profileController.GetProfileDetail())
-	router.Get("/profiles/short/:sessionId", profileController.GetProfileShortInfo())
+	router.Get("/profiles/telegram/:telegramUserId", profileController.GetProfileByTelegramUserId())
+	router.Get("/profiles/detail/:viewedTelegramUserId", profileController.GetProfileDetail())
+	router.Get("/profiles/short/:telegramUserId", profileController.GetProfileShortInfo())
 	router.Get("/profiles/list", profileController.GetProfileList())
-	router.Get("/profiles/filter/:sessionId", profileController.GetFilterBySessionId())
+	router.Get("/profiles/filter/:telegramUserId", profileController.GetFilterByTelegramUserId())
 }
 
 func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileController) {

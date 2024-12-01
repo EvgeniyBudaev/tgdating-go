@@ -14,8 +14,8 @@ type ProfileRepository interface {
 	Restore(ctx context.Context, p *request.ProfileRestoreRequestRepositoryDto) (*entity.ProfileEntity, error)
 	Delete(ctx context.Context, p *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
 	FindById(ctx context.Context, id uint64) (*entity.ProfileEntity, error)
-	FindBySessionId(ctx context.Context, sessionId string) (*entity.ProfileEntity, error)
-	SelectListBySessionId(ctx context.Context,
+	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.ProfileEntity, error)
+	SelectListByTelegramUserId(ctx context.Context,
 		pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error)
 	UpdateLastOnline(ctx context.Context, p *request.ProfileUpdateLastOnlineRequestRepositoryDto) error
 }
@@ -24,7 +24,7 @@ type NavigatorRepository interface {
 	Add(ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*entity.NavigatorEntity, error)
 	Update(ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.NavigatorEntity, error)
-	FindBySessionId(ctx context.Context, sessionId string) (*entity.NavigatorEntity, error)
+	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.NavigatorEntity, error)
 	FindDistance(ctx context.Context, pe *entity.NavigatorEntity,
 		pve *entity.NavigatorEntity) (*response.NavigatorDistanceResponseRepositoryDto, error)
 }
@@ -32,14 +32,14 @@ type NavigatorRepository interface {
 type FilterRepository interface {
 	Add(ctx context.Context, p *request.FilterAddRequestRepositoryDto) (*entity.FilterEntity, error)
 	Update(ctx context.Context, p *request.FilterUpdateRequestRepositoryDto) (*entity.FilterEntity, error)
-	FindBySessionId(ctx context.Context, sessionId string) (*entity.FilterEntity, error)
+	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.FilterEntity, error)
 }
 
 type TelegramRepository interface {
 	Add(ctx context.Context, p *request.TelegramAddRequestRepositoryDto) (*entity.TelegramEntity, error)
 	Update(ctx context.Context, p *request.TelegramUpdateRequestRepositoryDto) (*entity.TelegramEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.TelegramEntity, error)
-	FindBySessionId(ctx context.Context, sessionId string) (*entity.TelegramEntity, error)
+	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.TelegramEntity, error)
 }
 
 type ImageRepository interface {
@@ -47,22 +47,22 @@ type ImageRepository interface {
 	Update(ctx context.Context, p *request.ImageUpdateRequestRepositoryDto) (*entity.ImageEntity, error)
 	Delete(ctx context.Context, p *request.ImageDeleteRequestRepositoryDto) (*response.ResponseDto, error)
 	FindById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error)
-	FindLastBySessionId(ctx context.Context, sessionId string) (*entity.ImageEntity, error)
-	SelectListAllBySessionId(ctx context.Context, sessionId string) ([]*entity.ImageEntity, error)
-	SelectListPublicBySessionId(ctx context.Context, sessionId string) ([]*entity.ImageEntity, error)
-	SelectListBySessionId(ctx context.Context, sessionId string) ([]*entity.ImageEntity, error)
+	FindLastByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.ImageEntity, error)
+	SelectListAllByTelegramUserId(ctx context.Context, telegramUserId string) ([]*entity.ImageEntity, error)
+	SelectListPublicByTelegramUserId(ctx context.Context, telegramUserId string) ([]*entity.ImageEntity, error)
+	SelectListByTelegramUserId(ctx context.Context, telegramUserId string) ([]*entity.ImageEntity, error)
 }
 
 type LikeRepository interface {
 	Add(ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*entity.LikeEntity, error)
 	Update(ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*entity.LikeEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error)
-	FindBySessionId(ctx context.Context, sessionId string) (*entity.LikeEntity, error)
+	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.LikeEntity, error)
 }
 
 type BlockRepository interface {
 	Add(ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*entity.BlockEntity, error)
-	Find(ctx context.Context, sessionId, blockedUserSessionId string) (*entity.BlockEntity, error)
+	Find(ctx context.Context, telegramUserId, blockedTelegramUserId string) (*entity.BlockEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.BlockEntity, error)
 }
 

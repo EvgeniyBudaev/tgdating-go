@@ -27,8 +27,8 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 	message := errorMessages.GetBadRequest(locale)
 	fieldErrorsLanguages := map[string][]string{}
 
-	if req.SessionId == "" {
-		fieldErrorsLanguages["sessionId"] = append(fieldErrorsLanguages["sessionId"],
+	if req.TelegramUserId == "" {
+		fieldErrorsLanguages["telegramUserId"] = append(fieldErrorsLanguages["telegramUserId"],
 			errorMessages.GetNotEmpty(locale))
 	}
 
@@ -125,11 +125,6 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 	if req.Weight != 0 && int(req.Weight) > maxWeight {
 		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
 			errorMessages.GetLessOrEqualMaxNumber(locale, maxWeight))
-	}
-
-	if req.TelegramUserId == 0 {
-		fieldErrorsLanguages["telegramUserId"] = append(fieldErrorsLanguages["telegramUserId"],
-			errorMessages.GetNotEmpty(locale))
 	}
 
 	if req.TelegramUsername == "" {

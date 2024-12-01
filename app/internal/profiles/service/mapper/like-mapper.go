@@ -16,23 +16,23 @@ func (pm *LikeMapper) MapToResponse(
 		return nil
 	}
 	return &response.LikeResponseDto{
-		Id:             pe.Id,
-		SessionId:      pe.SessionId,
-		LikedSessionId: pe.LikedSessionId,
-		IsLiked:        pe.IsLiked,
-		CreatedAt:      pe.CreatedAt,
-		UpdatedAt:      pe.UpdatedAt,
+		Id:                  pe.Id,
+		TelegramUserId:      pe.TelegramUserId,
+		LikedTelegramUserId: pe.LikedTelegramUserId,
+		IsLiked:             pe.IsLiked,
+		CreatedAt:           pe.CreatedAt,
+		UpdatedAt:           pe.UpdatedAt,
 	}
 }
 
 func (pm *LikeMapper) MapToAddRequest(
 	pr *request.LikeAddRequestDto) *request.LikeAddRequestRepositoryDto {
 	return &request.LikeAddRequestRepositoryDto{
-		SessionId:      pr.SessionId,
-		LikedSessionId: pr.LikedSessionId,
-		IsLiked:        true,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		TelegramUserId:      pr.TelegramUserId,
+		LikedTelegramUserId: pr.LikedTelegramUserId,
+		IsLiked:             true,
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
 	}
 }
 

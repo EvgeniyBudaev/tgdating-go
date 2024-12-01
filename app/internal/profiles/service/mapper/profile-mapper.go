@@ -15,7 +15,7 @@ func (pm *ProfileMapper) MapToResponse(
 	tr *response.TelegramResponseDto, il []*entity.ImageEntity, isOnline bool,
 ) *response.ProfileResponseDto {
 	return &response.ProfileResponseDto{
-		SessionId:      pe.SessionId,
+		TelegramUserId: pe.TelegramUserId,
 		DisplayName:    pe.DisplayName,
 		Birthday:       pe.Birthday,
 		Gender:         pe.Gender,
@@ -44,7 +44,7 @@ func (pm *ProfileMapper) MapToDetailResponse(
 	lr *response.LikeResponseDto, tr *response.TelegramResponseDto, il []*entity.ImageEntity, isOnline bool,
 ) *response.ProfileDetailResponseDto {
 	return &response.ProfileDetailResponseDto{
-		SessionId:      pe.SessionId,
+		TelegramUserId: pe.TelegramUserId,
 		DisplayName:    pe.DisplayName,
 		Birthday:       pe.Birthday,
 		Gender:         pe.Gender,
@@ -71,23 +71,23 @@ func (pm *ProfileMapper) MapToDetailResponse(
 
 func (pm *ProfileMapper) MapToShortInfoResponse(pe *entity.ProfileEntity, imageUrl string) *response.ProfileShortInfoResponseDto {
 	return &response.ProfileShortInfoResponseDto{
-		SessionId: pe.SessionId,
-		ImageUrl:  imageUrl,
-		IsFrozen:  pe.IsFrozen,
-		IsBlocked: pe.IsBlocked,
+		TelegramUserId: pe.TelegramUserId,
+		ImageUrl:       imageUrl,
+		IsFrozen:       pe.IsFrozen,
+		IsBlocked:      pe.IsBlocked,
 	}
 }
 
 func (pm *ProfileMapper) MapToAddResponse(pe *entity.ProfileEntity) *response.ProfileAddResponseDto {
 	return &response.ProfileAddResponseDto{
-		SessionId: pe.SessionId,
+		TelegramUserId: pe.TelegramUserId,
 	}
 }
 
 func (pm *ProfileMapper) MapToAddRequest(
 	pr *request.ProfileAddRequestDto) *request.ProfileAddRequestRepositoryDto {
 	return &request.ProfileAddRequestRepositoryDto{
-		SessionId:      pr.SessionId,
+		TelegramUserId: pr.TelegramUserId,
 		DisplayName:    pr.DisplayName,
 		Birthday:       pr.Birthday,
 		Gender:         pr.Gender,
@@ -109,47 +109,47 @@ func (pm *ProfileMapper) MapToAddRequest(
 func (pm *ProfileMapper) MapToUpdateRequest(
 	pr *request.ProfileUpdateRequestDto) *request.ProfileUpdateRequestRepositoryDto {
 	return &request.ProfileUpdateRequestRepositoryDto{
-		SessionId:   pr.SessionId,
-		DisplayName: pr.DisplayName,
-		Birthday:    pr.Birthday,
-		Gender:      pr.Gender,
-		Location:    pr.Location,
-		Description: pr.Description,
-		Height:      pr.Height,
-		Weight:      pr.Weight,
-		UpdatedAt:   time.Now().UTC(),
-		LastOnline:  time.Now().UTC(),
+		TelegramUserId: pr.TelegramUserId,
+		DisplayName:    pr.DisplayName,
+		Birthday:       pr.Birthday,
+		Gender:         pr.Gender,
+		Location:       pr.Location,
+		Description:    pr.Description,
+		Height:         pr.Height,
+		Weight:         pr.Weight,
+		UpdatedAt:      time.Now().UTC(),
+		LastOnline:     time.Now().UTC(),
 	}
 }
 
-func (pm *ProfileMapper) MapToFreezeRequest(sessionId string) *request.ProfileFreezeRequestRepositoryDto {
+func (pm *ProfileMapper) MapToFreezeRequest(telegramUserId string) *request.ProfileFreezeRequestRepositoryDto {
 	return &request.ProfileFreezeRequestRepositoryDto{
-		SessionId:  sessionId,
-		IsFrozen:   true,
-		UpdatedAt:  time.Now().UTC(),
-		LastOnline: time.Now().UTC(),
+		TelegramUserId: telegramUserId,
+		IsFrozen:       true,
+		UpdatedAt:      time.Now().UTC(),
+		LastOnline:     time.Now().UTC(),
 	}
 }
 
-func (pm *ProfileMapper) MapToRestoreRequest(sessionId string) *request.ProfileRestoreRequestRepositoryDto {
+func (pm *ProfileMapper) MapToRestoreRequest(telegramUserId string) *request.ProfileRestoreRequestRepositoryDto {
 	return &request.ProfileRestoreRequestRepositoryDto{
-		SessionId:  sessionId,
-		IsFrozen:   false,
-		UpdatedAt:  time.Now().UTC(),
-		LastOnline: time.Now().UTC(),
+		TelegramUserId: telegramUserId,
+		IsFrozen:       false,
+		UpdatedAt:      time.Now().UTC(),
+		LastOnline:     time.Now().UTC(),
 	}
 }
 
 func (pm *ProfileMapper) MapToListRequest(
 	pr *entity.FilterEntity) *request.ProfileGetListRequestRepositoryDto {
 	return &request.ProfileGetListRequestRepositoryDto{
-		SessionId:    pr.SessionId,
-		SearchGender: pr.SearchGender,
-		LookingFor:   pr.LookingFor,
-		AgeFrom:      pr.AgeFrom,
-		AgeTo:        pr.AgeTo,
-		Distance:     pr.Distance,
-		Page:         pr.Page,
-		Size:         pr.Size,
+		TelegramUserId: pr.TelegramUserId,
+		SearchGender:   pr.SearchGender,
+		LookingFor:     pr.LookingFor,
+		AgeFrom:        pr.AgeFrom,
+		AgeTo:          pr.AgeTo,
+		Distance:       pr.Distance,
+		Page:           pr.Page,
+		Size:           pr.Size,
 	}
 }

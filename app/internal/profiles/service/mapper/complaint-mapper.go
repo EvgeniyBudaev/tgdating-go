@@ -11,10 +11,10 @@ type ComplaintMapper struct {
 func (pm *ComplaintMapper) MapToAddRequest(
 	pr *request.ComplaintAddRequestDto) *request.ComplaintAddRequestRepositoryDto {
 	return &request.ComplaintAddRequestRepositoryDto{
-		SessionId:         pr.SessionId,
-		CriminalSessionId: pr.CriminalSessionId,
-		Reason:            pr.Reason,
-		CreatedAt:         time.Now(),
-		UpdatedAt:         time.Now(),
+		TelegramUserId:         pr.TelegramUserId,
+		CriminalTelegramUserId: pr.CriminalTelegramUserId,
+		Reason:                 pr.Reason,
+		CreatedAt:              time.Now(),
+		UpdatedAt:              time.Now(),
 	}
 }

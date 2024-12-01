@@ -4,8 +4,7 @@ import "time"
 
 type TelegramEntity struct {
 	Id              uint64    `json:"id"`
-	SessionId       string    `json:"sessionId"`
-	UserId          uint64    `json:"userId"`
+	UserId          string    `json:"userId"`
 	UserName        string    `json:"username"`
 	FirstName       string    `json:"firstName"`
 	LastName        string    `json:"lastName"`

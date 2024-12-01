@@ -12,7 +12,7 @@ type NavigatorMapper struct {
 }
 
 func (pm *NavigatorMapper) MapToResponse(
-	sessionId string, longitude float64, latitude float64) *response.NavigatorResponseDto {
+	telegramUserId string, longitude float64, latitude float64) *response.NavigatorResponseDto {
 	var navigatorResponse *response.NavigatorResponseDto
 	if longitude != 0 || latitude != 0 {
 		location := &entity.PointEntity{
@@ -20,8 +20,8 @@ func (pm *NavigatorMapper) MapToResponse(
 			Latitude:  latitude,
 		}
 		navigatorResponse = &response.NavigatorResponseDto{
-			SessionId: sessionId,
-			Location:  location,
+			TelegramUserId: telegramUserId,
+			Location:       location,
 		}
 	}
 
@@ -36,25 +36,25 @@ func (pm *NavigatorMapper) MapToDetailResponse(distance float64) *response.Navig
 }
 
 func (pm *NavigatorMapper) MapToAddRequest(
-	sessionId string, longitude, latitude float64) *request.NavigatorAddRequestRepositoryDto {
+	telegramUserId string, longitude, latitude float64) *request.NavigatorAddRequestRepositoryDto {
 	point := &entity.PointEntity{
 		Longitude: longitude,
 		Latitude:  latitude,
 	}
 	return &request.NavigatorAddRequestRepositoryDto{
-		SessionId: sessionId,
-		Location:  point,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		TelegramUserId: telegramUserId,
+		Location:       point,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
 	}
 }
 
 func (pm *NavigatorMapper) MapToUpdateRequest(
-	sessionId string, longitude float64, latitude float64) *request.NavigatorUpdateRequestRepositoryDto {
+	telegramUserId string, longitude float64, latitude float64) *request.NavigatorUpdateRequestRepositoryDto {
 	return &request.NavigatorUpdateRequestRepositoryDto{
-		SessionId: sessionId,
-		Longitude: longitude,
-		Latitude:  latitude,
-		UpdatedAt: time.Now().UTC(),
+		TelegramUserId: telegramUserId,
+		Longitude:      longitude,
+		Latitude:       latitude,
+		UpdatedAt:      time.Now().UTC(),
 	}
 }

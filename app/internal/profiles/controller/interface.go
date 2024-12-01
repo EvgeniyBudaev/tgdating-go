@@ -13,18 +13,18 @@ type ProfileService interface {
 	FreezeProfile(ctx context.Context, pr *request.ProfileFreezeRequestDto) (*response.ResponseDto, error)
 	RestoreProfile(ctx context.Context, pr *request.ProfileRestoreRequestDto) (*response.ResponseDto, error)
 	DeleteProfile(ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
-	GetProfileBySessionId(ctx context.Context, sessionId string,
-		pr *request.ProfileGetBySessionIdRequestDto) (*response.ProfileResponseDto, error)
-	GetProfileDetail(ctx context.Context, sessionId string,
+	GetProfileByTelegramUserId(ctx context.Context, telegramUserId string,
+		pr *request.ProfileGetByTelegramUserIdRequestDto) (*response.ProfileResponseDto, error)
+	GetProfileDetail(ctx context.Context, telegramUserId string,
 		pr *request.ProfileGetDetailRequestDto) (*response.ProfileDetailResponseDto, error)
-	GetProfileShortInfo(ctx context.Context, sessionId string,
+	GetProfileShortInfo(ctx context.Context, telegramUserId string,
 		pr *request.ProfileGetShortInfoRequestDto) (*response.ProfileShortInfoResponseDto, error)
 	GetProfileList(ctx context.Context, pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error)
-	GetImageBySessionId(ctx context.Context, sessionId, fileName string) ([]byte, error)
+	GetImageByTelegramUserId(ctx context.Context, telegramUserId, fileName string) ([]byte, error)
 	GetImageById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error)
 	DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error)
-	GetFilterBySessionId(
-		ctx context.Context, sessionId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error)
+	GetFilterByTelegramUserId(
+		ctx context.Context, telegramUserId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error)
 	UpdateFilter(ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error)
 	AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*entity.BlockEntity, error)
 	AddLike(ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error)

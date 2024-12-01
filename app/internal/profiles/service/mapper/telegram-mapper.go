@@ -13,7 +13,6 @@ type TelegramMapper struct {
 func (pm *TelegramMapper) MapToResponse(
 	pe *entity.TelegramEntity) *response.TelegramResponseDto {
 	return &response.TelegramResponseDto{
-		SessionId:       pe.SessionId,
 		UserId:          pe.UserId,
 		Username:        pe.UserName,
 		FirstName:       pe.FirstName,
@@ -27,7 +26,6 @@ func (pm *TelegramMapper) MapToResponse(
 func (pm *TelegramMapper) MapToAddRequest(
 	pr *request.ProfileAddRequestDto) *request.TelegramAddRequestRepositoryDto {
 	return &request.TelegramAddRequestRepositoryDto{
-		SessionId:       pr.SessionId,
 		UserId:          pr.TelegramUserId,
 		UserName:        pr.TelegramUsername,
 		FirstName:       pr.TelegramFirstName,
@@ -43,7 +41,6 @@ func (pm *TelegramMapper) MapToAddRequest(
 func (pm *TelegramMapper) MapToUpdateRequest(
 	pr *request.ProfileUpdateRequestDto) *request.TelegramUpdateRequestRepositoryDto {
 	return &request.TelegramUpdateRequestRepositoryDto{
-		SessionId:       pr.SessionId,
 		UserId:          pr.TelegramUserId,
 		UserName:        pr.TelegramUsername,
 		FirstName:       pr.TelegramFirstName,

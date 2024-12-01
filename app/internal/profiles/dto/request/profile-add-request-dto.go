@@ -6,7 +6,7 @@ import (
 )
 
 type ProfileAddRequestDto struct {
-	SessionId               string                 `json:"sessionId"`
+	TelegramUserId          string                 `json:"telegramUserId"`
 	DisplayName             string                 `json:"displayName"`
 	Birthday                time.Time              `json:"birthday"`
 	Gender                  string                 `json:"gender"`
@@ -16,7 +16,6 @@ type ProfileAddRequestDto struct {
 	Height                  float64                `json:"height"`
 	Weight                  float64                `json:"weight"`
 	LookingFor              string                 `json:"lookingFor"`
-	TelegramUserId          uint64                 `json:"telegramUserId"`
 	TelegramUsername        string                 `json:"telegramUsername"`
 	TelegramFirstName       string                 `json:"telegramFirstName"`
 	TelegramLastName        string                 `json:"telegramLastName"`

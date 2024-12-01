@@ -18,7 +18,6 @@ import (
 	"go.uber.org/zap"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -90,7 +89,7 @@ func (s *ProfileService) AddProfile(
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
 		navigatorMapper := &mapper.NavigatorMapper{}
-		navigatorRequest := navigatorMapper.MapToAddRequest(pr.SessionId, longitude, latitude)
+		navigatorRequest := navigatorMapper.MapToAddRequest(pr.TelegramUserId, longitude, latitude)
 		_, err = unitOfWork.NavigatorRepository().Add(ctx, navigatorRequest)
 		if err != nil {
 			errorMessage := s.getErrorMessage("AddProfile",
@@ -100,7 +99,7 @@ func (s *ProfileService) AddProfile(
 		}
 	}
 	profileResponse := profileMapper.MapToAddResponse(profileCreated)
-	if err := s.AddImageList(ctx, unitOfWork, profileCreated.SessionId, pr.Files); err != nil {
+	if err := s.AddImageList(ctx, unitOfWork, profileCreated.TelegramUserId, pr.Files); err != nil {
 		errorMessage := s.getErrorMessage("AddProfile", "AddImageList")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -140,8 +139,7 @@ func (s *ProfileService) AddProfile(
 func (s *ProfileService) UpdateProfile(
 	ctx context.Context, pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	sessionId := pr.SessionId
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+	if err := s.checkUserExists(ctx, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile", "checkUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -155,14 +153,14 @@ func (s *ProfileService) UpdateProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	if err := s.updateImageList(ctx, unitOfWork, profileEntity.SessionId, pr.Files); err != nil {
+	if err := s.updateImageList(ctx, unitOfWork, profileEntity.TelegramUserId, pr.Files); err != nil {
 		return nil, err
 	}
 	var navigatorResponse *response.NavigatorResponseDto
 	if pr.Longitude != nil && pr.Latitude != nil {
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
-		navigatorResponse, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
+		navigatorResponse, err = s.updateNavigator(ctx, pr.TelegramUserId, longitude, latitude)
 		if err != nil {
 			errorMessage := s.getErrorMessage("UpdateProfile", "updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
@@ -189,10 +187,10 @@ func (s *ProfileService) UpdateProfile(
 		return nil, err
 	}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
-	imageEntityList, err := unitOfWork.ImageRepository().SelectListBySessionId(ctx, sessionId)
+	imageEntityList, err := unitOfWork.ImageRepository().SelectListByTelegramUserId(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile",
-			"ImageRepository().SelectListBySessionId")
+			"ImageRepository().SelectListByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -218,14 +216,13 @@ func (s *ProfileService) UpdateProfile(
 func (s *ProfileService) FreezeProfile(
 	ctx context.Context, pr *request.ProfileFreezeRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	sessionId := pr.SessionId
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+	if err := s.checkUserExists(ctx, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("FreezeProfile", "checkUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileRequest := profileMapper.MapToFreezeRequest(sessionId)
+	profileRequest := profileMapper.MapToFreezeRequest(pr.TelegramUserId)
 	_, err := unitOfWork.ProfileRepository().Freeze(ctx, profileRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("FreezeProfile",
@@ -255,14 +252,13 @@ func (s *ProfileService) FreezeProfile(
 func (s *ProfileService) RestoreProfile(
 	ctx context.Context, pr *request.ProfileRestoreRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	sessionId := pr.SessionId
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+	if err := s.checkUserExists(ctx, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("RestoreProfile", "checkUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileRequest := profileMapper.MapToRestoreRequest(sessionId)
+	profileRequest := profileMapper.MapToRestoreRequest(pr.TelegramUserId)
 	_, err := unitOfWork.ProfileRepository().Restore(ctx, profileRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("RestoreProfile",
@@ -292,13 +288,12 @@ func (s *ProfileService) RestoreProfile(
 func (s *ProfileService) DeleteProfile(
 	ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	sessionId := pr.SessionId
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+	if err := s.checkUserExists(ctx, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("DeleteProfile", "checkUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	if err := s.deleteImageListByS3(ctx, unitOfWork, sessionId); err != nil {
+	if err := s.deleteImageListByS3(ctx, unitOfWork, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("DeleteProfile", "deleteImageListByS3")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -329,64 +324,64 @@ func (s *ProfileService) DeleteProfile(
 	return profileResponse, err
 }
 
-func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId string,
-	pr *request.ProfileGetBySessionIdRequestDto) (*response.ProfileResponseDto, error) {
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+func (s *ProfileService) GetProfileByTelegramUserId(ctx context.Context, telegramUserId string,
+	pr *request.ProfileGetByTelegramUserIdRequestDto) (*response.ProfileResponseDto, error) {
+	if err := s.checkUserExists(ctx, telegramUserId); err != nil {
 		return nil, err
 	}
-	err := s.updateLastOnline(ctx, sessionId)
+	err := s.updateLastOnline(ctx, telegramUserId)
 	if err != nil {
 		return nil, err
 	}
 	if pr.Longitude != nil && pr.Latitude != nil {
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
-		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
+		_, err = s.updateNavigator(ctx, telegramUserId, longitude, latitude)
 		if err != nil {
-			errorMessage := s.getErrorMessage("GetProfileBySessionId",
+			errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
 				"updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
-	profileEntity, err := s.profileRepository.FindBySessionId(ctx, sessionId)
+	profileEntity, err := s.profileRepository.FindByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileBySessionId",
-			"profileRepository.FindBySessionId")
+		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
+			"profileRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	navigatorEntity, _ := s.navigatorRepository.FindBySessionId(ctx, sessionId)
+	navigatorEntity, _ := s.navigatorRepository.FindByTelegramUserId(ctx, telegramUserId)
 	var navigatorResponse *response.NavigatorResponseDto
 	if navigatorEntity != nil {
 		longitude := navigatorEntity.Location.Longitude
 		latitude := navigatorEntity.Location.Latitude
 		navigatorMapper := &mapper.NavigatorMapper{}
-		navigatorResponse = navigatorMapper.MapToResponse(sessionId, longitude, latitude)
+		navigatorResponse = navigatorMapper.MapToResponse(telegramUserId, longitude, latitude)
 	}
 	filterMapper := &mapper.FilterMapper{}
-	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
+	filterEntity, err := s.filterRepository.FindByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileBySessionId",
-			"filterRepository.FindBySessionId")
+		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
+			"filterRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	filterResponse := filterMapper.MapToResponse(filterEntity)
-	telegramEntity, err := s.telegramRepository.FindBySessionId(ctx, sessionId)
+	telegramEntity, err := s.telegramRepository.FindByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileBySessionId",
-			"telegramRepository.FindBySessionId")
+		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
+			"telegramRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
-	imageEntityList, err := s.imageRepository.SelectListBySessionId(ctx, sessionId)
+	imageEntityList, err := s.imageRepository.SelectListByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileBySessionId",
-			"imageRepository.SelectListBySessionId")
+		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
+			"imageRepository.SelectListByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -396,13 +391,12 @@ func (s *ProfileService) GetProfileBySessionId(ctx context.Context, sessionId st
 	return profileResponse, err
 }
 
-func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId string,
+func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUserId string,
 	pr *request.ProfileGetDetailRequestDto) (*response.ProfileDetailResponseDto, error) {
-	sessionId := pr.SessionId
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+	if err := s.checkUserExists(ctx, pr.TelegramUserId); err != nil {
 		return nil, err
 	}
-	err := s.updateLastOnline(ctx, sessionId)
+	err := s.updateLastOnline(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail", "updateLastOnline")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -411,7 +405,7 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 	if pr.Longitude != nil && pr.Latitude != nil {
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
-		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
+		_, err = s.updateNavigator(ctx, pr.TelegramUserId, longitude, latitude)
 		if err != nil {
 			errorMessage := s.getErrorMessage("GetProfileDetail", "updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
@@ -419,16 +413,16 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 		}
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileEntity, err := s.profileRepository.FindBySessionId(ctx, viewedSessionId)
+	profileEntity, err := s.profileRepository.FindByTelegramUserId(ctx, viewedTelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail",
-			"profileRepository.FindBySessionId")
+			"profileRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	navigatorMapper := &mapper.NavigatorMapper{}
-	navigatorEntity, _ := s.navigatorRepository.FindBySessionId(ctx, sessionId)
-	navigatorViewedEntity, _ := s.navigatorRepository.FindBySessionId(ctx, viewedSessionId)
+	navigatorEntity, _ := s.navigatorRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
+	navigatorViewedEntity, _ := s.navigatorRepository.FindByTelegramUserId(ctx, viewedTelegramUserId)
 	var navigatorResponse *response.NavigatorDetailResponseDto
 	if navigatorEntity != nil && navigatorViewedEntity != nil {
 		navigatorDistanceResponse, err := s.navigatorRepository.FindDistance(ctx, navigatorEntity, navigatorViewedEntity)
@@ -446,7 +440,7 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 		if pr.Longitude != nil && pr.Latitude != nil {
 			longitude := *pr.Longitude
 			latitude := *pr.Latitude
-			_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
+			_, err = s.updateNavigator(ctx, pr.TelegramUserId, longitude, latitude)
 			if err != nil {
 				errorMessage := s.getErrorMessage("GetProfileDetail",
 					"updateNavigator")
@@ -455,7 +449,7 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 			}
 		}
 	}
-	blockEntity, err := s.blockRepository.Find(ctx, sessionId, viewedSessionId)
+	blockEntity, err := s.blockRepository.Find(ctx, pr.TelegramUserId, viewedTelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail",
 			"blockRepository.Find")
@@ -464,29 +458,29 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 	}
 	blockMapper := mapper.BlockMapper{}
 	blockResponse := blockMapper.MapToResponse(blockEntity)
-	likeEntity, err := s.likeRepository.FindBySessionId(ctx, sessionId)
+	likeEntity, err := s.likeRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail",
-			"likeRepository.FindBySessionId")
+			"likeRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeResponse := likeMapper.MapToResponse(likeEntity)
-	telegramEntity, err := s.telegramRepository.FindBySessionId(ctx, viewedSessionId)
+	telegramEntity, err := s.telegramRepository.FindByTelegramUserId(ctx, viewedTelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail",
-			"telegramRepository.FindBySessionId")
+			"telegramRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
-	imageEntityList, err := s.imageRepository.SelectListBySessionId(ctx, viewedSessionId)
+	imageEntityList, err := s.imageRepository.SelectListByTelegramUserId(ctx, viewedTelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail",
-			"imageRepository.SelectListBySessionId")
+			"imageRepository.SelectListByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -495,12 +489,12 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedSessionId s
 	return profileResponse, err
 }
 
-func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId string,
+func (s *ProfileService) GetProfileShortInfo(ctx context.Context, telegramUserId string,
 	pr *request.ProfileGetShortInfoRequestDto) (*response.ProfileShortInfoResponseDto, error) {
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+	if err := s.checkUserExists(ctx, telegramUserId); err != nil {
 		return nil, err
 	}
-	err := s.updateLastOnline(ctx, sessionId)
+	err := s.updateLastOnline(ctx, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileShortInfo", "updateLastOnline")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -509,7 +503,7 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 	if pr.Longitude != nil && pr.Latitude != nil {
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
-		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
+		_, err = s.updateNavigator(ctx, telegramUserId, longitude, latitude)
 		if err != nil {
 			errorMessage := s.getErrorMessage("GetProfileShortInfo", "updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
@@ -517,17 +511,17 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 		}
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileEntity, err := s.profileRepository.FindBySessionId(ctx, sessionId)
+	profileEntity, err := s.profileRepository.FindByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileShortInfo",
-			"profileRepository.FindBySessionId")
+			"profileRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	lastImage, err := s.imageRepository.FindLastBySessionId(ctx, sessionId)
+	lastImage, err := s.imageRepository.FindLastByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileShortInfo",
-			"imageRepository.FindLastBySessionId")
+			"imageRepository.FindLastByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -537,11 +531,10 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, sessionId stri
 
 func (s *ProfileService) GetProfileList(ctx context.Context,
 	pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error) {
-	sessionId := pr.SessionId
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+	if err := s.checkUserExists(ctx, pr.TelegramUserId); err != nil {
 		return nil, err
 	}
-	err := s.updateLastOnline(ctx, sessionId)
+	err := s.updateLastOnline(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileList", "updateLastOnline")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -550,48 +543,48 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 	if pr.Longitude != nil && pr.Latitude != nil {
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
-		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
+		_, err = s.updateNavigator(ctx, pr.TelegramUserId, longitude, latitude)
 		if err != nil {
 			errorMessage := s.getErrorMessage("GetProfileList", "updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
-	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
+	filterEntity, err := s.filterRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileList",
-			"filterRepository.FindBySessionId")
+			"filterRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToListRequest(filterEntity)
 	var paginationProfileEntityList *response.ProfileListResponseRepositoryDto
-	paginationProfileEntityList, err = s.profileRepository.SelectListBySessionId(ctx, profileRequest)
+	paginationProfileEntityList, err = s.profileRepository.SelectListByTelegramUserId(ctx, profileRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileList",
-			"profileRepository.SelectListBySessionId")
+			"profileRepository.SelectListByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileContentResponse := make([]*response.ProfileListItemResponseDto, 0)
 	if len(paginationProfileEntityList.Content) > 0 {
 		for _, profileEntity := range paginationProfileEntityList.Content {
-			lastImage, err := s.imageRepository.FindLastBySessionId(ctx, profileEntity.SessionId)
+			lastImage, err := s.imageRepository.FindLastByTelegramUserId(ctx, profileEntity.TelegramUserId)
 			if err != nil {
 				errorMessage := s.getErrorMessage("GetProfileList",
-					"imageRepository.FindLastBySessionId")
+					"imageRepository.FindLastByTelegramUserId")
 				s.logger.Debug(errorMessage, zap.Error(err))
 				return nil, err
 			}
 			lastOnline := profileEntity.LastOnline
 			isOnline := s.checkIsOnline(lastOnline)
 			profileItem := response.ProfileListItemResponseDto{
-				SessionId:  profileEntity.SessionId,
-				Distance:   profileEntity.Distance,
-				Url:        lastImage.Url,
-				IsOnline:   isOnline,
-				LastOnline: profileEntity.LastOnline,
+				TelegramUserId: profileEntity.TelegramUserId,
+				Distance:       profileEntity.Distance,
+				Url:            lastImage.Url,
+				IsOnline:       isOnline,
+				LastOnline:     profileEntity.LastOnline,
 			}
 			profileContentResponse = append(profileContentResponse, &profileItem)
 		}
@@ -604,10 +597,10 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 }
 
 func (s *ProfileService) AddImageList(
-	ctx context.Context, unitOfWork *UnitOfWork, sessionId string, files []*entity.FileMetadata) error {
+	ctx context.Context, unitOfWork *UnitOfWork, telegramUserId string, files []*entity.FileMetadata) error {
 	if len(files) > 0 {
 		for _, file := range files {
-			_, err := s.AddImage(ctx, unitOfWork, sessionId, file)
+			_, err := s.AddImage(ctx, unitOfWork, telegramUserId, file)
 			if err != nil {
 				errorMessage := s.getErrorMessage("AddImageList", "AddImage")
 				s.logger.Debug(errorMessage, zap.Error(err))
@@ -618,9 +611,9 @@ func (s *ProfileService) AddImageList(
 	return nil
 }
 
-func (s *ProfileService) AddImage(ctx context.Context, unitOfWork *UnitOfWork, sessionId string,
+func (s *ProfileService) AddImage(ctx context.Context, unitOfWork *UnitOfWork, telegramUserId string,
 	file *entity.FileMetadata) (*entity.ImageEntity, error) {
-	imageConverted, err := s.uploadImageToFileSystem(ctx, file, sessionId)
+	imageConverted, err := s.uploadImageToFileSystem(ctx, file, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddImage", "uploadImageToFileSystem")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -629,16 +622,16 @@ func (s *ProfileService) AddImage(ctx context.Context, unitOfWork *UnitOfWork, s
 	return unitOfWork.ImageRepository().Add(ctx, imageConverted)
 }
 
-func (s *ProfileService) GetImageBySessionId(ctx context.Context, sessionId, fileName string) ([]byte, error) {
-	filePath := fmt.Sprintf("static/profiles/%s/images/%s", sessionId, fileName)
+func (s *ProfileService) GetImageByTelegramUserId(ctx context.Context, telegramUserId, fileName string) ([]byte, error) {
+	filePath := fmt.Sprintf("static/profiles/%s/images/%s", telegramUserId, fileName)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		errorMessage := s.getErrorMessage("GetImageBySessionId", "IsNotExist")
+		errorMessage := s.getErrorMessage("GetImageByTelegramUserId", "IsNotExist")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetImageBySessionId", "ReadFile")
+		errorMessage := s.getErrorMessage("GetImageByTelegramUserId", "ReadFile")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -650,15 +643,15 @@ func (s *ProfileService) GetImageById(ctx context.Context, imageId uint64) (*ent
 }
 
 func (s *ProfileService) updateImageList(
-	ctx context.Context, unitOfWork *UnitOfWork, sessionId string, files []*entity.FileMetadata) error {
-	return s.AddImageList(ctx, unitOfWork, sessionId, files)
+	ctx context.Context, unitOfWork *UnitOfWork, telegramUserId string, files []*entity.FileMetadata) error {
+	return s.AddImageList(ctx, unitOfWork, telegramUserId, files)
 }
 
-func (s *ProfileService) deleteImageListByS3(ctx context.Context, unitOfWork *UnitOfWork, sessionId string) error {
-	imageList, err := s.imageRepository.SelectListAllBySessionId(ctx, sessionId)
+func (s *ProfileService) deleteImageListByS3(ctx context.Context, unitOfWork *UnitOfWork, telegramUserId string) error {
+	imageList, err := s.imageRepository.SelectListAllByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("deleteImageListByS3",
-			"imageRepository.SelectListBySessionId")
+			"imageRepository.SelectListAllByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
@@ -693,7 +686,7 @@ func (s *ProfileService) deleteImageByS3(
 	//	return nil, err
 	//}
 	// Удаление из S3 хранилища
-	pathToS3 := fmt.Sprintf("/profiles/%s/images/%s", image.SessionId, image.Name)
+	pathToS3 := fmt.Sprintf("/profiles/%s/images/%s", image.TelegramUserId, image.Name)
 	if err := s.s3.Delete(pathToS3); err != nil {
 		errorMessage := s.getErrorMessage("deleteImageByS3", "s.s3.Delete")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -745,32 +738,33 @@ func (s *ProfileService) DeleteImage(
 	return responseDto, err
 }
 
-func (s *ProfileService) GetFilterBySessionId(
-	ctx context.Context, sessionId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error) {
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+func (s *ProfileService) GetFilterByTelegramUserId(
+	ctx context.Context, telegramUserId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error) {
+	if err := s.checkUserExists(ctx, telegramUserId); err != nil {
 		return nil, err
 	}
-	err := s.updateLastOnline(ctx, sessionId)
+	err := s.updateLastOnline(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetFilterBySessionId", "updateLastOnline")
+		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId",
+			"updateLastOnline")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	if fr.Longitude != nil && fr.Latitude != nil {
 		longitude := *fr.Longitude
 		latitude := *fr.Latitude
-		_, err = s.updateNavigator(ctx, sessionId, longitude, latitude)
+		_, err = s.updateNavigator(ctx, telegramUserId, longitude, latitude)
 		if err != nil {
-			errorMessage := s.getErrorMessage("GetFilterBySessionId",
+			errorMessage := s.getErrorMessage("GetFilterByTelegramUserId",
 				"updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
-	filterEntity, err := s.filterRepository.FindBySessionId(ctx, sessionId)
+	filterEntity, err := s.filterRepository.FindByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetFilterBySessionId",
-			"filterRepository.FindBySessionId")
+		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId",
+			"filterRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -782,15 +776,15 @@ func (s *ProfileService) UpdateFilter(
 	ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateFilter", "Begin")
+		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId", "Begin")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	defer tx.Rollback()
-	sessionId := fr.SessionId
-	err = s.updateLastOnline(ctx, sessionId)
+	err = s.updateLastOnline(ctx, fr.TelegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateFilter", "updateLastOnline")
+		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId",
+			"updateLastOnline")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -798,7 +792,8 @@ func (s *ProfileService) UpdateFilter(
 	filterRequest := filterMapper.MapToUpdateRequest(fr)
 	filterEntity, err := s.filterRepository.Update(ctx, filterRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateFilter", "filterRepository.Update")
+		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId",
+			"filterRepository.Update")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -812,8 +807,8 @@ func (s *ProfileService) removeStrSpaces(str string) string {
 }
 
 func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, file *entity.FileMetadata,
-	sessionId string) (*request.ImageAddRequestRepositoryDto, error) {
-	directoryPath := fmt.Sprintf("static/profiles/%s/images", sessionId)
+	telegramUserId string) (*request.ImageAddRequestRepositoryDto, error) {
+	directoryPath := fmt.Sprintf("static/profiles/%s/images", telegramUserId)
 	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(directoryPath, 0755); err != nil {
 			errorMessage := s.getErrorMessage("uploadImageToFileSystem", "MkdirAll")
@@ -828,27 +823,27 @@ func (s *ProfileService) uploadImageToFileSystem(ctx context.Context, file *enti
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	newFileName, newFilePath, newFileSize, err := s.convertImage(sessionId, directoryPath, filePath, filenameWithoutSpaces)
+	newFileName, newFilePath, newFileSize, err := s.convertImage(telegramUserId, directoryPath, filePath, filenameWithoutSpaces)
 	if err != nil {
 		errorMessage := s.getErrorMessage("uploadImageToFileSystem", "convertImage")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	imageConverted := &request.ImageAddRequestRepositoryDto{
-		SessionId: sessionId,
-		Name:      newFileName,
-		Url:       newFilePath,
-		Size:      newFileSize,
-		IsBlocked: false,
-		IsPrimary: false,
-		IsPrivate: false,
-		CreatedAt: time.Now().UTC(),
-		UpdatedAt: time.Now().UTC(),
+		TelegramUserId: telegramUserId,
+		Name:           newFileName,
+		Url:            newFilePath,
+		Size:           newFileSize,
+		IsBlocked:      false,
+		IsPrimary:      false,
+		IsPrivate:      false,
+		CreatedAt:      time.Now().UTC(),
+		UpdatedAt:      time.Now().UTC(),
 	}
 	return imageConverted, nil
 }
 
-func (s *ProfileService) convertImage(sessionId, directoryPath, filePath, fileName string) (string, string, int64, error) {
+func (s *ProfileService) convertImage(telegramUserId, directoryPath, filePath, fileName string) (string, string, int64, error) {
 	newFileName := s.replaceFileName(fileName)
 	newFilePathLocal := fmt.Sprintf("%s/%s", directoryPath, newFileName)
 	output, err := os.Create(directoryPath + "/" + newFileName)
@@ -886,7 +881,7 @@ func (s *ProfileService) convertImage(sessionId, directoryPath, filePath, fileNa
 		return "", "", 0, err
 	}
 	defer f.Close()
-	pathToS3 := fmt.Sprintf("/profiles/%s/images/%s", sessionId, newFileName)
+	pathToS3 := fmt.Sprintf("/profiles/%s/images/%s", telegramUserId, newFileName)
 	result, err := s.s3.Upload(pathToS3, f)
 	if err != nil {
 		errorMessage := s.getErrorMessage("convertImage", "s.s3.Upload")
@@ -924,8 +919,8 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddReque
 	blockMapper := &mapper.BlockMapper{}
 	blockRequest := blockMapper.MapToAddRequest(pr)
 	prForTwoUser := &request.BlockAddRequestDto{
-		SessionId:            pr.BlockedUserSessionId,
-		BlockedUserSessionId: pr.SessionId,
+		TelegramUserId:        pr.BlockedTelegramUserId,
+		BlockedTelegramUserId: pr.TelegramUserId,
 	}
 	blockForTwoUserRequest := blockMapper.MapToAddRequest(prForTwoUser)
 	_, err = s.blockRepository.Add(ctx, blockForTwoUserRequest)
@@ -941,39 +936,38 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddReque
 func (s *ProfileService) AddLike(
 	ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	sessionId := pr.SessionId
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+	if err := s.checkUserExists(ctx, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("AddLike", "checkUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	telegramProfile, err := s.telegramRepository.FindBySessionId(ctx, sessionId)
+	telegramProfile, err := s.telegramRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddLike",
-			"telegramRepository.FindBySessionId")
+			"telegramRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	lastImageProfile, err := s.imageRepository.FindLastBySessionId(ctx, sessionId)
+	lastImageProfile, err := s.imageRepository.FindLastByTelegramUserId(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddLike",
-			"imageRepository.FindLastBySessionId")
+			"imageRepository.FindLastByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	likedTelegramProfile, err := s.telegramRepository.FindBySessionId(ctx, pr.LikedSessionId)
+	likedTelegramProfile, err := s.telegramRepository.FindByTelegramUserId(ctx, pr.LikedTelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddLike",
-			"telegramRepository.FindBySessionId")
+			"telegramRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	hc := &entity.HubContent{
-		LikedUserId:  likedTelegramProfile.UserId,
-		Message:      s.GetMessageLike(locale),
-		Type:         "like",
-		UserImageUrl: lastImageProfile.Url,
-		Username:     telegramProfile.UserName,
+		LikedTelegramUserId: likedTelegramProfile.UserId,
+		Message:             s.GetMessageLike(locale),
+		Type:                "like",
+		UserImageUrl:        lastImageProfile.Url,
+		Username:            telegramProfile.UserName,
 	}
 	hubContentJson, err := json.Marshal(hc)
 	if err != nil {
@@ -983,7 +977,7 @@ func (s *ProfileService) AddLike(
 	}
 	err = s.kafkaWriter.WriteMessages(context.Background(),
 		kafka.Message{
-			Key:   []byte(strconv.FormatUint(likedTelegramProfile.UserId, 10)),
+			Key:   []byte(likedTelegramProfile.UserId),
 			Value: hubContentJson,
 		},
 	)
@@ -1021,8 +1015,7 @@ func (s *ProfileService) AddLike(
 func (s *ProfileService) UpdateLike(
 	ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.LikeResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	sessionId := pr.SessionId
-	if err := s.checkUserExists(ctx, sessionId); err != nil {
+	if err := s.checkUserExists(ctx, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("UpdateLike", "checkUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -1082,13 +1075,12 @@ func (s *ProfileService) AddComplaint(
 
 func (s *ProfileService) UpdateCoordinates(
 	ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error) {
-	sessionId := pr.SessionId
 	longitude := pr.Longitude
 	latitude := pr.Latitude
-	return s.updateNavigator(ctx, sessionId, longitude, latitude)
+	return s.updateNavigator(ctx, pr.TelegramUserId, longitude, latitude)
 }
 
-func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string) error {
+func (s *ProfileService) updateLastOnline(ctx context.Context, telegramUserId string) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		errorMessage := s.getErrorMessage("updateLastOnline", "Begin")
@@ -1097,7 +1089,7 @@ func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string)
 	}
 	defer tx.Rollback()
 	updateLastOnlineMapper := &mapper.ProfileUpdateLastOnlineMapper{}
-	updateLastOnlineRequest := updateLastOnlineMapper.MapToAddRequest(sessionId)
+	updateLastOnlineRequest := updateLastOnlineMapper.MapToAddRequest(telegramUserId)
 	err = s.profileRepository.UpdateLastOnline(ctx, updateLastOnlineRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("updateLastOnline",
@@ -1111,7 +1103,7 @@ func (s *ProfileService) updateLastOnline(ctx context.Context, sessionId string)
 
 func (s *ProfileService) updateNavigator(
 	ctx context.Context,
-	sessionId string, longitude float64, latitude float64) (*response.NavigatorResponseDto, error) {
+	telegramUserId string, longitude float64, latitude float64) (*response.NavigatorResponseDto, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		errorMessage := s.getErrorMessage("updateNavigator", "Begin")
@@ -1120,7 +1112,7 @@ func (s *ProfileService) updateNavigator(
 	}
 	defer tx.Rollback()
 	navigatorMapper := &mapper.NavigatorMapper{}
-	navigatorRequest := navigatorMapper.MapToUpdateRequest(sessionId, longitude, latitude)
+	navigatorRequest := navigatorMapper.MapToUpdateRequest(telegramUserId, longitude, latitude)
 	navigatorUpdated, err := s.navigatorRepository.Update(ctx, navigatorRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("updateNavigator",
@@ -1128,7 +1120,7 @@ func (s *ProfileService) updateNavigator(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	navigatorResponse := navigatorMapper.MapToResponse(sessionId, navigatorUpdated.Location.Longitude,
+	navigatorResponse := navigatorMapper.MapToResponse(telegramUserId, navigatorUpdated.Location.Longitude,
 		navigatorUpdated.Location.Latitude)
 	tx.Commit()
 	return navigatorResponse, nil
@@ -1184,11 +1176,11 @@ func (s *ProfileService) GetMessageLike(locale string) string {
 	}
 }
 
-func (s *ProfileService) checkUserExists(ctx context.Context, sessionId string) error {
-	p, err := s.profileRepository.FindBySessionId(ctx, sessionId)
+func (s *ProfileService) checkUserExists(ctx context.Context, telegramUserId string) error {
+	p, err := s.profileRepository.FindByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("checkUserExists",
-			"profileRepository.FindBySessionId")
+			"profileRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}

@@ -6,10 +6,10 @@ import (
 )
 
 type NavigatorDistanceResponseRepositoryDto struct {
-	Id        uint64              `json:"id"`
-	SessionId string              `json:"sessionId"`
-	Location  *entity.PointEntity `json:"location"`
-	CreatedAt time.Time           `json:"createdAt"`
-	UpdatedAt time.Time           `json:"updatedAt"`
-	Distance  float64             `json:"distance"`
+	Id             uint64              `json:"id"`
+	TelegramUserId string              `json:"telegramUserId"`
+	Location       *entity.PointEntity `json:"location"`
+	CreatedAt      time.Time           `json:"createdAt"`
+	UpdatedAt      time.Time           `json:"updatedAt"`
+	Distance       float64             `json:"distance"`
 }

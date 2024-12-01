@@ -3,10 +3,10 @@ package entity
 import "time"
 
 type ComplaintEntity struct {
-	Id                uint64    `json:"id"`
-	SessionId         string    `json:"sessionId"`
-	CriminalSessionId string    `json:"criminalSessionId"`
-	Reason            string    `json:"reason"`
-	CreatedAt         time.Time `json:"createdAt"`
-	UpdatedAt         time.Time `json:"updatedAt"`
+	Id                     uint64    `json:"id"`
+	TelegramUserId         string    `json:"telegramUserId"`
+	CriminalTelegramUserId string    `json:"criminalTelegramUserId"`
+	Reason                 string    `json:"reason"`
+	CreatedAt              time.Time `json:"createdAt"`
+	UpdatedAt              time.Time `json:"updatedAt"`
 }

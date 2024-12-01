@@ -8,6 +8,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/telegram/entity"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"go.uber.org/zap"
+	"strconv"
 	"time"
 )
 
@@ -77,7 +78,14 @@ func (app *App) StartBot(ctx context.Context) error {
 			app.Logger.Error(errorMessage, zap.Error(err))
 			continue
 		}
-		msg := tgbotapi.NewPhoto(int64(hc.LikedUserId), tgbotapi.FileURL(hc.UserImageUrl))
+		likedTelegramUserId, err := strconv.ParseInt(hc.LikedTelegramUserId, 10, 64)
+		if err != nil {
+			errorMessage := getErrorMessage("StartBot", "strconv.ParseInt",
+				errorFilePathBot)
+			app.Logger.Debug(errorMessage, zap.Error(err))
+			break
+		}
+		msg := tgbotapi.NewPhoto(likedTelegramUserId, tgbotapi.FileURL(hc.UserImageUrl))
 		msg.ParseMode = "HTML"
 		msg.Caption = fmt.Sprintf("%s %s <a href=\"tg://resolve?domain=%s\">@%s</a>",
 			hc.Message, EmojiPointRight, hc.Username, hc.Username)

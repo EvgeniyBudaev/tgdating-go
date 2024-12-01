@@ -56,7 +56,7 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("AddProfile", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
@@ -103,7 +103,7 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("UpdateProfile", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
@@ -129,7 +129,7 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		profileResponse := profileMapper.MapToBySessionIdResponse(profileUpdated)
+		profileResponse := profileMapper.MapToByTelegramUserIdResponse(profileUpdated)
 		return v1.ResponseCreated(ctf, profileResponse)
 	}
 }
@@ -205,24 +205,25 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 	}
 }
 
-func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
+func (pc *ProfileController) GetProfileByTelegramUserId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /api/v1/profiles/session/:sessionId")
+		pc.logger.Info("GET /api/v1/profiles/telegram/:telegramUserId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
-		req := &request.ProfileGetBySessionIdRequestDto{}
+		req := &request.ProfileGetByTelegramUserIdRequestDto{}
 		if err := ctf.QueryParser(req); err != nil {
-			errorMessage := pc.getErrorMessage("GetProfileBySessionId", "QueryParser")
+			errorMessage := pc.getErrorMessage("GetProfileByTelegramUserId",
+				"QueryParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		sessionId := ctf.Params("sessionId")
+		telegramUserId := ctf.Params("telegramUserId")
 		profileMapper := &mapper.ProfileMapper{}
-		profileRequest := profileMapper.MapToGetBySessionIdRequest(req, sessionId)
-		profileBySessionId, err := pc.proto.GetProfileBySessionId(ctx, profileRequest)
+		profileRequest := profileMapper.MapToGetByTelegramUserIdRequest(req, telegramUserId)
+		profileByTelegramUserId, err := pc.proto.GetProfileByTelegramUserId(ctx, profileRequest)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("GetProfileBySessionId",
-				"proto.GetProfileBySessionId")
+			errorMessage := pc.getErrorMessage("GetProfileByTelegramUserId",
+				"proto.GetProfileByTelegramUserId")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			if e, ok := status.FromError(err); ok {
 				if e.Code() == codes.NotFound {
@@ -232,14 +233,14 @@ func (pc *ProfileController) GetProfileBySessionId() fiber.Handler {
 			}
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		profileResponse := profileMapper.MapToBySessionIdResponse(profileBySessionId)
+		profileResponse := profileMapper.MapToByTelegramUserIdResponse(profileByTelegramUserId)
 		return v1.ResponseOk(ctf, profileResponse)
 	}
 }
 
 func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /api/v1/profiles/detail/:viewedSessionId")
+		pc.logger.Info("GET /api/v1/profiles/detail/:viewedTelegramUserId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetDetailRequestDto{}
@@ -248,9 +249,9 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		viewedSessionId := ctf.Params("viewedSessionId")
+		viewedTelegramUserId := ctf.Params("viewedTelegramUserId")
 		profileMapper := &mapper.ProfileMapper{}
-		profileRequest := profileMapper.MapToGetDetailRequest(req, viewedSessionId)
+		profileRequest := profileMapper.MapToGetDetailRequest(req, viewedTelegramUserId)
 		profileDetail, err := pc.proto.GetProfileDetail(ctx, profileRequest)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("GetProfileDetail",
@@ -271,7 +272,7 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 
 func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /api/v1/profiles/short/:sessionId")
+		pc.logger.Info("GET /api/v1/profiles/short/:telegramUserId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetShortInfoRequestDto{}
@@ -280,9 +281,9 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		sessionId := ctf.Params("sessionId")
+		telegramUserId := ctf.Params("telegramUserId")
 		profileMapper := &mapper.ProfileMapper{}
-		profileRequest := profileMapper.MapToGetShortInfoRequest(req, sessionId)
+		profileRequest := profileMapper.MapToGetShortInfoRequest(req, telegramUserId)
 		profileShortInfo, err := pc.proto.GetProfileShortInfo(ctx, profileRequest)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("GetProfileShortInfo",
@@ -332,23 +333,23 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 	}
 }
 
-func (pc *ProfileController) GetImageBySessionId() fiber.Handler {
+func (pc *ProfileController) GetImageByTelegramUserId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /api/v1/profiles/:sessionId/images/:fileName")
+		pc.logger.Info("GET /api/v1/profiles/:telegramUserId/images/:fileName")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
-		sessionId := ctf.Params("sessionId")
+		telegramUserId := ctf.Params("telegramUserId")
 		fileName := ctf.Params("fileName")
 		profileMapper := &mapper.ProfileMapper{}
-		profileRequest := profileMapper.MapToImageBySessionIdRequest(sessionId, fileName)
-		file, err := pc.proto.GetImageBySessionId(ctx, profileRequest)
+		profileRequest := profileMapper.MapToImageByTelegramUserIdRequest(telegramUserId, fileName)
+		file, err := pc.proto.GetImageByTelegramUserId(ctx, profileRequest)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("GetImageBySessionId",
-				"proto.GetImageBySessionId")
+			errorMessage := pc.getErrorMessage("GetImageByTelegramUserId",
+				"proto.GetImageByTelegramUserId")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		fileResponse := profileMapper.MapToImageBySessionIdResponse(file)
+		fileResponse := profileMapper.MapToImageByTelegramUserIdResponse(file)
 		ctf.Set("Content-Type", "image/jpeg")
 		return v1.ResponseImage(ctf, fileResponse)
 	}
@@ -375,8 +376,7 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		sessionId := image.SessionId
-		if err := pc.validateAuthUser(ctf, sessionId); err != nil {
+		if err := pc.validateAuthUser(ctf, image.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("DeleteImage", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
@@ -394,24 +394,25 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 	}
 }
 
-func (pc *ProfileController) GetFilterBySessionId() fiber.Handler {
+func (pc *ProfileController) GetFilterByTelegramUserId() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /api/v1/profiles/filter/:sessionId")
+		pc.logger.Info("GET /api/v1/profiles/filter/:telegramUserId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
-		sessionId := ctf.Params("sessionId")
+		telegramUserId := ctf.Params("telegramUserId")
 		req := &request.FilterGetRequestDto{}
 		if err := ctf.QueryParser(req); err != nil {
-			errorMessage := pc.getErrorMessage("GetFilterBySessionId", "QueryParser")
+			errorMessage := pc.getErrorMessage("GetFilterByTelegramUserId",
+				"QueryParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		profileMapper := &mapper.ProfileMapper{}
-		filterRequest := profileMapper.MapToFilterRequest(req, sessionId)
-		filterResponse, err := pc.proto.GetFilterBySessionId(ctx, filterRequest)
+		filterRequest := profileMapper.MapToFilterRequest(req, telegramUserId)
+		filterResponse, err := pc.proto.GetFilterByTelegramUserId(ctx, filterRequest)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("GetFilterBySessionId",
-				"proto.GetFilterBySessionId")
+			errorMessage := pc.getErrorMessage("GetFilterByTelegramUserId",
+				"proto.GetFilterByTelegramUserId")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			if e, ok := status.FromError(err); ok {
 				if e.Code() == codes.NotFound {
@@ -436,7 +437,7 @@ func (pc *ProfileController) UpdateFilter() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("UpdateFilter", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
@@ -464,7 +465,7 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("AddBlock", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
@@ -493,7 +494,7 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("AddLike", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
@@ -526,7 +527,7 @@ func (pc *ProfileController) UpdateLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("UpdateLike", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
@@ -555,7 +556,7 @@ func (pc *ProfileController) AddComplaint() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("AddComplaint", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
@@ -584,7 +585,7 @@ func (pc *ProfileController) UpdateCoordinates() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.SessionId); err != nil {
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("UpdateCoordinates", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
@@ -607,13 +608,13 @@ func (pc *ProfileController) getErrorMessage(repositoryMethodName string, callMe
 		errorFilePath)
 }
 
-func (pc *ProfileController) validateAuthUser(ctf *fiber.Ctx, sessionId string) error {
+func (pc *ProfileController) validateAuthUser(ctf *fiber.Ctx, telegramUserId string) error {
 	telegramInitData, ok := ctf.UserContext().Value(enum.ContextKeyTelegram).(initdata.InitData)
 	if !ok {
 		err := errors.New("missing telegram data in context")
 		return err
 	}
-	if sessionId != strconv.FormatInt(telegramInitData.User.ID, 10) {
+	if telegramUserId != strconv.FormatInt(telegramInitData.User.ID, 10) {
 		err := errors.New("unauthorized")
 		return err
 	}
