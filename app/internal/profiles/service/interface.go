@@ -10,8 +10,6 @@ import (
 type ProfileRepository interface {
 	Add(ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*entity.ProfileEntity, error)
 	Update(ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*entity.ProfileEntity, error)
-	Freeze(ctx context.Context, p *request.ProfileFreezeRequestRepositoryDto) (*entity.ProfileEntity, error)
-	Restore(ctx context.Context, p *request.ProfileRestoreRequestRepositoryDto) (*entity.ProfileEntity, error)
 	Delete(ctx context.Context, p *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
 	FindById(ctx context.Context, id uint64) (*entity.ProfileEntity, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.ProfileEntity, error)
@@ -69,4 +67,15 @@ type BlockRepository interface {
 type ComplaintRepository interface {
 	Add(ctx context.Context, p *request.ComplaintAddRequestRepositoryDto) (*entity.ComplaintEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.ComplaintEntity, error)
+	GetCountUserComplaintsByToday(ctx context.Context, telegramUserId string) (uint64, error)
+}
+
+type StatusRepository interface {
+	Add(ctx context.Context, p *request.StatusAddRequestRepositoryDto) (*entity.StatusEntity, error)
+	Update(ctx context.Context, p *request.StatusUpdateRequestRepositoryDto) (*entity.StatusEntity, error)
+	Block(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
+	Freeze(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
+	Restore(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
+	FindById(ctx context.Context, id uint64) (*entity.StatusEntity, error)
+	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
 }

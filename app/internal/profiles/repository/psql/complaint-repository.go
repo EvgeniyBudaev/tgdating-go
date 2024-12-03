@@ -59,6 +59,23 @@ func (r *ComplaintRepository) FindById(ctx context.Context, id uint64) (*entity.
 	return p, nil
 }
 
+func (r *ComplaintRepository) GetCountUserComplaintsByToday(
+	ctx context.Context, telegramUserId string) (uint64, error) {
+	query := "SELECT COUNT(*)" +
+		" FROM dating.profiles p" +
+		" JOIN dating.profile_complaints ps ON p.telegram_user_id = pc.telegram_user_id" +
+		" WHERE pc.telegram_user_id = $1" +
+		" AND DATE(pc.created_at) = CURRENT_DATE"
+	var countUserComplaints uint64
+	err := r.db.QueryRowContext(ctx, query, telegramUserId).Scan(&countUserComplaints)
+	if err != nil {
+		errorMessage := r.getErrorMessage("getTotalEntities", "QueryRowContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return 0, err
+	}
+	return countUserComplaints, nil
+}
+
 func (r *ComplaintRepository) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
 		errorFilePathComplaint)

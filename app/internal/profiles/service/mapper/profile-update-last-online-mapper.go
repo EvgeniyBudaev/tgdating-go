@@ -7,7 +7,8 @@ import (
 
 type ProfileUpdateLastOnlineMapper struct{}
 
-func (pm *ProfileUpdateLastOnlineMapper) MapToAddRequest(telegramUserId string) *request.ProfileUpdateLastOnlineRequestRepositoryDto {
+func (pm *ProfileUpdateLastOnlineMapper) MapToAddRequest(
+	telegramUserId string) *request.ProfileUpdateLastOnlineRequestRepositoryDto {
 	return &request.ProfileUpdateLastOnlineRequestRepositoryDto{
 		TelegramUserId: telegramUserId,
 		LastOnline:     time.Now().UTC(),

@@ -12,6 +12,15 @@ CREATE TABLE IF NOT EXISTS dating.profiles
     description      TEXT,
     height           REAL         NOT NULL,
     weight           REAL         NOT NULL,
+    created_at       TIMESTAMP    NOT NULL,
+    updated_at       TIMESTAMP    NOT NULL,
+    last_online      TIMESTAMP    NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS dating.profile_statuses
+(
+    id               BIGSERIAL    NOT NULL PRIMARY KEY,
+    telegram_user_id VARCHAR(255) NOT NULL,
     is_frozen        BOOL         NOT NULL,
     is_blocked       BOOL         NOT NULL,
     is_premium       BOOL         NOT NULL,
@@ -19,7 +28,7 @@ CREATE TABLE IF NOT EXISTS dating.profiles
     is_invisible     BOOL         NOT NULL,
     created_at       TIMESTAMP    NOT NULL,
     updated_at       TIMESTAMP    NOT NULL,
-    last_online      TIMESTAMP    NOT NULL
+    CONSTRAINT fk_profile_images_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS dating.profile_images

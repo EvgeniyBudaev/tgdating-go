@@ -59,6 +59,14 @@ message TelegramResponse {
   string queryId = 7; // id чата
 }
 
+message StatusResponse {
+  bool isFrozen = 1; // заморожен пользователь да/нет
+  bool isBlocked = 2; // заблокирован пользователь да/нет
+  bool isPremium = 3; // наличие премиум аакаунта да/нет
+  bool isShowDistance = 4; // показывать дистанцию до текущего пользваотеля да/нет
+  bool isInvisible = 5; // неведимка да/нет
+}
+
 message BlockResponse {
   bool isBlocked = 1; // заблокирован пользователь да/нет
 }
@@ -170,19 +178,15 @@ message ProfileByTelegramUserIdResponse {
   string description = 6; // описание
   double height = 7; // рост
   double weight = 8; // вес
-  bool isFrozen = 9; // заморожен пользователь да/нет
-  bool isBlocked = 10; // заблокирован пользователь да/нет
-  bool isPremium = 11; // наличие премиум аакаунта да/нет
-  bool isShowDistance = 12; // показывать дистанцию до текущего пользваотеля да/нет
-  bool isInvisible = 13; // неведимка да/нет
-  bool isOnline = 14; // пользователь онлайн да/нет
-  google.protobuf.Timestamp createdAt = 15; // дата создания
-  google.protobuf.Timestamp updatedAt = 16; // дата обновления
-  google.protobuf.Timestamp lastOnline = 17; // дата последнего входа в систему
-  NavigatorResponse navigator = 18; // объект навигатор
-  FilterResponse filter = 19; // объект фильтр
-  TelegramResponse telegram = 20; // объект телеграм
-  repeated Image images = 21; // список изображений
+  bool isOnline = 9; // пользователь онлайн да/нет
+  google.protobuf.Timestamp createdAt = 10; // дата создания
+  google.protobuf.Timestamp updatedAt = 11; // дата обновления
+  google.protobuf.Timestamp lastOnline = 12; // дата последнего входа в систему
+  NavigatorResponse navigator = 13; // объект навигатор
+  FilterResponse filter = 14; // объект фильтр
+  TelegramResponse telegram = 15; // объект телеграм
+  StatusResponse status = 16; // статус пользователя
+  repeated Image images = 17; // список изображений
 }
 
 message ProfileGetDetailRequest {
@@ -201,20 +205,16 @@ message ProfileDetailResponse {
   string description = 6; // описание
   double height = 7; // рост
   double weight = 8; // вес
-  bool isFrozen = 9; // заморожен пользователь да/нет
-  bool isBlocked = 10; // заблокирован пользователь да/нет
-  bool isPremium = 11; // наличие премиум аакаунта да/нет
-  bool isShowDistance = 12; // показывать дистанцию до текущего пользователя да/нет
-  bool isInvisible = 13; // неведимка да/нет
-  bool isOnline = 14; // пользователь онлайн да/нет
-  google.protobuf.Timestamp createdAt = 15; // дата создания
-  google.protobuf.Timestamp updatedAt = 16; // дата обновления
-  google.protobuf.Timestamp lastOnline = 17; // дата последнего входа в систему
-  NavigatorDetailResponse navigator = 18; // объект навигатор
-  TelegramResponse telegram = 19; // объект телеграм
-  BlockResponse block = 20; // объект блок
-  LikeResponse like = 21; //  объект дайк
-  repeated Image images = 22; // список изображений
+  bool isOnline = 9; // пользователь онлайн да/нет
+  google.protobuf.Timestamp createdAt = 10; // дата создания
+  google.protobuf.Timestamp updatedAt = 11; // дата обновления
+  google.protobuf.Timestamp lastOnline = 12; // дата последнего входа в систему
+  NavigatorDetailResponse navigator = 13; // объект навигатор
+  TelegramResponse telegram = 14; // объект телеграм
+  StatusResponse status = 15; // статус пользователя
+  BlockResponse block = 16; // объект блок
+  LikeResponse like = 17; //  объект дайк
+  repeated Image images = 18; // список изображений
 }
 
 message ProfileGetShortInfoRequest {

@@ -46,22 +46,14 @@ func (r *NavigatorRepository) Add(
 
 func (r *NavigatorRepository) Update(
 	ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error) {
-	tx, err := r.db.Begin()
-	if err != nil {
-		errorMessage := r.getErrorMessage("Update", "Begin")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
 	query := "UPDATE dating.profile_navigators SET location=ST_SetSRID(ST_MakePoint($1, $2),  4326), updated_at = $3" +
 		" WHERE telegram_user_id = $4"
-	_, err = r.db.ExecContext(ctx, query, &p.Longitude, &p.Latitude, &p.UpdatedAt, &p.TelegramUserId)
+	_, err := r.db.ExecContext(ctx, query, &p.Longitude, &p.Latitude, &p.UpdatedAt, &p.TelegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	tx.Commit()
 	return r.FindByTelegramUserId(ctx, p.TelegramUserId)
 }
 

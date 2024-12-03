@@ -12,7 +12,7 @@ type ProfileMapper struct {
 
 func (pm *ProfileMapper) MapToResponse(
 	pe *entity.ProfileEntity, nr *response.NavigatorResponseDto, fr *response.FilterResponseDto,
-	tr *response.TelegramResponseDto, il []*entity.ImageEntity, isOnline bool,
+	tr *response.TelegramResponseDto, sr *response.StatusResponseDto, il []*entity.ImageEntity, isOnline bool,
 ) *response.ProfileResponseDto {
 	return &response.ProfileResponseDto{
 		TelegramUserId: pe.TelegramUserId,
@@ -23,11 +23,6 @@ func (pm *ProfileMapper) MapToResponse(
 		Description:    pe.Description,
 		Height:         pe.Height,
 		Weight:         pe.Weight,
-		IsFrozen:       pe.IsFrozen,
-		IsBlocked:      pe.IsBlocked,
-		IsPremium:      pe.IsPremium,
-		IsShowDistance: pe.IsShowDistance,
-		IsInvisible:    pe.IsInvisible,
 		IsOnline:       isOnline,
 		CreatedAt:      pe.CreatedAt,
 		UpdatedAt:      pe.UpdatedAt,
@@ -35,13 +30,15 @@ func (pm *ProfileMapper) MapToResponse(
 		Navigator:      nr,
 		Filter:         fr,
 		Telegram:       tr,
+		Status:         sr,
 		Images:         il,
 	}
 }
 
 func (pm *ProfileMapper) MapToDetailResponse(
 	pe *entity.ProfileEntity, nr *response.NavigatorDetailResponseDto, br *response.BlockResponseDto,
-	lr *response.LikeResponseDto, tr *response.TelegramResponseDto, il []*entity.ImageEntity, isOnline bool,
+	lr *response.LikeResponseDto, tr *response.TelegramResponseDto, sr *response.StatusResponseDto,
+	il []*entity.ImageEntity, isOnline bool,
 ) *response.ProfileDetailResponseDto {
 	return &response.ProfileDetailResponseDto{
 		TelegramUserId: pe.TelegramUserId,
@@ -52,29 +49,26 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		Description:    pe.Description,
 		Height:         pe.Height,
 		Weight:         pe.Weight,
-		IsFrozen:       pe.IsFrozen,
-		IsBlocked:      pe.IsBlocked,
-		IsPremium:      pe.IsPremium,
-		IsShowDistance: pe.IsShowDistance,
-		IsInvisible:    pe.IsInvisible,
 		IsOnline:       isOnline,
 		CreatedAt:      pe.CreatedAt,
 		UpdatedAt:      pe.UpdatedAt,
 		LastOnline:     pe.LastOnline,
 		Navigator:      nr,
+		Telegram:       tr,
+		Status:         sr,
 		Block:          br,
 		Like:           lr,
-		Telegram:       tr,
 		Images:         il,
 	}
 }
 
-func (pm *ProfileMapper) MapToShortInfoResponse(pe *entity.ProfileEntity, imageUrl string) *response.ProfileShortInfoResponseDto {
+func (pm *ProfileMapper) MapToShortInfoResponse(
+	pe *entity.ProfileEntity, sr *response.StatusResponseDto, imageUrl string) *response.ProfileShortInfoResponseDto {
 	return &response.ProfileShortInfoResponseDto{
 		TelegramUserId: pe.TelegramUserId,
 		ImageUrl:       imageUrl,
-		IsFrozen:       pe.IsFrozen,
-		IsBlocked:      pe.IsBlocked,
+		IsFrozen:       sr.IsFrozen,
+		IsBlocked:      sr.IsBlocked,
 	}
 }
 
@@ -95,11 +89,6 @@ func (pm *ProfileMapper) MapToAddRequest(
 		Description:    pr.Description,
 		Height:         pr.Height,
 		Weight:         pr.Weight,
-		IsFrozen:       false,
-		IsBlocked:      false,
-		IsPremium:      false,
-		IsShowDistance: true,
-		IsInvisible:    false,
 		CreatedAt:      time.Now().UTC(),
 		UpdatedAt:      time.Now().UTC(),
 		LastOnline:     time.Now().UTC(),
@@ -117,24 +106,6 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 		Description:    pr.Description,
 		Height:         pr.Height,
 		Weight:         pr.Weight,
-		UpdatedAt:      time.Now().UTC(),
-		LastOnline:     time.Now().UTC(),
-	}
-}
-
-func (pm *ProfileMapper) MapToFreezeRequest(telegramUserId string) *request.ProfileFreezeRequestRepositoryDto {
-	return &request.ProfileFreezeRequestRepositoryDto{
-		TelegramUserId: telegramUserId,
-		IsFrozen:       true,
-		UpdatedAt:      time.Now().UTC(),
-		LastOnline:     time.Now().UTC(),
-	}
-}
-
-func (pm *ProfileMapper) MapToRestoreRequest(telegramUserId string) *request.ProfileRestoreRequestRepositoryDto {
-	return &request.ProfileRestoreRequestRepositoryDto{
-		TelegramUserId: telegramUserId,
-		IsFrozen:       false,
 		UpdatedAt:      time.Now().UTC(),
 		LastOnline:     time.Now().UTC(),
 	}

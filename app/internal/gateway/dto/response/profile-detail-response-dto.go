@@ -14,17 +14,13 @@ type ProfileDetailResponseDto struct {
 	Description    string                      `json:"description"`
 	Height         float64                     `json:"height"`
 	Weight         float64                     `json:"weight"`
-	IsFrozen       bool                        `json:"isFrozen"`
-	IsBlocked      bool                        `json:"isBlocked"`
-	IsPremium      bool                        `json:"isPremium"`
-	IsShowDistance bool                        `json:"isShowDistance"`
-	IsInvisible    bool                        `json:"isInvisible"`
 	IsOnline       bool                        `json:"isOnline"`
 	CreatedAt      time.Time                   `json:"createdAt"`
 	UpdatedAt      time.Time                   `json:"updatedAt"`
 	LastOnline     time.Time                   `json:"lastOnline"`
 	Navigator      *NavigatorDetailResponseDto `json:"navigator"`
 	Telegram       *TelegramResponseDto        `json:"telegram"`
+	Status         *StatusResponseDto          `json:"status"`
 	Block          *BlockResponseDto           `json:"block"`
 	Like           *LikeResponseDto            `json:"like"`
 	Images         []*entity.ImageEntity       `json:"images"`

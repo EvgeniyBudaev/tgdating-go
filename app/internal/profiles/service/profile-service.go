@@ -23,8 +23,9 @@ import (
 )
 
 const (
-	errorFilePath = "internal/profiles/service/profile-service.go"
-	minDistance   = 100
+	errorFilePath          = "internal/profiles/service/profile-service.go"
+	minDistance            = 100
+	maxCountUserComplaints = 0
 )
 
 type ProfileService struct {
@@ -42,6 +43,7 @@ type ProfileService struct {
 	likeRepository      LikeRepository
 	blockRepository     BlockRepository
 	complaintRepository ComplaintRepository
+	statusRepository    StatusRepository
 }
 
 func NewProfileService(
@@ -55,7 +57,11 @@ func NewProfileService(
 	nr NavigatorRepository,
 	fr FilterRepository,
 	tr TelegramRepository,
-	ir ImageRepository, lr LikeRepository, br BlockRepository, cr ComplaintRepository) *ProfileService {
+	ir ImageRepository,
+	lr LikeRepository,
+	br BlockRepository,
+	cr ComplaintRepository,
+	sr StatusRepository) *ProfileService {
 	return &ProfileService{
 		logger:              l,
 		db:                  db,
@@ -71,6 +77,7 @@ func NewProfileService(
 		likeRepository:      lr,
 		blockRepository:     br,
 		complaintRepository: cr,
+		statusRepository:    sr,
 	}
 }
 
@@ -82,6 +89,15 @@ func (s *ProfileService) AddProfile(
 	profileCreated, err := unitOfWork.ProfileRepository().Add(ctx, profileRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddProfile", "ProfileRepository().Add")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	statusMapper := &mapper.StatusMapper{}
+	statusRequest := statusMapper.MapToAddRequest(pr)
+	_, err = unitOfWork.StatusRepository().Add(ctx, statusRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile",
+			"StatusRepository().Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -187,6 +203,15 @@ func (s *ProfileService) UpdateProfile(
 		return nil, err
 	}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
+	statusMapper := &mapper.StatusMapper{}
+	statusEntity, err := unitOfWork.StatusRepository().FindByTelegramUserId(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile",
+			"StatusRepository().FindByTelegramUserId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	statusResponse := statusMapper.MapToResponse(statusEntity)
 	imageEntityList, err := unitOfWork.ImageRepository().SelectListByTelegramUserId(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile",
@@ -196,7 +221,7 @@ func (s *ProfileService) UpdateProfile(
 	}
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
 	profileResponse := profileMapper.MapToResponse(profileEntity, navigatorResponse, filterResponse, telegramResponse,
-		imageEntityList, isOnline)
+		statusResponse, imageEntityList, isOnline)
 	defer func() {
 		if err != nil {
 			if err := unitOfWork.Rollback(ctx); err != nil {
@@ -221,12 +246,19 @@ func (s *ProfileService) FreezeProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	profileMapper := &mapper.ProfileMapper{}
-	profileRequest := profileMapper.MapToFreezeRequest(pr.TelegramUserId)
-	_, err := unitOfWork.ProfileRepository().Freeze(ctx, profileRequest)
+	updateLastOnlineMapper := &mapper.ProfileUpdateLastOnlineMapper{}
+	updateLastOnlineRequest := updateLastOnlineMapper.MapToAddRequest(pr.TelegramUserId)
+	err := unitOfWork.ProfileRepository().UpdateLastOnline(ctx, updateLastOnlineRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("FreezeProfile",
-			"ProfileRepository().Freeze")
+			"ProfileRepository().UpdateLastOnline")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	_, err = unitOfWork.StatusRepository().Freeze(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("FreezeProfile",
+			"StatusRepository().Freeze")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -257,12 +289,19 @@ func (s *ProfileService) RestoreProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	profileMapper := &mapper.ProfileMapper{}
-	profileRequest := profileMapper.MapToRestoreRequest(pr.TelegramUserId)
-	_, err := unitOfWork.ProfileRepository().Restore(ctx, profileRequest)
+	updateLastOnlineMapper := &mapper.ProfileUpdateLastOnlineMapper{}
+	updateLastOnlineRequest := updateLastOnlineMapper.MapToAddRequest(pr.TelegramUserId)
+	err := unitOfWork.ProfileRepository().UpdateLastOnline(ctx, updateLastOnlineRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("RestoreProfile",
-			"profileRepository.Restore")
+			"ProfileRepository().UpdateLastOnline")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	_, err = unitOfWork.StatusRepository().Restore(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("RestoreProfile",
+			"StatusRepository().Restore")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -377,6 +416,15 @@ func (s *ProfileService) GetProfileByTelegramUserId(ctx context.Context, telegra
 	}
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
+	statusMapper := &mapper.StatusMapper{}
+	statusEntity, err := s.statusRepository.FindByTelegramUserId(ctx, telegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
+			"statusRepository.FindByTelegramUserId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	statusResponse := statusMapper.MapToResponse(statusEntity)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
 	imageEntityList, err := s.imageRepository.SelectListByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
@@ -387,7 +435,7 @@ func (s *ProfileService) GetProfileByTelegramUserId(ctx context.Context, telegra
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileResponse := profileMapper.MapToResponse(
-		profileEntity, navigatorResponse, filterResponse, telegramResponse, imageEntityList, isOnline)
+		profileEntity, navigatorResponse, filterResponse, telegramResponse, statusResponse, imageEntityList, isOnline)
 	return profileResponse, err
 }
 
@@ -476,6 +524,15 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUse
 	}
 	telegramMapper := &mapper.TelegramMapper{}
 	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
+	statusMapper := &mapper.StatusMapper{}
+	statusEntity, err := s.statusRepository.FindByTelegramUserId(ctx, viewedTelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail",
+			"statusRepository.FindByTelegramUserId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	statusResponse := statusMapper.MapToResponse(statusEntity)
 	isOnline := s.checkIsOnline(profileEntity.LastOnline)
 	imageEntityList, err := s.imageRepository.SelectListByTelegramUserId(ctx, viewedTelegramUserId)
 	if err != nil {
@@ -484,8 +541,8 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUse
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	profileResponse := profileMapper.MapToDetailResponse(
-		profileEntity, navigatorResponse, blockResponse, likeResponse, telegramResponse, imageEntityList, isOnline)
+	profileResponse := profileMapper.MapToDetailResponse(profileEntity, navigatorResponse, blockResponse, likeResponse,
+		telegramResponse, statusResponse, imageEntityList, isOnline)
 	return profileResponse, err
 }
 
@@ -518,6 +575,15 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, telegramUserId
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	statusMapper := &mapper.StatusMapper{}
+	statusEntity, err := s.statusRepository.FindByTelegramUserId(ctx, telegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileShortInfo",
+			"statusRepository.FindByTelegramUserId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	statusResponse := statusMapper.MapToResponse(statusEntity)
 	lastImage, err := s.imageRepository.FindLastByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileShortInfo",
@@ -525,7 +591,7 @@ func (s *ProfileService) GetProfileShortInfo(ctx context.Context, telegramUserId
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	profileResponse := profileMapper.MapToShortInfoResponse(profileEntity, lastImage.Url)
+	profileResponse := profileMapper.MapToShortInfoResponse(profileEntity, statusResponse, lastImage.Url)
 	return profileResponse, err
 }
 
@@ -948,6 +1014,13 @@ func (s *ProfileService) AddLike(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	statusProfile, err := s.statusRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddLike",
+			"statusRepository.FindByTelegramUserId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	lastImageProfile, err := s.imageRepository.FindLastByTelegramUserId(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddLike",
@@ -975,16 +1048,18 @@ func (s *ProfileService) AddLike(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	err = s.kafkaWriter.WriteMessages(context.Background(),
-		kafka.Message{
-			Key:   []byte(likedTelegramProfile.UserId),
-			Value: hubContentJson,
-		},
-	)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddLike", "kafkaWriter.WriteMessages")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
+	if !statusProfile.IsBlocked {
+		err = s.kafkaWriter.WriteMessages(context.Background(),
+			kafka.Message{
+				Key:   []byte(likedTelegramProfile.UserId),
+				Value: hubContentJson,
+			},
+		)
+		if err != nil {
+			errorMessage := s.getErrorMessage("AddLike", "kafkaWriter.WriteMessages")
+			s.logger.Debug(errorMessage, zap.Error(err))
+			return nil, err
+		}
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToAddRequest(pr)
@@ -1056,6 +1131,22 @@ func (s *ProfileService) AddComplaint(
 			"ComplaintRepository().Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
+	}
+	countUserComplaints, err := unitOfWork.ComplaintRepository().GetCountUserComplaintsByToday(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddComplaint",
+			"complaintRepository.GetCountUserComplaintsByToday")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	if countUserComplaints >= maxCountUserComplaints {
+		_, err := unitOfWork.StatusRepository().Block(ctx, pr.TelegramUserId)
+		if err != nil {
+			errorMessage := s.getErrorMessage("AddComplaint",
+				"statusRepository().Block")
+			s.logger.Debug(errorMessage, zap.Error(err))
+			return nil, err
+		}
 	}
 	defer func() {
 		if err != nil {
@@ -1177,10 +1268,10 @@ func (s *ProfileService) GetMessageLike(locale string) string {
 }
 
 func (s *ProfileService) checkUserExists(ctx context.Context, telegramUserId string) error {
-	p, err := s.profileRepository.FindByTelegramUserId(ctx, telegramUserId)
+	p, err := s.statusRepository.FindByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("checkUserExists",
-			"profileRepository.FindByTelegramUserId")
+			"statusRepository.FindByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
 	}
