@@ -30,6 +30,7 @@ func (factory *UnitOfWorkFactory) CreateUnit() *UnitOfWork {
 		psql.NewComplaintRepository(factory.logger, factory.db),
 		psql.NewFilterRepository(factory.logger, factory.db),
 		psql.NewImageRepository(factory.logger, factory.db),
+		psql.NewImageStatusRepository(factory.logger, factory.db),
 		psql.NewLikeRepository(factory.logger, factory.db),
 		psql.NewNavigatorRepository(factory.logger, factory.db),
 		psql.NewProfileRepository(factory.logger, factory.db),

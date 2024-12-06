@@ -1,7 +1,6 @@
 package response
 
 import (
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"time"
 )
 
@@ -14,7 +13,6 @@ type ProfileResponseDto struct {
 	Description    string                `json:"description"`
 	Height         float64               `json:"height"`
 	Weight         float64               `json:"weight"`
-	IsOnline       bool                  `json:"isOnline"`
 	CreatedAt      time.Time             `json:"createdAt"`
 	UpdatedAt      time.Time             `json:"updatedAt"`
 	LastOnline     time.Time             `json:"lastOnline"`
@@ -22,5 +20,5 @@ type ProfileResponseDto struct {
 	Filter         *FilterResponseDto    `json:"filter"`
 	Telegram       *TelegramResponseDto  `json:"telegram"`
 	Status         *StatusResponseDto    `json:"status"`
-	Images         []*entity.ImageEntity `json:"images"`
+	Images         []*ImageResponseDto   `json:"images"`
 }

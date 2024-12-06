@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"go.uber.org/zap"
 )
@@ -28,39 +27,24 @@ func NewImageRepository(l logger.Logger, db *sql.DB) *ImageRepository {
 }
 
 func (r *ImageRepository) Add(
-	ctx context.Context, p *request.ImageAddRequestRepositoryDto) (*entity.ImageEntity, error) {
-	query := "INSERT INTO dating.profile_images (telegram_user_id, name, url, size, is_blocked, is_primary," +
-		" is_private, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &p.IsBlocked,
-		&p.IsPrimary, &p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
+	ctx context.Context, p *request.ImageAddRequestRepositoryDto) (uint64, error) {
+	query := "INSERT INTO dating.profile_images (telegram_user_id, name, url, size, created_at, updated_at)" +
+		" VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Add", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
+		return 0, err
 	}
-	return r.FindById(ctx, id)
-}
-
-func (r *ImageRepository) Update(
-	ctx context.Context, p *request.ImageUpdateRequestRepositoryDto) (*entity.ImageEntity, error) {
-	query := "UPDATE dating.profile_images SET name = $1, url = $2, size = $3, is_blocked = $4," +
-		" is_primary = $5, is_private = $6, updated_at = $7 WHERE id = $8"
-	_, err := r.db.ExecContext(ctx, query, &p.Name, &p.Url, &p.Size, &p.IsBlocked,
-		&p.IsPrimary, &p.IsPrivate, &p.UpdatedAt, &p.Id)
-	if err != nil {
-		errorMessage := r.getErrorMessage("Update", "ExecContext")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return r.FindById(ctx, p.Id)
+	return id, nil
 }
 
 func (r *ImageRepository) Delete(
-	ctx context.Context, p *request.ImageDeleteRequestRepositoryDto) (*response.ResponseDto, error) {
+	ctx context.Context, id uint64) (*response.ResponseDto, error) {
 	query := "DELETE FROM dating.profile_images WHERE id = $1"
-	_, err := r.db.ExecContext(ctx, query, &p.Id)
+	_, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Delete", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -72,15 +56,16 @@ func (r *ImageRepository) Delete(
 	return imageResponse, nil
 }
 
-func (r *ImageRepository) FindById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error) {
-	p := &entity.ImageEntity{}
-	query := "SELECT id, telegram_user_id, name, url, size, is_blocked, is_primary," +
-		" is_private, created_at, updated_at" +
-		" FROM dating.profile_images" +
-		" WHERE id = $1"
+func (r *ImageRepository) FindById(ctx context.Context, imageId uint64) (*response.ImageResponseRepositoryDto, error) {
+	p := &response.ImageResponseRepositoryDto{}
+	query := "SELECT pi.id, pi.telegram_user_id, pi.name, pi.url, pi.size, pis.is_blocked, pis.is_primary," +
+		" pis.is_private, pi.created_at, pi.updated_at" +
+		" FROM dating.profile_images pi" +
+		" JOIN dating.profile_image_statuses pis ON pi.id = pis.id" +
+		" WHERE pi.id = $1"
 	row := r.db.QueryRowContext(ctx, query, imageId)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &p.IsBlocked, &p.IsPrimary,
-		&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &p.IsBlocked, &p.IsPrimary, &p.IsPrivate,
+		&p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -89,31 +74,45 @@ func (r *ImageRepository) FindById(ctx context.Context, imageId uint64) (*entity
 	return p, nil
 }
 
-func (r *ImageRepository) FindLastByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.ImageEntity, error) {
-	p := &entity.ImageEntity{}
-	query := "SELECT id, telegram_user_id, name, url, size, is_blocked, is_primary," +
-		" is_private, created_at, updated_at" +
-		" FROM dating.profile_images" +
-		" WHERE telegram_user_id = $1 AND is_blocked = false AND is_private = false" +
-		" ORDER BY id DESC" +
+func (r *ImageRepository) FindLastByTelegramUserId(
+	ctx context.Context, telegramUserId string) (*response.ImageResponseDto, error) {
+	p := &response.ImageResponseRepositoryDto{}
+	s := &response.ImageStatusResponseDto{}
+	query := "SELECT pi.id, pi.telegram_user_id, pi.name, pi.url, pi.size, pis.is_blocked, pis.is_primary," +
+		" pis.is_private, pi.created_at, pi.updated_at" +
+		" FROM dating.profile_images pi" +
+		" JOIN dating.profile_image_statuses pis ON pi.id = pis.id" +
+		" WHERE pi.telegram_user_id = $1 AND pis.is_blocked = false AND pis.is_private = false" +
+		" ORDER BY pi.id DESC" +
 		" LIMIT 1"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &p.IsBlocked, &p.IsPrimary,
-		&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &s.IsBlocked, &s.IsPrimary, &s.IsPrivate,
+		&p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindLastByTelegramUserId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return p, nil
+	result := &response.ImageResponseDto{
+		Id:             p.Id,
+		TelegramUserId: p.TelegramUserId,
+		Name:           p.Name,
+		Url:            p.Url,
+		Size:           p.Size,
+		Status:         s,
+		CreatedAt:      p.CreatedAt,
+		UpdatedAt:      p.UpdatedAt,
+	}
+	return result, nil
 }
 
 func (r *ImageRepository) SelectListAllByTelegramUserId(
-	ctx context.Context, telegramUserId string) ([]*entity.ImageEntity, error) {
-	query := "SELECT id, telegram_user_id, name, url, size, is_blocked, is_primary," +
-		" is_private, created_at, updated_at" +
-		" FROM dating.profile_images" +
-		" WHERE telegram_user_id = $1"
+	ctx context.Context, telegramUserId string) ([]*response.ImageResponseDto, error) {
+	query := "SELECT pi.id, pi.telegram_user_id, pi.name, pi.url, pi.size, pis.is_blocked, pis.is_primary," +
+		" pis.is_private, pi.created_at, pi.updated_at" +
+		" FROM dating.profile_images pi" +
+		" JOIN dating.profile_image_statuses pis ON pi.id = pis.id" +
+		" WHERE pi.telegram_user_id = $1"
 	rows, err := r.db.QueryContext(ctx, query, telegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("SelectListAllByTelegramUserId",
@@ -122,27 +121,40 @@ func (r *ImageRepository) SelectListAllByTelegramUserId(
 		return nil, err
 	}
 	defer rows.Close()
-	list := make([]*entity.ImageEntity, 0)
+	list := make([]*response.ImageResponseDto, 0)
 	for rows.Next() {
-		p := entity.ImageEntity{}
-		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &p.IsBlocked, &p.IsPrimary,
-			&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
+		p := &response.ImageResponseDto{}
+		s := &response.ImageStatusResponseDto{}
+		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &s.IsBlocked, &s.IsPrimary, &s.IsPrivate,
+			&p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
-			errorMessage := r.getErrorMessage("SelectListAllByTelegramUserId", "Scan")
+			errorMessage := r.getErrorMessage("SelectListAllByTelegramUserId",
+				"Scan")
 			r.logger.Debug(errorMessage, zap.Error(err))
 			continue
 		}
-		list = append(list, &p)
+		result := &response.ImageResponseDto{
+			Id:             p.Id,
+			TelegramUserId: p.TelegramUserId,
+			Name:           p.Name,
+			Url:            p.Url,
+			Size:           p.Size,
+			Status:         s,
+			CreatedAt:      p.CreatedAt,
+			UpdatedAt:      p.UpdatedAt,
+		}
+		list = append(list, result)
 	}
 	return list, nil
 }
 
 func (r *ImageRepository) SelectListPublicByTelegramUserId(
-	ctx context.Context, telegramUserId string) ([]*entity.ImageEntity, error) {
-	query := "SELECT id, telegram_user_id, name, url, size, is_blocked, is_primary," +
-		" is_private, created_at, updated_at" +
-		" FROM dating.profile_images" +
-		" WHERE telegram_user_id = $1 AND is_blocked = false AND is_private = false"
+	ctx context.Context, telegramUserId string) ([]*response.ImageResponseDto, error) {
+	query := "SELECT pi.id, pi.telegram_user_id, pi.name, pi.url, pi.size, pis.is_blocked, pis.is_primary," +
+		" pis.is_private, pi.created_at, pi.updated_at" +
+		" FROM dating.profile_images pi" +
+		" JOIN dating.profile_image_statuses pis ON pi.id = pis.id" +
+		" WHERE pi.telegram_user_id = $1 AND pis.is_blocked = false AND pis.is_private = false"
 	rows, err := r.db.QueryContext(ctx, query, telegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("SelectListPublicByTelegramUserId",
@@ -151,28 +163,40 @@ func (r *ImageRepository) SelectListPublicByTelegramUserId(
 		return nil, err
 	}
 	defer rows.Close()
-	list := make([]*entity.ImageEntity, 0)
+	list := make([]*response.ImageResponseDto, 0)
 	for rows.Next() {
-		p := entity.ImageEntity{}
-		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &p.IsBlocked, &p.IsPrimary,
-			&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
+		p := &response.ImageResponseDto{}
+		s := &response.ImageStatusResponseDto{}
+		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &s.IsBlocked, &s.IsPrimary, &s.IsPrivate,
+			&p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectListPublicByTelegramUserId",
 				"Scan")
 			r.logger.Debug(errorMessage, zap.Error(err))
 			continue
 		}
-		list = append(list, &p)
+		result := &response.ImageResponseDto{
+			Id:             p.Id,
+			TelegramUserId: p.TelegramUserId,
+			Name:           p.Name,
+			Url:            p.Url,
+			Size:           p.Size,
+			Status:         s,
+			CreatedAt:      p.CreatedAt,
+			UpdatedAt:      p.UpdatedAt,
+		}
+		list = append(list, result)
 	}
 	return list, nil
 }
 
 func (r *ImageRepository) SelectListByTelegramUserId(
-	ctx context.Context, telegramUserId string) ([]*entity.ImageEntity, error) {
-	query := "SELECT id, telegram_user_id, name, url, size, is_blocked, is_primary," +
-		" is_private, created_at, updated_at" +
-		" FROM dating.profile_images" +
-		" WHERE telegram_user_id = $1 AND is_blocked = false"
+	ctx context.Context, telegramUserId string) ([]*response.ImageResponseDto, error) {
+	query := "SELECT pi.id, pi.telegram_user_id, pi.name, pi.url, pi.size, pis.is_blocked, pis.is_primary," +
+		" pis.is_private, pi.created_at, pi.updated_at" +
+		" FROM dating.profile_images pi" +
+		" JOIN dating.profile_image_statuses pis ON pi.id = pis.id" +
+		" WHERE pi.telegram_user_id = $1 AND pis.is_blocked = false"
 	rows, err := r.db.QueryContext(ctx, query, telegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("SelectListByTelegramUserId",
@@ -181,17 +205,28 @@ func (r *ImageRepository) SelectListByTelegramUserId(
 		return nil, err
 	}
 	defer rows.Close()
-	list := make([]*entity.ImageEntity, 0)
+	list := make([]*response.ImageResponseDto, 0)
 	for rows.Next() {
-		p := entity.ImageEntity{}
-		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &p.IsBlocked, &p.IsPrimary,
-			&p.IsPrivate, &p.CreatedAt, &p.UpdatedAt)
+		p := &response.ImageResponseDto{}
+		s := &response.ImageStatusResponseDto{}
+		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &s.IsBlocked, &s.IsPrimary, &s.IsPrivate,
+			&p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectListByTelegramUserId", "Scan")
 			r.logger.Debug(errorMessage, zap.Error(err))
 			continue
 		}
-		list = append(list, &p)
+		result := &response.ImageResponseDto{
+			Id:             p.Id,
+			TelegramUserId: p.TelegramUserId,
+			Name:           p.Name,
+			Url:            p.Url,
+			Size:           p.Size,
+			Status:         s,
+			CreatedAt:      p.CreatedAt,
+			UpdatedAt:      p.UpdatedAt,
+		}
+		list = append(list, result)
 	}
 	return list, nil
 }

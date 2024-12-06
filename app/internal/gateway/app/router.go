@@ -13,7 +13,6 @@ func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileContr
 	router.Get("/profiles/detail/:viewedTelegramUserId", profileController.GetProfileDetail())
 	router.Get("/profiles/short/:telegramUserId", profileController.GetProfileShortInfo())
 	router.Get("/profiles/list", profileController.GetProfileList())
-	router.Get("/profiles/filter/:telegramUserId", profileController.GetFilterByTelegramUserId())
 }
 
 func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileController) {

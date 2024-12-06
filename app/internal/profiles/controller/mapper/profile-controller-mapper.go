@@ -41,9 +41,9 @@ func (pm *ProfileControllerMapper) MapControllerToAddRequest(
 	}
 }
 
-func (pm *ProfileControllerMapper) MapControllerToAddResponse(r *response.ProfileAddResponseDto) *pb.ProfileAddResponse {
+func (pm *ProfileControllerMapper) MapControllerToAddResponse(r *response.ResponseDto) *pb.ProfileAddResponse {
 	return &pb.ProfileAddResponse{
-		TelegramUserId: r.TelegramUserId,
+		Success: r.Success,
 	}
 }
 
@@ -95,20 +95,23 @@ func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
 			Location:       location,
 		}
 	}
-	images := make([]*pb.Image, 0)
+	images := make([]*pb.ImageResponse, 0)
 	if len(r.Images) > 0 {
 		for _, image := range r.Images {
 			createdAtImageTimestamp := timestamppb.New(image.CreatedAt)
 			updatedAtImageTimestamp := timestamppb.New(image.UpdatedAt)
-			images = append(images, &pb.Image{
+			status := &pb.ImageStatusResponse{
+				IsBlocked: image.Status.IsBlocked,
+				IsPrimary: image.Status.IsPrimary,
+				IsPrivate: image.Status.IsPrivate,
+			}
+			images = append(images, &pb.ImageResponse{
 				Id:             image.Id,
 				TelegramUserId: image.TelegramUserId,
 				Name:           image.Name,
 				Url:            image.Url,
 				Size:           image.Size,
-				IsBlocked:      image.IsBlocked,
-				IsPrimary:      image.IsPrimary,
-				IsPrivate:      image.IsPrivate,
+				Status:         status,
 				CreatedAt:      createdAtImageTimestamp,
 				UpdatedAt:      updatedAtImageTimestamp,
 			})
@@ -123,7 +126,6 @@ func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		IsOnline:       r.IsOnline,
 		CreatedAt:      createdAtTimestamp,
 		UpdatedAt:      updatedAtTimestamp,
 		LastOnline:     lastOnlineTimestamp,
@@ -148,11 +150,12 @@ func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
 			QueryId:         r.Telegram.QueryId,
 		},
 		Status: &pb.StatusResponse{
-			IsFrozen:       r.Status.IsFrozen,
 			IsBlocked:      r.Status.IsBlocked,
+			IsFrozen:       r.Status.IsFrozen,
+			IsInvisible:    r.Status.IsInvisible,
+			IsOnline:       r.Status.IsOnline,
 			IsPremium:      r.Status.IsPremium,
 			IsShowDistance: r.Status.IsShowDistance,
-			IsInvisible:    r.Status.IsInvisible,
 		},
 		Images: images,
 	}
@@ -189,20 +192,23 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 			UpdatedAt:           likeUpdatedAtTimestamp,
 		}
 	}
-	images := make([]*pb.Image, 0)
+	images := make([]*pb.ImageResponse, 0)
 	if len(r.Images) > 0 {
 		for _, image := range r.Images {
 			createdAtImageTimestamp := timestamppb.New(image.CreatedAt)
 			updatedAtImageTimestamp := timestamppb.New(image.UpdatedAt)
-			images = append(images, &pb.Image{
+			status := &pb.ImageStatusResponse{
+				IsBlocked: image.Status.IsBlocked,
+				IsPrimary: image.Status.IsPrimary,
+				IsPrivate: image.Status.IsPrivate,
+			}
+			images = append(images, &pb.ImageResponse{
 				Id:             image.Id,
 				TelegramUserId: image.TelegramUserId,
 				Name:           image.Name,
 				Url:            image.Url,
 				Size:           image.Size,
-				IsBlocked:      image.IsBlocked,
-				IsPrimary:      image.IsPrimary,
-				IsPrivate:      image.IsPrivate,
+				Status:         status,
 				CreatedAt:      createdAtImageTimestamp,
 				UpdatedAt:      updatedAtImageTimestamp,
 			})
@@ -217,7 +223,6 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		IsOnline:       r.IsOnline,
 		CreatedAt:      createdAtTimestamp,
 		UpdatedAt:      updatedAtTimestamp,
 		LastOnline:     lastOnlineTimestamp,
@@ -232,11 +237,12 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 			QueryId:         r.Telegram.QueryId,
 		},
 		Status: &pb.StatusResponse{
-			IsFrozen:       r.Status.IsFrozen,
 			IsBlocked:      r.Status.IsBlocked,
+			IsFrozen:       r.Status.IsFrozen,
+			IsInvisible:    r.Status.IsInvisible,
+			IsOnline:       r.Status.IsOnline,
 			IsPremium:      r.Status.IsPremium,
 			IsShowDistance: r.Status.IsShowDistance,
-			IsInvisible:    r.Status.IsInvisible,
 		},
 		Block:  blockResponse,
 		Like:   likeResponse,
@@ -248,9 +254,15 @@ func (pm *ProfileControllerMapper) MapControllerToShortInfoResponse(
 	r *response.ProfileShortInfoResponseDto) *pb.ProfileShortInfoResponse {
 	return &pb.ProfileShortInfoResponse{
 		TelegramUserId: r.TelegramUserId,
-		ImageUrl:       r.ImageUrl,
-		IsFrozen:       r.IsFrozen,
 		IsBlocked:      r.IsBlocked,
+		IsFrozen:       r.IsFrozen,
+		SearchGender:   r.SearchGender,
+		LookingFor:     r.LookingFor,
+		AgeFrom:        r.AgeFrom,
+		AgeTo:          r.AgeTo,
+		Distance:       r.Distance,
+		Page:           r.Page,
+		Size:           r.Size,
 	}
 }
 
@@ -280,34 +292,23 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 	}
 }
 
-func (pm *ProfileControllerMapper) MapControllerToImageResponse(r *entity.ImageEntity) *pb.Image {
+func (pm *ProfileControllerMapper) MapControllerToImageResponse(r *response.ImageResponseDto) *pb.ImageResponse {
 	createdAtImageTimestamp := timestamppb.New(r.CreatedAt)
 	updatedAtImageTimestamp := timestamppb.New(r.UpdatedAt)
-	return &pb.Image{
+	status := &pb.ImageStatusResponse{
+		IsBlocked: r.Status.IsBlocked,
+		IsPrimary: r.Status.IsPrimary,
+		IsPrivate: r.Status.IsPrivate,
+	}
+	return &pb.ImageResponse{
 		Id:             r.Id,
 		TelegramUserId: r.TelegramUserId,
 		Name:           r.Name,
 		Url:            r.Url,
 		Size:           r.Size,
-		IsBlocked:      r.IsBlocked,
-		IsPrimary:      r.IsPrimary,
-		IsPrivate:      r.IsPrivate,
+		Status:         status,
 		CreatedAt:      createdAtImageTimestamp,
 		UpdatedAt:      updatedAtImageTimestamp,
-	}
-}
-
-func (pm *ProfileControllerMapper) MapControllerToFilterResponse(
-	r *response.FilterResponseDto) *pb.FilterGetResponse {
-	return &pb.FilterGetResponse{
-		TelegramUserId: r.TelegramUserId,
-		SearchGender:   r.SearchGender,
-		LookingFor:     r.LookingFor,
-		AgeFrom:        r.AgeFrom,
-		AgeTo:          r.AgeTo,
-		Distance:       r.Distance,
-		Page:           r.Page,
-		Size:           r.Size,
 	}
 }
 

@@ -275,15 +275,9 @@ func (pc *ProfileController) GetProfileShortInfo() fiber.Handler {
 		pc.logger.Info("GET /api/v1/profiles/short/:telegramUserId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
-		req := &request.ProfileGetShortInfoRequestDto{}
-		if err := ctf.QueryParser(req); err != nil {
-			errorMessage := pc.getErrorMessage("GetProfileShortInfo", "QueryParser")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-		}
 		telegramUserId := ctf.Params("telegramUserId")
 		profileMapper := &mapper.ProfileMapper{}
-		profileRequest := profileMapper.MapToGetShortInfoRequest(req, telegramUserId)
+		profileRequest := profileMapper.MapToGetShortInfoRequest(telegramUserId)
 		profileShortInfo, err := pc.proto.GetProfileShortInfo(ctx, profileRequest)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("GetProfileShortInfo",
@@ -391,38 +385,6 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
 		return v1.ResponseCreated(ctf, response)
-	}
-}
-
-func (pc *ProfileController) GetFilterByTelegramUserId() fiber.Handler {
-	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /api/v1/profiles/filter/:telegramUserId")
-		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
-		defer cancel()
-		telegramUserId := ctf.Params("telegramUserId")
-		req := &request.FilterGetRequestDto{}
-		if err := ctf.QueryParser(req); err != nil {
-			errorMessage := pc.getErrorMessage("GetFilterByTelegramUserId",
-				"QueryParser")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			return v1.ResponseError(ctf, err, http.StatusBadRequest)
-		}
-		profileMapper := &mapper.ProfileMapper{}
-		filterRequest := profileMapper.MapToFilterRequest(req, telegramUserId)
-		filterResponse, err := pc.proto.GetFilterByTelegramUserId(ctx, filterRequest)
-		if err != nil {
-			errorMessage := pc.getErrorMessage("GetFilterByTelegramUserId",
-				"proto.GetFilterByTelegramUserId")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			if e, ok := status.FromError(err); ok {
-				if e.Code() == codes.NotFound {
-					return v1.ResponseError(ctf, err, http.StatusNotFound)
-				}
-				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-			}
-			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
-		}
-		return v1.ResponseOk(ctf, filterResponse)
 	}
 }
 

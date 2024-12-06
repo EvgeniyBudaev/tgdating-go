@@ -36,12 +36,11 @@ func NewProfileRepository(l logger.Logger, db *sql.DB) *ProfileRepository {
 }
 
 func (r *ProfileRepository) Add(
-	ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*entity.ProfileEntity, error) {
+	ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*response.ResponseDto, error) {
 	birthday := p.Birthday.Format("2006-01-02")
 	query := "INSERT INTO dating.profiles (telegram_user_id, display_name, birthday, gender, location, description," +
 		" height, weight, created_at, updated_at, last_online)" +
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)" +
-		" RETURNING id"
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
 	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.DisplayName, &birthday, &p.Gender, &p.Location,
 		&p.Description, &p.Height, &p.Weight, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if row == nil {
@@ -49,19 +48,10 @@ func (r *ProfileRepository) Add(
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
-	id := uint64(0)
-	err := row.Scan(&id)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		errorMessage := r.getErrorMessage("Add", "Scan")
-		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
-		return nil, ErrNotRowFound
+	profileResponse := &response.ResponseDto{
+		Success: true,
 	}
-	if err != nil {
-		errorMessage := r.getErrorMessage("Add", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return r.FindById(ctx, id)
+	return profileResponse, nil
 }
 
 func (r *ProfileRepository) Update(
@@ -94,47 +84,21 @@ func (r *ProfileRepository) Delete(
 	return profileResponse, nil
 }
 
-func (r *ProfileRepository) FindById(ctx context.Context, id uint64) (*entity.ProfileEntity, error) {
-	p := &entity.ProfileEntity{}
-	query := "SELECT id, telegram_user_id, display_name, birthday, gender, location, description, height, weight," +
-		" created_at, updated_at, last_online" +
-		" FROM dating.profiles" +
-		" WHERE id = $1"
-	row := r.db.QueryRowContext(ctx, query, id)
-	if row == nil {
-		errorMessage := r.getErrorMessage("FindById", "QueryRowContext")
-		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
-		return nil, ErrNotRowFound
-	}
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
-		&p.Description, &p.Height, &p.Weight, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		errorMessage := r.getErrorMessage("FindById", "Scan")
-		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
-		return nil, ErrNotRowFound
-	}
-	if err != nil {
-		errorMessage := r.getErrorMessage("FindById", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return p, nil
-}
-
 func (r *ProfileRepository) FindByTelegramUserId(
 	ctx context.Context, telegramUserId string) (*entity.ProfileEntity, error) {
 	p := &entity.ProfileEntity{}
-	query := "SELECT id, telegram_user_id, display_name, birthday, gender, location, description, height, weight," +
-		" created_at, updated_at, last_online" +
-		" FROM dating.profiles" +
-		" WHERE telegram_user_id = $1"
+	query := "SELECT p.telegram_user_id, p.display_name, p.birthday, p.gender, p.location, p.description," +
+		" p.height, p.weight, p.created_at, p.updated_at, p.last_online" +
+		" FROM dating.profiles p" +
+		//" JOIN dating.profile_images pi ON p.telegram_user_id = pi.telegram_user_id" +
+		" WHERE p.telegram_user_id = $1"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId)
 	if row == nil {
 		errorMessage := r.getErrorMessage("FindByTelegramUserId", "QueryRowContext")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
+	err := row.Scan(&p.TelegramUserId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
 		&p.Description, &p.Height, &p.Weight, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("FindByTelegramUserId", "Scan")
@@ -149,7 +113,69 @@ func (r *ProfileRepository) FindByTelegramUserId(
 	return p, nil
 }
 
-func (r *ProfileRepository) SelectListByTelegramUserId(ctx context.Context,
+func (r *ProfileRepository) GetDetail(
+	ctx context.Context, telegramUserId, viewedTelegramUserId string) (*response.ProfileDetailResponseRepositoryDto, error) {
+	p := &response.ProfileDetailResponseRepositoryDto{}
+	query := "SELECT p.telegram_user_id, p.display_name, p.birthday, p.location, p.description, p.height, p.weight," +
+		" ps.is_blocked, ps.is_frozen, ps.is_online," +
+		//" (ST_DistanceSphere(ST_SetSRID(ST_MakePoint($4, $5), 4326)," +
+		//" ST_SetSRID(ST_MakePoint($2, $3),  4326)) as distance" +
+		" FROM dating.profiles p" +
+		" JOIN dating.profile_statuses ps ON p.telegram_user_id = ps.telegram_user_id" +
+		//" JOIN dating.profile_navigators ps ON p.telegram_user_id = pn.telegram_user_id" +
+		" WHERE p.telegram_user_id = $1"
+	row := r.db.QueryRowContext(ctx, query, telegramUserId)
+	if row == nil {
+		errorMessage := r.getErrorMessage("GetDetail", "QueryRowContext")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
+		return nil, ErrNotRowFound
+	}
+	err := row.Scan(&p.TelegramUserId, &p.DisplayName, &p.Birthday, &p.Location, &p.Description,
+		&p.Height, &p.Weight, &p.IsBlocked, &p.IsFrozen, &p.IsOnline)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		errorMessage := r.getErrorMessage("GetDetail", "Scan")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
+		return nil, ErrNotRowFound
+	}
+	if err != nil {
+		errorMessage := r.getErrorMessage("GetDetail", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return p, nil
+}
+
+func (r *ProfileRepository) GetShortInfo(
+	ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseDto, error) {
+	p := &response.ProfileShortInfoResponseDto{}
+	query := "SELECT p.telegram_user_id, ps.is_blocked, ps.is_frozen," +
+		" pf.search_gender, pf.looking_for, pf.age_from, pf.age_to, pf.distance, pf.page, pf.size" +
+		" FROM dating.profiles p" +
+		" JOIN dating.profile_statuses ps ON p.telegram_user_id = ps.telegram_user_id" +
+		" JOIN dating.profile_filters pf ON p.telegram_user_id = pf.telegram_user_id" +
+		" WHERE p.telegram_user_id = $1"
+	row := r.db.QueryRowContext(ctx, query, telegramUserId)
+	if row == nil {
+		errorMessage := r.getErrorMessage("GetShortInfo", "QueryRowContext")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
+		return nil, ErrNotRowFound
+	}
+	err := row.Scan(&p.TelegramUserId, &p.IsBlocked, &p.IsFrozen, &p.SearchGender, &p.LookingFor,
+		&p.AgeFrom, &p.AgeTo, &p.Distance, &p.Page, &p.Size)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		errorMessage := r.getErrorMessage("GetShortInfo", "Scan")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
+		return nil, ErrNotRowFound
+	}
+	if err != nil {
+		errorMessage := r.getErrorMessage("GetShortInfo", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return p, nil
+}
+
+func (r *ProfileRepository) SelectList(ctx context.Context,
 	pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error) {
 	telegramUserId := pr.TelegramUserId
 	searchGender := pr.SearchGender
@@ -158,21 +184,31 @@ func (r *ProfileRepository) SelectListByTelegramUserId(ctx context.Context,
 	page := pr.Page
 	size := pr.Size
 	offset := (page - 1) * size
-	distance := pr.Distance * 1000
+	distance := pr.Distance * 1000 // in meters
+	fmt.Println("pr.Distance: ", pr.Distance)
+	fmt.Println("distance: ", distance)
 	query := "WITH filtered_profiles AS (" +
-		" SELECT p.id, p.telegram_user_id, p.display_name, p.birthday, p.gender, p.location, p.description, p.height," +
-		" p.weight, ps.is_frozen, ps.is_blocked, ps.is_premium, ps.is_show_distance, ps.is_invisible, p.created_at," +
-		" p.updated_at, p.last_online," +
+		" SELECT p.id, p.telegram_user_id, p.birthday, p.gender, ps.is_blocked, ps.is_frozen," +
+		" p.created_at, p.updated_at, p.last_online," +
 		" EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) AS age," +
 		" COALESCE(" +
 		" ST_Distance(" +
 		" (SELECT location FROM dating.profile_navigators WHERE telegram_user_id = p.telegram_user_id)::geography," +
 		" ST_SetSRID(ST_Force2D(ST_MakePoint(" +
-		"(SELECT ST_X(location) FROM dating.profile_navigators WHERE telegram_user_id = $1)," +
+		" (SELECT ST_X(location) FROM dating.profile_navigators WHERE telegram_user_id = $1)," +
 		" (SELECT ST_Y(location) FROM dating.profile_navigators WHERE telegram_user_id = $1)" +
 		" )), 4326)::geography)," +
 		" NULL::numeric" +
-		" ) AS distance" +
+		" ) AS distance," +
+		" (SELECT url FROM dating.profile_images pi" +
+		" JOIN dating.profile_image_statuses pis ON pi.id = pis.id" +
+		" WHERE pi.telegram_user_id = p.telegram_user_id AND pis.is_blocked = false AND pis.is_private = false" +
+		" ORDER BY pi.created_at DESC LIMIT 1) AS url," +
+		" (CASE " +
+		" WHEN p.last_online >= NOW() AT TIME ZONE 'UTC' - INTERVAL '5 minutes' THEN true " +
+		" ELSE false" +
+		" END) AS is_online," +
+		" COUNT(*) OVER () AS total_count" +
 		" FROM dating.profiles p" +
 		" JOIN dating.profile_statuses ps ON p.telegram_user_id = ps.telegram_user_id" +
 		" LEFT JOIN dating.profile_navigators pn ON p.telegram_user_id = pn.telegram_user_id" +
@@ -182,10 +218,11 @@ func (r *ProfileRepository) SelectListByTelegramUserId(ctx context.Context,
 		" NOT EXISTS (SELECT 1 FROM dating.profile_blocks" +
 		" WHERE telegram_user_id = $1 AND blocked_telegram_user_id = p.telegram_user_id)" +
 		" )" +
-		" SELECT *" +
+		" SELECT id, telegram_user_id, birthday, gender, is_blocked, is_frozen, created_at, updated_at, last_online," +
+		" age, distance, url, is_online, total_count" +
 		" FROM filtered_profiles" +
 		" WHERE distance IS NULL OR (distance < $5 AND distance IS NOT NULL)" +
-		" ORDER BY CASE WHEN distance IS NULL THEN 1 ELSE 0 END, distance ASC, p.last_online DESC" +
+		" ORDER BY CASE WHEN distance IS NULL THEN 1 ELSE 0 END, distance ASC, last_online DESC" +
 		" LIMIT $6 OFFSET $7"
 	rows, err := r.db.QueryContext(ctx, query, telegramUserId, searchGender, ageFrom, ageTo, distance, size, offset)
 	if err != nil {
@@ -198,9 +235,8 @@ func (r *ProfileRepository) SelectListByTelegramUserId(ctx context.Context,
 	profileContent := make([]*response.ProfileListItemResponseRepositoryDto, 0)
 	for rows.Next() {
 		p := response.ProfileListItemResponseRepositoryDto{}
-		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.DisplayName, &p.Birthday, &p.Gender, &p.Location,
-			&p.Description, &p.Height, &p.Weight, &p.IsFrozen, &p.IsBlocked, &p.IsPremium,
-			&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline, &p.Age, &p.Distance)
+		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Birthday, &p.Gender, &p.IsBlocked, &p.IsFrozen,
+			&p.CreatedAt, &p.UpdatedAt, &p.LastOnline, &p.Age, &p.Distance, &p.Url, &p.IsOnline, &p.TotalEntities)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectListByTelegramUserId", "Scan")
 			r.logger.Info(errorMessage, zap.Error(ErrNotRowsFound))
@@ -225,7 +261,7 @@ func (r *ProfileRepository) getTotalEntities(
 	query := "SELECT COUNT(*)" +
 		" FROM dating.profiles p" +
 		" JOIN dating.profile_statuses ps ON p.telegram_user_id = ps.telegram_user_id" +
-		" WHERE ps.is_frozen=false AND ps.is_blocked=false AND" +
+		" WHERE ps.is_frozen = false AND ps.is_blocked = false AND" +
 		" (EXTRACT(YEAR FROM AGE(NOW(), p.birthday)) BETWEEN $3 AND $4) AND" +
 		" ($2 = 'all' OR p.gender = $2) AND p.telegram_user_id <> $1"
 	var totalEntities uint64

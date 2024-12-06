@@ -101,7 +101,8 @@ func (pm *ProfileMapper) MapToGetByTelegramUserIdRequest(
 	}
 }
 
-func (pm *ProfileMapper) MapToByTelegramUserIdResponse(r *pb.ProfileByTelegramUserIdResponse) *response.ProfileResponseDto {
+func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
+	r *pb.ProfileByTelegramUserIdResponse) *response.ProfileResponseDto {
 	var navigatorResponse *response.NavigatorResponseDto
 	if r.Navigator != nil {
 		location := &entity.PointEntity{
@@ -122,9 +123,6 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(r *pb.ProfileByTelegramUs
 				Name:           image.Name,
 				Url:            image.Url,
 				Size:           image.Size,
-				IsBlocked:      image.IsBlocked,
-				IsPrimary:      image.IsPrimary,
-				IsPrivate:      image.IsPrivate,
 				CreatedAt:      image.CreatedAt.AsTime(),
 				UpdatedAt:      image.UpdatedAt.AsTime(),
 			})
@@ -139,7 +137,6 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(r *pb.ProfileByTelegramUs
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		IsOnline:       r.IsOnline,
 		CreatedAt:      r.CreatedAt.AsTime(),
 		UpdatedAt:      r.UpdatedAt.AsTime(),
 		LastOnline:     r.LastOnline.AsTime(),
@@ -164,11 +161,12 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(r *pb.ProfileByTelegramUs
 			QueryId:         r.Telegram.QueryId,
 		},
 		Status: &response.StatusResponseDto{
-			IsFrozen:       r.Status.IsFrozen,
 			IsBlocked:      r.Status.IsBlocked,
+			IsFrozen:       r.Status.IsFrozen,
+			IsInvisible:    r.Status.IsInvisible,
+			IsOnline:       r.Status.IsOnline,
 			IsPremium:      r.Status.IsPremium,
 			IsShowDistance: r.Status.IsShowDistance,
-			IsInvisible:    r.Status.IsInvisible,
 		},
 		Images: images,
 	}
@@ -177,9 +175,15 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(r *pb.ProfileByTelegramUs
 func (pm *ProfileMapper) MapToShortInfoResponse(r *pb.ProfileShortInfoResponse) *response.ProfileShortInfoResponseDto {
 	return &response.ProfileShortInfoResponseDto{
 		TelegramUserId: r.TelegramUserId,
-		ImageUrl:       r.ImageUrl,
-		IsFrozen:       r.IsFrozen,
 		IsBlocked:      r.IsBlocked,
+		IsFrozen:       r.IsFrozen,
+		SearchGender:   r.SearchGender,
+		LookingFor:     r.LookingFor,
+		AgeFrom:        r.AgeFrom,
+		AgeTo:          r.AgeTo,
+		Distance:       r.Distance,
+		Page:           r.Page,
+		Size:           r.Size,
 	}
 }
 
@@ -226,9 +230,6 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 				Name:           image.Name,
 				Url:            image.Url,
 				Size:           image.Size,
-				IsBlocked:      image.IsBlocked,
-				IsPrimary:      image.IsPrimary,
-				IsPrivate:      image.IsPrivate,
 				CreatedAt:      image.CreatedAt.AsTime(),
 				UpdatedAt:      image.UpdatedAt.AsTime(),
 			})
@@ -243,7 +244,6 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		IsOnline:       r.IsOnline,
 		CreatedAt:      r.CreatedAt.AsTime(),
 		UpdatedAt:      r.UpdatedAt.AsTime(),
 		LastOnline:     r.LastOnline.AsTime(),
@@ -258,11 +258,12 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 			QueryId:         r.Telegram.QueryId,
 		},
 		Status: &response.StatusResponseDto{
-			IsFrozen:       r.Status.IsFrozen,
 			IsBlocked:      r.Status.IsBlocked,
+			IsFrozen:       r.Status.IsFrozen,
+			IsInvisible:    r.Status.IsInvisible,
+			IsOnline:       r.Status.IsOnline,
 			IsPremium:      r.Status.IsPremium,
 			IsShowDistance: r.Status.IsShowDistance,
-			IsInvisible:    r.Status.IsInvisible,
 		},
 		Block:  blockResponse,
 		Like:   likeResponse,
@@ -270,12 +271,9 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 	}
 }
 
-func (pm *ProfileMapper) MapToGetShortInfoRequest(
-	r *request.ProfileGetShortInfoRequestDto, telegramUserId string) *pb.ProfileGetShortInfoRequest {
+func (pm *ProfileMapper) MapToGetShortInfoRequest(telegramUserId string) *pb.ProfileGetShortInfoRequest {
 	return &pb.ProfileGetShortInfoRequest{
 		TelegramUserId: telegramUserId,
-		Latitude:       r.Latitude,
-		Longitude:      r.Longitude,
 	}
 }
 
@@ -283,6 +281,13 @@ func (pm *ProfileMapper) MapToListRequest(
 	r *request.ProfileGetListRequestDto) *pb.ProfileGetListRequest {
 	return &pb.ProfileGetListRequest{
 		TelegramUserId: r.TelegramUserId,
+		SearchGender:   r.SearchGender,
+		LookingFor:     r.LookingFor,
+		AgeFrom:        r.AgeFrom,
+		AgeTo:          r.AgeTo,
+		Distance:       r.Distance,
+		Page:           r.Page,
+		Size:           r.Size,
 		Latitude:       r.Latitude,
 		Longitude:      r.Longitude,
 	}
@@ -326,14 +331,6 @@ func (pm *ProfileMapper) MapToImageByTelegramUserIdRequest(
 func (pm *ProfileMapper) MapToImageByTelegramUserIdResponse(
 	r *pb.ImageByTelegramUserIdResponse) []byte {
 	return r.File
-}
-
-func (pm *ProfileMapper) MapToFilterRequest(r *request.FilterGetRequestDto, telegramUserId string) *pb.FilterGetRequest {
-	return &pb.FilterGetRequest{
-		TelegramUserId: telegramUserId,
-		Latitude:       r.Latitude,
-		Longitude:      r.Longitude,
-	}
 }
 
 func (pm *ProfileMapper) MapToFilterUpdateRequest(r *request.FilterUpdateRequestDto) *pb.FilterUpdateRequest {

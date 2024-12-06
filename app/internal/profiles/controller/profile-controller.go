@@ -165,11 +165,7 @@ func (pc *ProfileController) GetProfileDetail(
 func (pc *ProfileController) GetProfileShortInfo(
 	ctx context.Context, in *pb.ProfileGetShortInfoRequest) (*pb.ProfileShortInfoResponse, error) {
 	pc.logger.Info("GET /api/v1/profiles/short/:telegramUserId")
-	req := &request.ProfileGetShortInfoRequestDto{
-		Latitude:  in.Latitude,
-		Longitude: in.Longitude,
-	}
-	profileShortInfo, err := pc.service.GetProfileShortInfo(ctx, in.TelegramUserId, req)
+	profileShortInfo, err := pc.service.GetProfileShortInfo(ctx, in.TelegramUserId)
 	if err != nil {
 		if errors.Is(err, psql.ErrNotRowFound) {
 			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
@@ -186,6 +182,13 @@ func (pc *ProfileController) GetProfileList(
 	pc.logger.Info("GET api/v1/profiles/list")
 	req := &request.ProfileGetListRequestDto{
 		TelegramUserId: in.TelegramUserId,
+		SearchGender:   in.SearchGender,
+		LookingFor:     in.LookingFor,
+		AgeFrom:        in.AgeFrom,
+		AgeTo:          in.AgeTo,
+		Distance:       in.Distance,
+		Page:           in.Page,
+		Size:           in.Size,
 		Latitude:       in.Latitude,
 		Longitude:      in.Longitude,
 	}
@@ -217,7 +220,7 @@ func (pc *ProfileController) GetImageByTelegramUserId(
 	return fileResponse, nil
 }
 
-func (pc *ProfileController) GetImageById(ctx context.Context, in *pb.GetImageByIdRequest) (*pb.Image, error) {
+func (pc *ProfileController) GetImageById(ctx context.Context, in *pb.GetImageByIdRequest) (*pb.ImageResponse, error) {
 	pc.logger.Info("GET /api/v1/profiles/images/:id")
 	imageById, err := pc.service.GetImageById(ctx, in.Id)
 	if err != nil {
@@ -242,25 +245,6 @@ func (pc *ProfileController) DeleteImage(
 		Success: fileDeleted.Success,
 	}
 	return fileResponse, nil
-}
-
-func (pc *ProfileController) GetFilterByTelegramUserId(
-	ctx context.Context, in *pb.FilterGetRequest) (*pb.FilterGetResponse, error) {
-	pc.logger.Info("GET /api/v1/profiles/filter/:telegramUserId")
-	req := &request.FilterGetRequestDto{
-		Latitude:  in.Latitude,
-		Longitude: in.Longitude,
-	}
-	profileFilter, err := pc.service.GetFilterByTelegramUserId(ctx, in.TelegramUserId, req)
-	if err != nil {
-		if errors.Is(err, psql.ErrNotRowFound) {
-			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
-		}
-		return nil, err
-	}
-	profileMapper := &mapper.ProfileControllerMapper{}
-	filterResponse := profileMapper.MapControllerToFilterResponse(profileFilter)
-	return filterResponse, nil
 }
 
 func (pc *ProfileController) UpdateFilter(

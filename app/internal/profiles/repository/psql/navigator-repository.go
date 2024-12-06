@@ -123,7 +123,7 @@ func (r *NavigatorRepository) FindDistance(ctx context.Context, pe *entity.Navig
 	var latitude sql.NullFloat64
 	query := "SELECT id, telegram_user_id, ST_X(location) as longitude, ST_Y(location) as latitude, created_at," +
 		" updated_at," +
-		" ST_DistanceSphere(ST_SetSRID(ST_MakePoint($4, $5),  4326)," +
+		" ST_DistanceSphere(ST_SetSRID(ST_MakePoint($4, $5), 4326)," +
 		" ST_SetSRID(ST_MakePoint($2, $3),  4326)) as distance" +
 		" FROM dating.profile_navigators" +
 		" WHERE telegram_user_id = $1"

@@ -8,12 +8,12 @@ import (
 )
 
 type ProfileRepository interface {
-	Add(ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*entity.ProfileEntity, error)
+	Add(ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*response.ResponseDto, error)
 	Update(ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*entity.ProfileEntity, error)
 	Delete(ctx context.Context, p *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
-	FindById(ctx context.Context, id uint64) (*entity.ProfileEntity, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.ProfileEntity, error)
-	SelectListByTelegramUserId(ctx context.Context,
+	GetShortInfo(ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseDto, error)
+	SelectList(ctx context.Context,
 		pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error)
 	UpdateLastOnline(ctx context.Context, p *request.ProfileUpdateLastOnlineRequestRepositoryDto) error
 }
@@ -41,14 +41,18 @@ type TelegramRepository interface {
 }
 
 type ImageRepository interface {
-	Add(ctx context.Context, p *request.ImageAddRequestRepositoryDto) (*entity.ImageEntity, error)
-	Update(ctx context.Context, p *request.ImageUpdateRequestRepositoryDto) (*entity.ImageEntity, error)
-	Delete(ctx context.Context, p *request.ImageDeleteRequestRepositoryDto) (*response.ResponseDto, error)
-	FindById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error)
-	FindLastByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.ImageEntity, error)
-	SelectListAllByTelegramUserId(ctx context.Context, telegramUserId string) ([]*entity.ImageEntity, error)
-	SelectListPublicByTelegramUserId(ctx context.Context, telegramUserId string) ([]*entity.ImageEntity, error)
-	SelectListByTelegramUserId(ctx context.Context, telegramUserId string) ([]*entity.ImageEntity, error)
+	Add(ctx context.Context, p *request.ImageAddRequestRepositoryDto) (uint64, error)
+	Delete(ctx context.Context, id uint64) (*response.ResponseDto, error)
+	FindById(ctx context.Context, imageId uint64) (*response.ImageResponseRepositoryDto, error)
+	FindLastByTelegramUserId(ctx context.Context, telegramUserId string) (*response.ImageResponseDto, error)
+	SelectListAllByTelegramUserId(ctx context.Context, telegramUserId string) ([]*response.ImageResponseDto, error)
+	SelectListPublicByTelegramUserId(ctx context.Context, telegramUserId string) ([]*response.ImageResponseDto, error)
+	SelectListByTelegramUserId(ctx context.Context, telegramUserId string) ([]*response.ImageResponseDto, error)
+}
+
+type ImageStatusRepository interface {
+	Add(ctx context.Context, p *request.ImageStatusAddRequestRepositoryDto) (*response.ResponseDto, error)
+	FindById(ctx context.Context, id uint64) (*entity.ImageStatusEntity, error)
 }
 
 type LikeRepository interface {

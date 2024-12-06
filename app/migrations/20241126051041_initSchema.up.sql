@@ -21,11 +21,12 @@ CREATE TABLE IF NOT EXISTS dating.profile_statuses
 (
     id               BIGSERIAL    NOT NULL PRIMARY KEY,
     telegram_user_id VARCHAR(255) NOT NULL,
-    is_frozen        BOOL         NOT NULL,
     is_blocked       BOOL         NOT NULL,
+    is_frozen        BOOL         NOT NULL,
+    is_invisible     BOOL         NOT NULL,
+    is_online        BOOL         NOT NULL,
     is_premium       BOOL         NOT NULL,
     is_show_distance BOOL         NOT NULL,
-    is_invisible     BOOL         NOT NULL,
     created_at       TIMESTAMP    NOT NULL,
     updated_at       TIMESTAMP    NOT NULL,
     CONSTRAINT fk_profile_images_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
@@ -38,12 +39,21 @@ CREATE TABLE IF NOT EXISTS dating.profile_images
     name             VARCHAR(255),
     url              VARCHAR,
     size             BIGINT,
+    created_at       TIMESTAMP    NOT NULL,
+    updated_at       TIMESTAMP    NOT NULL,
+    CONSTRAINT fk_profile_images_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS dating.profile_image_statuses
+(
+    id               BIGSERIAL    NOT NULL PRIMARY KEY,
+    image_id         BIGINT        NOT NULL,
     is_blocked       BOOL         NOT NULL,
     is_primary       BOOL         NOT NULL,
     is_private       BOOL         NOT NULL,
     created_at       TIMESTAMP    NOT NULL,
     updated_at       TIMESTAMP    NOT NULL,
-    CONSTRAINT fk_profile_images_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
+    CONSTRAINT fk_profile_image_statuses_id FOREIGN KEY (image_id) REFERENCES dating.profile_images (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS dating.profile_navigators

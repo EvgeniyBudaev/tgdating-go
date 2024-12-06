@@ -6,16 +6,17 @@ import (
 )
 
 type UnitOfWork struct {
-	tx                  *sql.Tx
-	blockRepository     BlockRepository
-	complaintRepository ComplaintRepository
-	filterRepository    FilterRepository
-	imageRepository     ImageRepository
-	likeRepository      LikeRepository
-	navigatorRepository NavigatorRepository
-	profileRepository   ProfileRepository
-	telegramRepository  TelegramRepository
-	statusRepository    StatusRepository
+	tx                    *sql.Tx
+	blockRepository       BlockRepository
+	complaintRepository   ComplaintRepository
+	filterRepository      FilterRepository
+	imageRepository       ImageRepository
+	imageStatusRepository ImageStatusRepository
+	likeRepository        LikeRepository
+	navigatorRepository   NavigatorRepository
+	profileRepository     ProfileRepository
+	telegramRepository    TelegramRepository
+	statusRepository      StatusRepository
 }
 
 func NewUnitOfWork(
@@ -24,22 +25,24 @@ func NewUnitOfWork(
 	cr ComplaintRepository,
 	fr FilterRepository,
 	ir ImageRepository,
+	isr ImageStatusRepository,
 	lr LikeRepository,
 	nr NavigatorRepository,
 	pr ProfileRepository,
 	tr TelegramRepository,
 	sr StatusRepository) *UnitOfWork {
 	return &UnitOfWork{
-		tx:                  tx,
-		blockRepository:     br,
-		complaintRepository: cr,
-		filterRepository:    fr,
-		imageRepository:     ir,
-		likeRepository:      lr,
-		navigatorRepository: nr,
-		profileRepository:   pr,
-		telegramRepository:  tr,
-		statusRepository:    sr,
+		tx:                    tx,
+		blockRepository:       br,
+		complaintRepository:   cr,
+		filterRepository:      fr,
+		imageRepository:       ir,
+		imageStatusRepository: isr,
+		likeRepository:        lr,
+		navigatorRepository:   nr,
+		profileRepository:     pr,
+		telegramRepository:    tr,
+		statusRepository:      sr,
 	}
 }
 
@@ -57,6 +60,10 @@ func (unit *UnitOfWork) FilterRepository() FilterRepository {
 
 func (unit *UnitOfWork) ImageRepository() ImageRepository {
 	return unit.imageRepository
+}
+
+func (unit *UnitOfWork) ImageStatusRepository() ImageStatusRepository {
+	return unit.imageStatusRepository
 }
 
 func (unit *UnitOfWork) LikeRepository() LikeRepository {

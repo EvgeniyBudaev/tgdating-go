@@ -12,7 +12,7 @@ type ProfileMapper struct {
 
 func (pm *ProfileMapper) MapToResponse(
 	pe *entity.ProfileEntity, nr *response.NavigatorResponseDto, fr *response.FilterResponseDto,
-	tr *response.TelegramResponseDto, sr *response.StatusResponseDto, il []*entity.ImageEntity, isOnline bool,
+	tr *response.TelegramResponseDto, sr *response.StatusResponseDto, il []*response.ImageResponseDto,
 ) *response.ProfileResponseDto {
 	return &response.ProfileResponseDto{
 		TelegramUserId: pe.TelegramUserId,
@@ -23,7 +23,6 @@ func (pm *ProfileMapper) MapToResponse(
 		Description:    pe.Description,
 		Height:         pe.Height,
 		Weight:         pe.Weight,
-		IsOnline:       isOnline,
 		CreatedAt:      pe.CreatedAt,
 		UpdatedAt:      pe.UpdatedAt,
 		LastOnline:     pe.LastOnline,
@@ -38,7 +37,7 @@ func (pm *ProfileMapper) MapToResponse(
 func (pm *ProfileMapper) MapToDetailResponse(
 	pe *entity.ProfileEntity, nr *response.NavigatorDetailResponseDto, br *response.BlockResponseDto,
 	lr *response.LikeResponseDto, tr *response.TelegramResponseDto, sr *response.StatusResponseDto,
-	il []*entity.ImageEntity, isOnline bool,
+	il []*response.ImageResponseDto,
 ) *response.ProfileDetailResponseDto {
 	return &response.ProfileDetailResponseDto{
 		TelegramUserId: pe.TelegramUserId,
@@ -49,7 +48,6 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		Description:    pe.Description,
 		Height:         pe.Height,
 		Weight:         pe.Weight,
-		IsOnline:       isOnline,
 		CreatedAt:      pe.CreatedAt,
 		UpdatedAt:      pe.UpdatedAt,
 		LastOnline:     pe.LastOnline,
@@ -59,16 +57,6 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		Block:          br,
 		Like:           lr,
 		Images:         il,
-	}
-}
-
-func (pm *ProfileMapper) MapToShortInfoResponse(
-	pe *entity.ProfileEntity, sr *response.StatusResponseDto, imageUrl string) *response.ProfileShortInfoResponseDto {
-	return &response.ProfileShortInfoResponseDto{
-		TelegramUserId: pe.TelegramUserId,
-		ImageUrl:       imageUrl,
-		IsFrozen:       sr.IsFrozen,
-		IsBlocked:      sr.IsBlocked,
 	}
 }
 
@@ -112,7 +100,7 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 }
 
 func (pm *ProfileMapper) MapToListRequest(
-	pr *entity.FilterEntity) *request.ProfileGetListRequestRepositoryDto {
+	pr *request.ProfileGetListRequestDto) *request.ProfileGetListRequestRepositoryDto {
 	return &request.ProfileGetListRequestRepositoryDto{
 		TelegramUserId: pr.TelegramUserId,
 		SearchGender:   pr.SearchGender,

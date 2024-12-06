@@ -14,7 +14,6 @@ type ProfileResponseDto struct {
 	Description    string                `json:"description"`
 	Height         float64               `json:"height"`
 	Weight         float64               `json:"weight"`
-	IsOnline       bool                  `json:"isOnline"`
 	CreatedAt      time.Time             `json:"createdAt"`
 	UpdatedAt      time.Time             `json:"updatedAt"`
 	LastOnline     time.Time             `json:"lastOnline"`

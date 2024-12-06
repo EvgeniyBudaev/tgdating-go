@@ -31,7 +31,6 @@ const (
 	Profile_GetImageByTelegramUserId_FullMethodName   = "/protobuf.Profile/GetImageByTelegramUserId"
 	Profile_GetImageById_FullMethodName               = "/protobuf.Profile/GetImageById"
 	Profile_DeleteImage_FullMethodName                = "/protobuf.Profile/DeleteImage"
-	Profile_GetFilterByTelegramUserId_FullMethodName  = "/protobuf.Profile/GetFilterByTelegramUserId"
 	Profile_UpdateFilter_FullMethodName               = "/protobuf.Profile/UpdateFilter"
 	Profile_AddBlock_FullMethodName                   = "/protobuf.Profile/AddBlock"
 	Profile_AddLike_FullMethodName                    = "/protobuf.Profile/AddLike"
@@ -54,9 +53,8 @@ type ProfileClient interface {
 	GetProfileShortInfo(ctx context.Context, in *ProfileGetShortInfoRequest, opts ...grpc.CallOption) (*ProfileShortInfoResponse, error)
 	GetProfileList(ctx context.Context, in *ProfileGetListRequest, opts ...grpc.CallOption) (*ProfileListResponse, error)
 	GetImageByTelegramUserId(ctx context.Context, in *GetImageByTelegramUserIdRequest, opts ...grpc.CallOption) (*ImageByTelegramUserIdResponse, error)
-	GetImageById(ctx context.Context, in *GetImageByIdRequest, opts ...grpc.CallOption) (*Image, error)
+	GetImageById(ctx context.Context, in *GetImageByIdRequest, opts ...grpc.CallOption) (*ImageResponse, error)
 	DeleteImage(ctx context.Context, in *ImageDeleteRequest, opts ...grpc.CallOption) (*ImageDeleteResponse, error)
-	GetFilterByTelegramUserId(ctx context.Context, in *FilterGetRequest, opts ...grpc.CallOption) (*FilterGetResponse, error)
 	UpdateFilter(ctx context.Context, in *FilterUpdateRequest, opts ...grpc.CallOption) (*FilterUpdateResponse, error)
 	AddBlock(ctx context.Context, in *BlockAddRequest, opts ...grpc.CallOption) (*BlockAddResponse, error)
 	AddLike(ctx context.Context, in *LikeAddRequest, opts ...grpc.CallOption) (*LikeAddResponse, error)
@@ -163,8 +161,8 @@ func (c *profileClient) GetImageByTelegramUserId(ctx context.Context, in *GetIma
 	return out, nil
 }
 
-func (c *profileClient) GetImageById(ctx context.Context, in *GetImageByIdRequest, opts ...grpc.CallOption) (*Image, error) {
-	out := new(Image)
+func (c *profileClient) GetImageById(ctx context.Context, in *GetImageByIdRequest, opts ...grpc.CallOption) (*ImageResponse, error) {
+	out := new(ImageResponse)
 	err := c.cc.Invoke(ctx, Profile_GetImageById_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -175,15 +173,6 @@ func (c *profileClient) GetImageById(ctx context.Context, in *GetImageByIdReques
 func (c *profileClient) DeleteImage(ctx context.Context, in *ImageDeleteRequest, opts ...grpc.CallOption) (*ImageDeleteResponse, error) {
 	out := new(ImageDeleteResponse)
 	err := c.cc.Invoke(ctx, Profile_DeleteImage_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *profileClient) GetFilterByTelegramUserId(ctx context.Context, in *FilterGetRequest, opts ...grpc.CallOption) (*FilterGetResponse, error) {
-	out := new(FilterGetResponse)
-	err := c.cc.Invoke(ctx, Profile_GetFilterByTelegramUserId_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -258,9 +247,8 @@ type ProfileServer interface {
 	GetProfileShortInfo(context.Context, *ProfileGetShortInfoRequest) (*ProfileShortInfoResponse, error)
 	GetProfileList(context.Context, *ProfileGetListRequest) (*ProfileListResponse, error)
 	GetImageByTelegramUserId(context.Context, *GetImageByTelegramUserIdRequest) (*ImageByTelegramUserIdResponse, error)
-	GetImageById(context.Context, *GetImageByIdRequest) (*Image, error)
+	GetImageById(context.Context, *GetImageByIdRequest) (*ImageResponse, error)
 	DeleteImage(context.Context, *ImageDeleteRequest) (*ImageDeleteResponse, error)
-	GetFilterByTelegramUserId(context.Context, *FilterGetRequest) (*FilterGetResponse, error)
 	UpdateFilter(context.Context, *FilterUpdateRequest) (*FilterUpdateResponse, error)
 	AddBlock(context.Context, *BlockAddRequest) (*BlockAddResponse, error)
 	AddLike(context.Context, *LikeAddRequest) (*LikeAddResponse, error)
@@ -304,14 +292,11 @@ func (UnimplementedProfileServer) GetProfileList(context.Context, *ProfileGetLis
 func (UnimplementedProfileServer) GetImageByTelegramUserId(context.Context, *GetImageByTelegramUserIdRequest) (*ImageByTelegramUserIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetImageByTelegramUserId not implemented")
 }
-func (UnimplementedProfileServer) GetImageById(context.Context, *GetImageByIdRequest) (*Image, error) {
+func (UnimplementedProfileServer) GetImageById(context.Context, *GetImageByIdRequest) (*ImageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetImageById not implemented")
 }
 func (UnimplementedProfileServer) DeleteImage(context.Context, *ImageDeleteRequest) (*ImageDeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteImage not implemented")
-}
-func (UnimplementedProfileServer) GetFilterByTelegramUserId(context.Context, *FilterGetRequest) (*FilterGetResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFilterByTelegramUserId not implemented")
 }
 func (UnimplementedProfileServer) UpdateFilter(context.Context, *FilterUpdateRequest) (*FilterUpdateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFilter not implemented")
@@ -560,24 +545,6 @@ func _Profile_DeleteImage_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Profile_GetFilterByTelegramUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FilterGetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ProfileServer).GetFilterByTelegramUserId(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Profile_GetFilterByTelegramUserId_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProfileServer).GetFilterByTelegramUserId(ctx, req.(*FilterGetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Profile_UpdateFilter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FilterUpdateRequest)
 	if err := dec(in); err != nil {
@@ -740,10 +707,6 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteImage",
 			Handler:    _Profile_DeleteImage_Handler,
-		},
-		{
-			MethodName: "GetFilterByTelegramUserId",
-			Handler:    _Profile_GetFilterByTelegramUserId_Handler,
 		},
 		{
 			MethodName: "UpdateFilter",

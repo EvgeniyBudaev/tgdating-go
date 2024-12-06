@@ -8,7 +8,7 @@ import (
 )
 
 type ProfileService interface {
-	AddProfile(ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ProfileAddResponseDto, error)
+	AddProfile(ctx context.Context, pr *request.ProfileAddRequestDto) (*response.ResponseDto, error)
 	UpdateProfile(ctx context.Context, pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error)
 	FreezeProfile(ctx context.Context, pr *request.ProfileFreezeRequestDto) (*response.ResponseDto, error)
 	RestoreProfile(ctx context.Context, pr *request.ProfileRestoreRequestDto) (*response.ResponseDto, error)
@@ -17,14 +17,11 @@ type ProfileService interface {
 		pr *request.ProfileGetByTelegramUserIdRequestDto) (*response.ProfileResponseDto, error)
 	GetProfileDetail(ctx context.Context, telegramUserId string,
 		pr *request.ProfileGetDetailRequestDto) (*response.ProfileDetailResponseDto, error)
-	GetProfileShortInfo(ctx context.Context, telegramUserId string,
-		pr *request.ProfileGetShortInfoRequestDto) (*response.ProfileShortInfoResponseDto, error)
+	GetProfileShortInfo(ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseDto, error)
 	GetProfileList(ctx context.Context, pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error)
 	GetImageByTelegramUserId(ctx context.Context, telegramUserId, fileName string) ([]byte, error)
-	GetImageById(ctx context.Context, imageId uint64) (*entity.ImageEntity, error)
+	GetImageById(ctx context.Context, imageId uint64) (*response.ImageResponseDto, error)
 	DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error)
-	GetFilterByTelegramUserId(
-		ctx context.Context, telegramUserId string, fr *request.FilterGetRequestDto) (*response.FilterResponseDto, error)
 	UpdateFilter(ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error)
 	AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*entity.BlockEntity, error)
 	AddLike(ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error)

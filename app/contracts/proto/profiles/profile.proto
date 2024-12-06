@@ -12,17 +12,21 @@ message FileMetadata {
   bytes content = 3;   // Содержимое файла в виде массива байтов
 }
 
-message Image {
+message ImageStatusResponse {
+  bool isBlocked = 1; // заблокировано изображение да/нет
+  bool isPrimary = 2; // изображение является основным да/нет
+  bool isPrivate = 3; // изображение является приватным да/нет
+}
+
+message ImageResponse {
   uint64 id = 1; // id изображения
   string telegramUserId = 2; // id пользователя в телеграм
   string name = 3; // название файла
   string url = 4; // url файла
   int64 size = 5; // Размер файла в байтах
-  bool isBlocked = 6; // заблокировано изображение да/нет
-  bool isPrimary = 7; // изображение является основным да/нет
-  bool isPrivate = 8; // изображение является приватным да/нет
-  google.protobuf.Timestamp createdAt = 9; // дата создания
-  google.protobuf.Timestamp updatedAt = 10; // дата обновления
+  ImageStatusResponse status = 6; // статусы изображений
+  google.protobuf.Timestamp createdAt = 7; // дата создания
+  google.protobuf.Timestamp updatedAt = 8; // дата обновления
 }
 
 message Point {
@@ -60,11 +64,12 @@ message TelegramResponse {
 }
 
 message StatusResponse {
-  bool isFrozen = 1; // заморожен пользователь да/нет
-  bool isBlocked = 2; // заблокирован пользователь да/нет
-  bool isPremium = 3; // наличие премиум аакаунта да/нет
-  bool isShowDistance = 4; // показывать дистанцию до текущего пользваотеля да/нет
-  bool isInvisible = 5; // неведимка да/нет
+  bool isBlocked = 1; // заблокирован пользователь да/нет
+  bool isFrozen = 2; // заморожен пользователь да/нет
+  bool isInvisible = 3; // неведимка да/нет
+  bool isOnline = 4; // онлайн да/нет
+  bool isPremium = 5; // наличие премиум аакаунта да/нет
+  bool isShowDistance = 6; // показывать дистанцию до текущего пользваотеля да/нет
 }
 
 message BlockResponse {
@@ -108,7 +113,7 @@ message ProfileAddRequest {
 }
 
 message ProfileAddResponse {
-  string telegramUserId = 1; // id пользователя в телеграм
+  bool success = 1; // успешно добавлен да/нет
 }
 
 message ProfileUpdateRequest {
@@ -178,15 +183,14 @@ message ProfileByTelegramUserIdResponse {
   string description = 6; // описание
   double height = 7; // рост
   double weight = 8; // вес
-  bool isOnline = 9; // пользователь онлайн да/нет
-  google.protobuf.Timestamp createdAt = 10; // дата создания
-  google.protobuf.Timestamp updatedAt = 11; // дата обновления
-  google.protobuf.Timestamp lastOnline = 12; // дата последнего входа в систему
-  NavigatorResponse navigator = 13; // объект навигатор
-  FilterResponse filter = 14; // объект фильтр
-  TelegramResponse telegram = 15; // объект телеграм
-  StatusResponse status = 16; // статус пользователя
-  repeated Image images = 17; // список изображений
+  google.protobuf.Timestamp createdAt = 9; // дата создания
+  google.protobuf.Timestamp updatedAt = 10; // дата обновления
+  google.protobuf.Timestamp lastOnline = 11; // дата последнего входа в систему
+  NavigatorResponse navigator = 12; // объект навигатор
+  FilterResponse filter = 13; // объект фильтр
+  TelegramResponse telegram = 14; // объект телеграм
+  StatusResponse status = 15; // статус пользователя
+  repeated ImageResponse images = 16; // список изображений
 }
 
 message ProfileGetDetailRequest {
@@ -205,35 +209,45 @@ message ProfileDetailResponse {
   string description = 6; // описание
   double height = 7; // рост
   double weight = 8; // вес
-  bool isOnline = 9; // пользователь онлайн да/нет
-  google.protobuf.Timestamp createdAt = 10; // дата создания
-  google.protobuf.Timestamp updatedAt = 11; // дата обновления
-  google.protobuf.Timestamp lastOnline = 12; // дата последнего входа в систему
-  NavigatorDetailResponse navigator = 13; // объект навигатор
-  TelegramResponse telegram = 14; // объект телеграм
-  StatusResponse status = 15; // статус пользователя
-  BlockResponse block = 16; // объект блок
-  LikeResponse like = 17; //  объект дайк
-  repeated Image images = 18; // список изображений
+  google.protobuf.Timestamp createdAt = 9; // дата создания
+  google.protobuf.Timestamp updatedAt = 10; // дата обновления
+  google.protobuf.Timestamp lastOnline = 11; // дата последнего входа в систему
+  NavigatorDetailResponse navigator = 12; // объект навигатор
+  TelegramResponse telegram = 13; // объект телеграм
+  StatusResponse status = 14; // статус пользователя
+  BlockResponse block = 15; // объект блок
+  LikeResponse like = 16; //  объект дайк
+  repeated ImageResponse images = 17; // список изображений
 }
 
 message ProfileGetShortInfoRequest {
   string telegramUserId = 1; // id пользователя в телеграм
-  optional double latitude = 2; // широта
-  optional double longitude = 3; // долгота
 }
 
 message ProfileShortInfoResponse {
   string telegramUserId = 1; // id пользователя в телеграм
-  string imageUrl = 2; // url освного изображения
+  bool isBlocked = 2; // заблокирован пользователь да/нет
   bool isFrozen = 3; // заморожен пользователь да/нет
-  bool isBlocked = 4; // заблокирован пользователь да/нет
+  string searchGender = 4; // поиск по половому признаку
+  string lookingFor = 5; // цель поиска
+  uint64 ageFrom = 6; // возраст от
+  uint64 ageTo = 7; // возраст до
+  double distance = 8; // дистанция
+  uint64 page = 9; // номер текущей страницы
+  uint64 size = 10; // количество элементов на странице
 }
 
 message ProfileGetListRequest {
   string telegramUserId = 1; // id пользователя в телеграм
-  optional double latitude = 2; // широта
-  optional double longitude = 3; // долгота
+  string searchGender = 2; // поиск по половому признаку
+  string lookingFor = 3; // цель поиска
+  uint64 ageFrom = 4; // возраст от
+  uint64 ageTo = 5; // возраст до
+  double distance = 6; // дистанция
+  uint64 page = 7; // номер текущей страницы
+  uint64 size = 8; // количество элементов на странице
+  optional double latitude = 9; // широта
+  optional double longitude = 10; // долгота
 }
 
 message ProfileListItemResponse {
@@ -273,23 +287,6 @@ message ImageDeleteRequest {
 
 message ImageDeleteResponse {
   bool success = 1; // успешно удаление файла да/нет
-}
-
-message FilterGetRequest {
-  string telegramUserId = 1; // id пользователя в телеграм
-  optional double latitude = 2; // широта
-  optional double longitude = 3; // долгота
-}
-
-message FilterGetResponse {
-  string telegramUserId = 1; // id пользователя в телеграм
-  string searchGender = 2; // поиск по половому признаку
-  string lookingFor = 3; // цель поиска
-  uint64 ageFrom = 4; // возраст от
-  uint64 ageTo = 5; // возраст до
-  double distance = 6; // дистанция
-  uint64 page = 7; // номер текущей страницы
-  uint64 size = 8; // количество элементов на странице
 }
 
 message FilterUpdateRequest {
@@ -394,9 +391,8 @@ service Profile {
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю
   rpc GetProfileList(ProfileGetListRequest) returns (ProfileListResponse); // получение списка профилей
   rpc GetImageByTelegramUserId(GetImageByTelegramUserIdRequest) returns (ImageByTelegramUserIdResponse); // получение файла
-  rpc GetImageById(GetImageByIdRequest) returns (Image); // получение изображения по id
+  rpc GetImageById(GetImageByIdRequest) returns (ImageResponse); // получение изображения по id
   rpc DeleteImage(ImageDeleteRequest) returns (ImageDeleteResponse); // удаление файла
-  rpc GetFilterByTelegramUserId(FilterGetRequest) returns (FilterGetResponse); // получение данных фильтра
   rpc UpdateFilter(FilterUpdateRequest) returns (FilterUpdateResponse); // получение данных фильтра
   rpc AddBlock(BlockAddRequest) returns (BlockAddResponse); // добавить пользователя в блок лист
   rpc AddLike(LikeAddRequest) returns (LikeAddResponse); // поставить лайк
