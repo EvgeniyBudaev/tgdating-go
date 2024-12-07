@@ -16,8 +16,8 @@ func (pm *BlockMapper) MapToAddRequest(
 		TelegramUserId:        pr.TelegramUserId,
 		BlockedTelegramUserId: pr.BlockedTelegramUserId,
 		IsBlocked:             true,
-		CreatedAt:             time.Now(),
-		UpdatedAt:             time.Now(),
+		CreatedAt:             time.Now().UTC(),
+		UpdatedAt:             time.Now().UTC(),
 	}
 }
 

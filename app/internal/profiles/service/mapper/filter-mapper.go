@@ -35,8 +35,8 @@ func (pm *FilterMapper) MapToAddRequest(
 		Distance:       pr.Distance,
 		Page:           pr.Page,
 		Size:           pr.Size,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		CreatedAt:      time.Now().UTC(),
+		UpdatedAt:      time.Now().UTC(),
 	}
 }
 
@@ -47,7 +47,7 @@ func (pm *FilterMapper) MapToUpdateRequest(
 		SearchGender:   fr.SearchGender,
 		AgeFrom:        fr.AgeFrom,
 		AgeTo:          fr.AgeTo,
-		UpdatedAt:      time.Now(),
+		UpdatedAt:      time.Now().UTC(),
 	}
 }
 
@@ -59,6 +59,6 @@ func (pm *FilterMapper) MapProfileToUpdateRequest(
 		LookingFor:     pr.LookingFor,
 		AgeFrom:        pr.AgeFrom,
 		AgeTo:          pr.AgeTo,
-		UpdatedAt:      time.Now(),
+		UpdatedAt:      time.Now().UTC(),
 	}
 }

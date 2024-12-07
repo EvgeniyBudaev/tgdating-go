@@ -221,17 +221,13 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 			UpdatedAt:           r.Like.UpdatedAt.AsTime(),
 		}
 	}
-	images := make([]*entity.ImageEntity, 0)
+	images := make([]*response.ImageResponseDto, 0)
 	if len(r.Images) > 0 {
 		for _, image := range r.Images {
-			images = append(images, &entity.ImageEntity{
-				Id:             image.Id,
-				TelegramUserId: image.TelegramUserId,
-				Name:           image.Name,
-				Url:            image.Url,
-				Size:           image.Size,
-				CreatedAt:      image.CreatedAt.AsTime(),
-				UpdatedAt:      image.UpdatedAt.AsTime(),
+			images = append(images, &response.ImageResponseDto{
+				Id:   image.Id,
+				Name: image.Name,
+				Url:  image.Url,
 			})
 		}
 	}
@@ -239,24 +235,11 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
 		Birthday:       r.Birthday.AsTime(),
-		Gender:         r.Gender,
 		Location:       r.Location,
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		CreatedAt:      r.CreatedAt.AsTime(),
-		UpdatedAt:      r.UpdatedAt.AsTime(),
-		LastOnline:     r.LastOnline.AsTime(),
 		Navigator:      navigatorResponse,
-		Telegram: &response.TelegramResponseDto{
-			UserId:          r.Telegram.UserId,
-			Username:        r.Telegram.Username,
-			FirstName:       r.Telegram.FirstName,
-			LastName:        r.Telegram.LastName,
-			LanguageCode:    r.Telegram.LanguageCode,
-			AllowsWriteToPm: r.Telegram.AllowsWriteToPm,
-			QueryId:         r.Telegram.QueryId,
-		},
 		Status: &response.StatusResponseDto{
 			IsBlocked:      r.Status.IsBlocked,
 			IsFrozen:       r.Status.IsFrozen,

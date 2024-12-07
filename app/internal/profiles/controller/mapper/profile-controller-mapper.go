@@ -98,22 +98,10 @@ func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
 	images := make([]*pb.ImageResponse, 0)
 	if len(r.Images) > 0 {
 		for _, image := range r.Images {
-			createdAtImageTimestamp := timestamppb.New(image.CreatedAt)
-			updatedAtImageTimestamp := timestamppb.New(image.UpdatedAt)
-			status := &pb.ImageStatusResponse{
-				IsBlocked: image.Status.IsBlocked,
-				IsPrimary: image.Status.IsPrimary,
-				IsPrivate: image.Status.IsPrivate,
-			}
 			images = append(images, &pb.ImageResponse{
-				Id:             image.Id,
-				TelegramUserId: image.TelegramUserId,
-				Name:           image.Name,
-				Url:            image.Url,
-				Size:           image.Size,
-				Status:         status,
-				CreatedAt:      createdAtImageTimestamp,
-				UpdatedAt:      updatedAtImageTimestamp,
+				Id:   image.Id,
+				Name: image.Name,
+				Url:  image.Url,
 			})
 		}
 	}
@@ -164,9 +152,6 @@ func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
 func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 	r *response.ProfileDetailResponseDto) *pb.ProfileDetailResponse {
 	birthdayTimestamp := timestamppb.New(r.Birthday)
-	createdAtTimestamp := timestamppb.New(r.CreatedAt)
-	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
-	lastOnlineTimestamp := timestamppb.New(r.LastOnline)
 	var navigatorResponse *pb.NavigatorDetailResponse
 	if r.Navigator != nil {
 		navigatorResponse = &pb.NavigatorDetailResponse{
@@ -195,22 +180,10 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 	images := make([]*pb.ImageResponse, 0)
 	if len(r.Images) > 0 {
 		for _, image := range r.Images {
-			createdAtImageTimestamp := timestamppb.New(image.CreatedAt)
-			updatedAtImageTimestamp := timestamppb.New(image.UpdatedAt)
-			status := &pb.ImageStatusResponse{
-				IsBlocked: image.Status.IsBlocked,
-				IsPrimary: image.Status.IsPrimary,
-				IsPrivate: image.Status.IsPrivate,
-			}
 			images = append(images, &pb.ImageResponse{
-				Id:             image.Id,
-				TelegramUserId: image.TelegramUserId,
-				Name:           image.Name,
-				Url:            image.Url,
-				Size:           image.Size,
-				Status:         status,
-				CreatedAt:      createdAtImageTimestamp,
-				UpdatedAt:      updatedAtImageTimestamp,
+				Id:   image.Id,
+				Name: image.Name,
+				Url:  image.Url,
 			})
 		}
 	}
@@ -218,24 +191,11 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
 		Birthday:       birthdayTimestamp,
-		Gender:         r.Gender,
 		Location:       r.Location,
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		CreatedAt:      createdAtTimestamp,
-		UpdatedAt:      updatedAtTimestamp,
-		LastOnline:     lastOnlineTimestamp,
 		Navigator:      navigatorResponse,
-		Telegram: &pb.TelegramResponse{
-			UserId:          r.Telegram.UserId,
-			Username:        r.Telegram.Username,
-			FirstName:       r.Telegram.FirstName,
-			LastName:        r.Telegram.LastName,
-			LanguageCode:    r.Telegram.LanguageCode,
-			AllowsWriteToPm: r.Telegram.AllowsWriteToPm,
-			QueryId:         r.Telegram.QueryId,
-		},
 		Status: &pb.StatusResponse{
 			IsBlocked:      r.Status.IsBlocked,
 			IsFrozen:       r.Status.IsFrozen,
@@ -293,22 +253,10 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 }
 
 func (pm *ProfileControllerMapper) MapControllerToImageResponse(r *response.ImageResponseDto) *pb.ImageResponse {
-	createdAtImageTimestamp := timestamppb.New(r.CreatedAt)
-	updatedAtImageTimestamp := timestamppb.New(r.UpdatedAt)
-	status := &pb.ImageStatusResponse{
-		IsBlocked: r.Status.IsBlocked,
-		IsPrimary: r.Status.IsPrimary,
-		IsPrivate: r.Status.IsPrivate,
-	}
 	return &pb.ImageResponse{
-		Id:             r.Id,
-		TelegramUserId: r.TelegramUserId,
-		Name:           r.Name,
-		Url:            r.Url,
-		Size:           r.Size,
-		Status:         status,
-		CreatedAt:      createdAtImageTimestamp,
-		UpdatedAt:      updatedAtImageTimestamp,
+		Id:   r.Id,
+		Name: r.Name,
+		Url:  r.Url,
 	}
 }
 

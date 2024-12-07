@@ -14,7 +14,7 @@ func (pm *ImageStatusMapper) MapToAddRequest(imageId uint64) *request.ImageStatu
 		IsBlocked: false,
 		IsPrimary: false,
 		IsPrivate: false,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 	}
 }

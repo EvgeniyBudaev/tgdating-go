@@ -3,8 +3,10 @@ package psql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"go.uber.org/zap"
@@ -32,8 +34,8 @@ func (r *StatusRepository) Add(
 	query := "INSERT INTO dating.profile_statuses (telegram_user_id, is_blocked, is_frozen, is_invisible, is_online," +
 		"  is_premium, is_show_distance, created_at, updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.IsFrozen, &p.IsBlocked, &p.IsOnline, &p.IsPremium,
-		&p.IsShowDistance, &p.IsInvisible, &p.CreatedAt, &p.UpdatedAt)
+	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.IsBlocked, &p.IsFrozen, &p.IsInvisible, &p.IsOnline,
+		&p.IsPremium, &p.IsShowDistance, &p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -124,6 +126,32 @@ func (r *StatusRepository) FindByTelegramUserId(
 		&p.IsShowDistance, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindByTelegramUserId", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return p, nil
+}
+
+func (r *StatusRepository) CheckProfileExists(
+	ctx context.Context, telegramUserId string) (*response.CheckExistsDto, error) {
+	p := &response.CheckExistsDto{}
+	query := "SELECT telegram_user_id, is_frozen" +
+		" FROM dating.profile_statuses" +
+		" WHERE telegram_user_id = $1"
+	row := r.db.QueryRowContext(ctx, query, telegramUserId)
+	if row == nil {
+		errorMessage := r.getErrorMessage("CheckProfileExists", "QueryRowContext")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
+		return nil, ErrNotRowFound
+	}
+	err := row.Scan(&p.TelegramUserId, &p.IsFrozen)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		errorMessage := r.getErrorMessage("CheckProfileExists", "Scan")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
+		return nil, ErrNotRowFound
+	}
+	if err != nil {
+		errorMessage := r.getErrorMessage("CheckProfileExists", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}

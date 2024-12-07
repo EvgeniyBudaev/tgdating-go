@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"go.uber.org/zap"
@@ -27,7 +28,7 @@ func NewFilterRepository(l logger.Logger, db *sql.DB) *FilterRepository {
 }
 
 func (r *FilterRepository) Add(
-	ctx context.Context, p *request.FilterAddRequestRepositoryDto) (*entity.FilterEntity, error) {
+	ctx context.Context, p *request.FilterAddRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "INSERT INTO dating.profile_filters (telegram_user_id, search_gender, looking_for, age_from, age_to," +
 		" distance, page, size, created_at, updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id"
@@ -40,7 +41,10 @@ func (r *FilterRepository) Add(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindById(ctx, id)
+	filterResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return filterResponse, nil
 }
 
 func (r *FilterRepository) Update(

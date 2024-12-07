@@ -31,8 +31,8 @@ func (pm *LikeMapper) MapToAddRequest(
 		TelegramUserId:      pr.TelegramUserId,
 		LikedTelegramUserId: pr.LikedTelegramUserId,
 		IsLiked:             true,
-		CreatedAt:           time.Now(),
-		UpdatedAt:           time.Now(),
+		CreatedAt:           time.Now().UTC(),
+		UpdatedAt:           time.Now().UTC(),
 	}
 }
 
@@ -41,6 +41,6 @@ func (pm *LikeMapper) MapToUpdateRequest(
 	return &request.LikeUpdateRequestRepositoryDto{
 		Id:        pr.Id,
 		IsLiked:   pr.IsLiked,
-		UpdatedAt: time.Now(),
+		UpdatedAt: time.Now().UTC(),
 	}
 }

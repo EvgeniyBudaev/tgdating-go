@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"go.uber.org/zap"
@@ -27,7 +28,7 @@ func NewTelegramRepository(l logger.Logger, db *sql.DB) *TelegramRepository {
 }
 
 func (r *TelegramRepository) Add(
-	ctx context.Context, p *request.TelegramAddRequestRepositoryDto) (*entity.TelegramEntity, error) {
+	ctx context.Context, p *request.TelegramAddRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "INSERT INTO dating.profile_telegrams (user_id, username, first_name, last_name," +
 		" language_code, allows_write_to_pm, query_id, created_at, updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
@@ -40,7 +41,10 @@ func (r *TelegramRepository) Add(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindById(ctx, id)
+	telegramResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return telegramResponse, nil
 }
 
 func (r *TelegramRepository) Update(

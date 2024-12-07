@@ -33,8 +33,8 @@ func (pm *TelegramMapper) MapToAddRequest(
 		LanguageCode:    pr.TelegramLanguageCode,
 		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
 		QueryId:         pr.TelegramQueryId,
-		CreatedAt:       time.Now(),
-		UpdatedAt:       time.Now(),
+		CreatedAt:       time.Now().UTC(),
+		UpdatedAt:       time.Now().UTC(),
 	}
 }
 
@@ -48,6 +48,6 @@ func (pm *TelegramMapper) MapToUpdateRequest(
 		LanguageCode:    pr.TelegramLanguageCode,
 		AllowsWriteToPm: pr.TelegramAllowsWriteToPm,
 		QueryId:         pr.TelegramQueryId,
-		UpdatedAt:       time.Now(),
+		UpdatedAt:       time.Now().UTC(),
 	}
 }

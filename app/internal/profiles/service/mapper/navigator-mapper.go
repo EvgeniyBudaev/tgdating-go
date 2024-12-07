@@ -4,7 +4,6 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
-	"math"
 	"time"
 )
 
@@ -28,13 +27,6 @@ func (pm *NavigatorMapper) MapToResponse(
 	return navigatorResponse
 }
 
-func (pm *NavigatorMapper) MapToDetailResponse(distance float64) *response.NavigatorDetailResponseDto {
-	roundedDistance := uint64(math.Ceil(distance))
-	return &response.NavigatorDetailResponseDto{
-		Distance: roundedDistance,
-	}
-}
-
 func (pm *NavigatorMapper) MapToAddRequest(
 	telegramUserId string, longitude, latitude float64) *request.NavigatorAddRequestRepositoryDto {
 	point := &entity.PointEntity{
@@ -44,8 +36,8 @@ func (pm *NavigatorMapper) MapToAddRequest(
 	return &request.NavigatorAddRequestRepositoryDto{
 		TelegramUserId: telegramUserId,
 		Location:       point,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		CreatedAt:      time.Now().UTC(),
+		UpdatedAt:      time.Now().UTC(),
 	}
 }
 

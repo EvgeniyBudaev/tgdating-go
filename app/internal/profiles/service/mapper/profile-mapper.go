@@ -35,25 +35,23 @@ func (pm *ProfileMapper) MapToResponse(
 }
 
 func (pm *ProfileMapper) MapToDetailResponse(
-	pe *entity.ProfileEntity, nr *response.NavigatorDetailResponseDto, br *response.BlockResponseDto,
-	lr *response.LikeResponseDto, tr *response.TelegramResponseDto, sr *response.StatusResponseDto,
+	p *response.ProfileDetailResponseRepositoryDto, br *response.BlockResponseDto,
+	lr *response.LikeResponseDto,
 	il []*response.ImageResponseDto,
 ) *response.ProfileDetailResponseDto {
+	navigator := &response.NavigatorDetailResponseDto{
+		Distance: p.Navigator.Distance,
+	}
 	return &response.ProfileDetailResponseDto{
-		TelegramUserId: pe.TelegramUserId,
-		DisplayName:    pe.DisplayName,
-		Birthday:       pe.Birthday,
-		Gender:         pe.Gender,
-		Location:       pe.Location,
-		Description:    pe.Description,
-		Height:         pe.Height,
-		Weight:         pe.Weight,
-		CreatedAt:      pe.CreatedAt,
-		UpdatedAt:      pe.UpdatedAt,
-		LastOnline:     pe.LastOnline,
-		Navigator:      nr,
-		Telegram:       tr,
-		Status:         sr,
+		TelegramUserId: p.TelegramUserId,
+		DisplayName:    p.DisplayName,
+		Birthday:       p.Birthday,
+		Location:       p.Location,
+		Description:    p.Description,
+		Height:         p.Height,
+		Weight:         p.Weight,
+		Navigator:      navigator,
+		Status:         p.Status,
 		Block:          br,
 		Like:           lr,
 		Images:         il,

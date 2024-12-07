@@ -14,7 +14,7 @@ func (pm *ComplaintMapper) MapToAddRequest(
 		TelegramUserId:         pr.TelegramUserId,
 		CriminalTelegramUserId: pr.CriminalTelegramUserId,
 		Reason:                 pr.Reason,
-		CreatedAt:              time.Now(),
-		UpdatedAt:              time.Now(),
+		CreatedAt:              time.Now().UTC(),
+		UpdatedAt:              time.Now().UTC(),
 	}
 }

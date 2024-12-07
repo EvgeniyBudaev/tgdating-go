@@ -39,7 +39,7 @@ message NavigatorResponse {
   Point location = 2; // объект с координатами
 }
 message NavigatorDetailResponse {
-  uint64 distance = 1; // расстояние до просматриваемого пользователя
+  optional double distance = 1; // расстояние до просматриваемого пользователя
 }
 
 message FilterResponse {
@@ -204,20 +204,15 @@ message ProfileDetailResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   string displayName = 2; // Имя для отображения
   google.protobuf.Timestamp birthday = 3; // дата для рождения
-  string gender = 4; // пол
-  string location = 5; // местоположение
-  string description = 6; // описание
-  double height = 7; // рост
-  double weight = 8; // вес
-  google.protobuf.Timestamp createdAt = 9; // дата создания
-  google.protobuf.Timestamp updatedAt = 10; // дата обновления
-  google.protobuf.Timestamp lastOnline = 11; // дата последнего входа в систему
-  NavigatorDetailResponse navigator = 12; // объект навигатор
-  TelegramResponse telegram = 13; // объект телеграм
-  StatusResponse status = 14; // статус пользователя
-  BlockResponse block = 15; // объект блок
-  LikeResponse like = 16; //  объект дайк
-  repeated ImageResponse images = 17; // список изображений
+  string location = 4; // местоположение
+  string description = 5; // описание
+  double height = 6; // рост
+  double weight = 7; // вес
+  NavigatorDetailResponse navigator = 8; // объект навигатор
+  StatusResponse status = 9; // статус пользователя
+  BlockResponse block = 10; // объект блок
+  LikeResponse like = 11; //  объект дайк
+  repeated ImageResponse images = 12; // список изображений
 }
 
 message ProfileGetShortInfoRequest {

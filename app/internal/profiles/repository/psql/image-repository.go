@@ -94,14 +94,9 @@ func (r *ImageRepository) FindLastByTelegramUserId(
 		return nil, err
 	}
 	result := &response.ImageResponseDto{
-		Id:             p.Id,
-		TelegramUserId: p.TelegramUserId,
-		Name:           p.Name,
-		Url:            p.Url,
-		Size:           p.Size,
-		Status:         s,
-		CreatedAt:      p.CreatedAt,
-		UpdatedAt:      p.UpdatedAt,
+		Id:   p.Id,
+		Name: p.Name,
+		Url:  p.Url,
 	}
 	return result, nil
 }
@@ -124,9 +119,9 @@ func (r *ImageRepository) SelectListAllByTelegramUserId(
 	list := make([]*response.ImageResponseDto, 0)
 	for rows.Next() {
 		p := &response.ImageResponseDto{}
-		s := &response.ImageStatusResponseDto{}
-		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &s.IsBlocked, &s.IsPrimary, &s.IsPrivate,
-			&p.CreatedAt, &p.UpdatedAt)
+		pr := &response.ImageResponseRepositoryDto{}
+		err := rows.Scan(&p.Id, &pr.TelegramUserId, &p.Name, &p.Url, &pr.Size, &pr.IsBlocked, &pr.IsPrimary,
+			&pr.IsPrivate, &pr.CreatedAt, &pr.UpdatedAt)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectListAllByTelegramUserId",
 				"Scan")
@@ -134,14 +129,9 @@ func (r *ImageRepository) SelectListAllByTelegramUserId(
 			continue
 		}
 		result := &response.ImageResponseDto{
-			Id:             p.Id,
-			TelegramUserId: p.TelegramUserId,
-			Name:           p.Name,
-			Url:            p.Url,
-			Size:           p.Size,
-			Status:         s,
-			CreatedAt:      p.CreatedAt,
-			UpdatedAt:      p.UpdatedAt,
+			Id:   p.Id,
+			Name: p.Name,
+			Url:  p.Url,
 		}
 		list = append(list, result)
 	}
@@ -166,9 +156,9 @@ func (r *ImageRepository) SelectListPublicByTelegramUserId(
 	list := make([]*response.ImageResponseDto, 0)
 	for rows.Next() {
 		p := &response.ImageResponseDto{}
-		s := &response.ImageStatusResponseDto{}
-		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &s.IsBlocked, &s.IsPrimary, &s.IsPrivate,
-			&p.CreatedAt, &p.UpdatedAt)
+		pr := &response.ImageResponseRepositoryDto{}
+		err := rows.Scan(&p.Id, &pr.TelegramUserId, &p.Name, &p.Url, &pr.Size, &pr.IsBlocked, &pr.IsPrimary,
+			&pr.IsPrivate, &pr.CreatedAt, &pr.UpdatedAt)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectListPublicByTelegramUserId",
 				"Scan")
@@ -176,14 +166,9 @@ func (r *ImageRepository) SelectListPublicByTelegramUserId(
 			continue
 		}
 		result := &response.ImageResponseDto{
-			Id:             p.Id,
-			TelegramUserId: p.TelegramUserId,
-			Name:           p.Name,
-			Url:            p.Url,
-			Size:           p.Size,
-			Status:         s,
-			CreatedAt:      p.CreatedAt,
-			UpdatedAt:      p.UpdatedAt,
+			Id:   p.Id,
+			Name: p.Name,
+			Url:  p.Url,
 		}
 		list = append(list, result)
 	}
@@ -208,23 +193,18 @@ func (r *ImageRepository) SelectListByTelegramUserId(
 	list := make([]*response.ImageResponseDto, 0)
 	for rows.Next() {
 		p := &response.ImageResponseDto{}
-		s := &response.ImageStatusResponseDto{}
-		err := rows.Scan(&p.Id, &p.TelegramUserId, &p.Name, &p.Url, &p.Size, &s.IsBlocked, &s.IsPrimary, &s.IsPrivate,
-			&p.CreatedAt, &p.UpdatedAt)
+		pr := &response.ImageResponseRepositoryDto{}
+		err := rows.Scan(&p.Id, &pr.TelegramUserId, &p.Name, &p.Url, &pr.Size, &pr.IsBlocked, &pr.IsPrimary,
+			&pr.IsPrivate, &pr.CreatedAt, &pr.UpdatedAt)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectListByTelegramUserId", "Scan")
 			r.logger.Debug(errorMessage, zap.Error(err))
 			continue
 		}
 		result := &response.ImageResponseDto{
-			Id:             p.Id,
-			TelegramUserId: p.TelegramUserId,
-			Name:           p.Name,
-			Url:            p.Url,
-			Size:           p.Size,
-			Status:         s,
-			CreatedAt:      p.CreatedAt,
-			UpdatedAt:      p.UpdatedAt,
+			Id:   p.Id,
+			Name: p.Name,
+			Url:  p.Url,
 		}
 		list = append(list, result)
 	}

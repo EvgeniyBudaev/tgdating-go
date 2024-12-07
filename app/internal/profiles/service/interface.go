@@ -12,6 +12,8 @@ type ProfileRepository interface {
 	Update(ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*entity.ProfileEntity, error)
 	Delete(ctx context.Context, p *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.ProfileEntity, error)
+	GetDetail(ctx context.Context,
+		telegramUserId, viewedTelegramUserId string) (*response.ProfileDetailResponseRepositoryDto, error)
 	GetShortInfo(ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseDto, error)
 	SelectList(ctx context.Context,
 		pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error)
@@ -19,22 +21,21 @@ type ProfileRepository interface {
 }
 
 type NavigatorRepository interface {
-	Add(ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*entity.NavigatorEntity, error)
+	Add(ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*response.ResponseDto, error)
 	Update(ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.NavigatorEntity, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.NavigatorEntity, error)
-	FindDistance(ctx context.Context, pe *entity.NavigatorEntity,
-		pve *entity.NavigatorEntity) (*response.NavigatorDistanceResponseRepositoryDto, error)
+	CheckNavigatorExists(ctx context.Context, telegramUserId string) (*response.ResponseDto, error)
 }
 
 type FilterRepository interface {
-	Add(ctx context.Context, p *request.FilterAddRequestRepositoryDto) (*entity.FilterEntity, error)
+	Add(ctx context.Context, p *request.FilterAddRequestRepositoryDto) (*response.ResponseDto, error)
 	Update(ctx context.Context, p *request.FilterUpdateRequestRepositoryDto) (*entity.FilterEntity, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.FilterEntity, error)
 }
 
 type TelegramRepository interface {
-	Add(ctx context.Context, p *request.TelegramAddRequestRepositoryDto) (*entity.TelegramEntity, error)
+	Add(ctx context.Context, p *request.TelegramAddRequestRepositoryDto) (*response.ResponseDto, error)
 	Update(ctx context.Context, p *request.TelegramUpdateRequestRepositoryDto) (*entity.TelegramEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.TelegramEntity, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.TelegramEntity, error)
@@ -82,4 +83,5 @@ type StatusRepository interface {
 	Restore(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.StatusEntity, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
+	CheckProfileExists(ctx context.Context, telegramUserId string) (*response.CheckExistsDto, error)
 }

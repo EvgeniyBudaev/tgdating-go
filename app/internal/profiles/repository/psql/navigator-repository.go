@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
+	//"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"go.uber.org/zap"
@@ -29,7 +30,7 @@ func NewNavigatorRepository(l logger.Logger, db *sql.DB) *NavigatorRepository {
 }
 
 func (r *NavigatorRepository) Add(
-	ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*entity.NavigatorEntity, error) {
+	ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "INSERT INTO dating.profile_navigators (telegram_user_id, location, created_at, updated_at)" +
 		" VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3),  4326), $4, $5) RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.Location.Longitude, &p.Location.Latitude,
@@ -41,7 +42,10 @@ func (r *NavigatorRepository) Add(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindById(ctx, id)
+	navigatorResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return navigatorResponse, nil
 }
 
 func (r *NavigatorRepository) Update(
@@ -112,37 +116,32 @@ func (r *NavigatorRepository) FindByTelegramUserId(
 	return p, nil
 }
 
-func (r *NavigatorRepository) FindDistance(ctx context.Context, pe *entity.NavigatorEntity,
-	pve *entity.NavigatorEntity) (*response.NavigatorDistanceResponseRepositoryDto, error) {
-	longitudeSession := pe.Location.Longitude
-	latitudeSession := pe.Location.Latitude
-	longitudeViewed := pve.Location.Longitude
-	latitudeViewed := pve.Location.Latitude
-	p := &response.NavigatorDistanceResponseRepositoryDto{}
-	var longitude sql.NullFloat64
-	var latitude sql.NullFloat64
-	query := "SELECT id, telegram_user_id, ST_X(location) as longitude, ST_Y(location) as latitude, created_at," +
-		" updated_at," +
-		" ST_DistanceSphere(ST_SetSRID(ST_MakePoint($4, $5), 4326)," +
-		" ST_SetSRID(ST_MakePoint($2, $3),  4326)) as distance" +
-		" FROM dating.profile_navigators" +
-		" WHERE telegram_user_id = $1"
-	row := r.db.QueryRowContext(ctx, query, pe.TelegramUserId, longitudeSession, latitudeSession, longitudeViewed,
-		latitudeViewed)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &longitude, &latitude, &p.CreatedAt, &p.UpdatedAt, &p.Distance)
+func (r *NavigatorRepository) CheckNavigatorExists(
+	ctx context.Context, telegramUserId string) (*response.ResponseDto, error) {
+	var existingRecordCount int
+	query := "SELECT COUNT(*) FROM dating.profile_navigators WHERE telegram_user_id = $1"
+	row := r.db.QueryRowContext(ctx, query, telegramUserId)
+	if row == nil {
+		errorMessage := r.getErrorMessage("CheckNavigatorExists", "QueryRowContext")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
+		return nil, ErrNotRowFound
+	}
+	err := row.Scan(&existingRecordCount)
 	if err != nil {
-		errorMessage := r.getErrorMessage("FindDistance", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		errorMessage := r.getErrorMessage("CheckNavigatorExists", "Scan")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
+		return nil, ErrNotRowFound
 	}
-	if !longitude.Valid && !latitude.Valid {
-		return nil, err
+	if existingRecordCount == 0 {
+		return nil, nil
 	}
-	p.Location = &entity.PointEntity{
-		Latitude:  latitude.Float64,
-		Longitude: longitude.Float64,
+	navigatorResponse := &response.ResponseDto{
+		Success: true,
 	}
-	return p, nil
+	return navigatorResponse, nil
 }
 
 func (r *NavigatorRepository) getErrorMessage(repositoryMethodName string, callMethodName string) string {
