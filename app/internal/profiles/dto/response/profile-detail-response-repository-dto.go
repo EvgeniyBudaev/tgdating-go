@@ -15,4 +15,5 @@ type ProfileDetailResponseRepositoryDto struct {
 	Navigator      *NavigatorDistanceResponseRepositoryDto `json:"navigator"`
 	Status         *StatusResponseDto                      `json:"status"`
 	Block          *BlockResponseDto                       `json:"block"`
+	Like           *LikeResponseDto                        `json:"like"`
 }

@@ -16,12 +16,9 @@ func (pm *LikeMapper) MapToResponse(
 		return nil
 	}
 	return &response.LikeResponseDto{
-		Id:                  pe.Id,
-		TelegramUserId:      pe.TelegramUserId,
-		LikedTelegramUserId: pe.LikedTelegramUserId,
-		IsLiked:             pe.IsLiked,
-		CreatedAt:           pe.CreatedAt,
-		UpdatedAt:           pe.UpdatedAt,
+		Id:        pe.Id,
+		IsLiked:   pe.IsLiked,
+		UpdatedAt: pe.UpdatedAt,
 	}
 }
 

@@ -166,15 +166,11 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 	}
 	var likeResponse *pb.LikeResponse
 	if r.Like != nil {
-		likeCreatedAtTimestamp := timestamppb.New(r.Like.CreatedAt)
 		likeUpdatedAtTimestamp := timestamppb.New(r.Like.UpdatedAt)
 		likeResponse = &pb.LikeResponse{
-			Id:                  r.Like.Id,
-			TelegramUserId:      r.Like.TelegramUserId,
-			LikedTelegramUserId: r.Like.LikedTelegramUserId,
-			IsLiked:             r.Like.IsLiked,
-			CreatedAt:           likeCreatedAtTimestamp,
-			UpdatedAt:           likeUpdatedAtTimestamp,
+			Id:        r.Like.Id,
+			IsLiked:   r.Like.IsLiked,
+			UpdatedAt: likeUpdatedAtTimestamp,
 		}
 	}
 	images := make([]*pb.ImageResponse, 0)
@@ -281,29 +277,21 @@ func (pm *ProfileControllerMapper) MapControllerToBlockAddResponse(r *response.R
 }
 
 func (pm *ProfileControllerMapper) MapControllerToLikeAddResponse(r *response.LikeResponseDto) *pb.LikeAddResponse {
-	createdAtTimestamp := timestamppb.New(r.CreatedAt)
 	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
 	return &pb.LikeAddResponse{
-		Id:                  r.Id,
-		TelegramUserId:      r.TelegramUserId,
-		LikedTelegramUserId: r.LikedTelegramUserId,
-		IsLiked:             r.IsLiked,
-		CreatedAt:           createdAtTimestamp,
-		UpdatedAt:           updatedAtTimestamp,
+		Id:        r.Id,
+		IsLiked:   r.IsLiked,
+		UpdatedAt: updatedAtTimestamp,
 	}
 }
 
 func (pm *ProfileControllerMapper) MapControllerToLikeUpdateResponse(
 	r *response.LikeResponseDto) *pb.LikeUpdateResponse {
-	createdAtTimestamp := timestamppb.New(r.CreatedAt)
 	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
 	return &pb.LikeUpdateResponse{
-		Id:                  r.Id,
-		TelegramUserId:      r.TelegramUserId,
-		LikedTelegramUserId: r.LikedTelegramUserId,
-		IsLiked:             r.IsLiked,
-		CreatedAt:           createdAtTimestamp,
-		UpdatedAt:           updatedAtTimestamp,
+		Id:        r.Id,
+		IsLiked:   r.IsLiked,
+		UpdatedAt: updatedAtTimestamp,
 	}
 }
 

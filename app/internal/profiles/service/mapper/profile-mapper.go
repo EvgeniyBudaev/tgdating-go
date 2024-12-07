@@ -36,7 +36,6 @@ func (pm *ProfileMapper) MapToResponse(
 
 func (pm *ProfileMapper) MapToDetailResponse(
 	p *response.ProfileDetailResponseRepositoryDto,
-	lr *response.LikeResponseDto,
 	il []*response.ImageResponseDto,
 ) *response.ProfileDetailResponseDto {
 	navigator := &response.NavigatorDetailResponseDto{
@@ -53,7 +52,7 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		Navigator:      navigator,
 		Status:         p.Status,
 		Block:          p.Block,
-		Like:           lr,
+		Like:           p.Like,
 		Images:         il,
 	}
 }

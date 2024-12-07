@@ -54,7 +54,8 @@ func (r *BlockRepository) Add(
 	return blockResponse, nil
 }
 
-func (r *BlockRepository) Find(ctx context.Context, telegramUserId, blockedTelegramUserId string) (*entity.BlockEntity, error) {
+func (r *BlockRepository) Find(
+	ctx context.Context, telegramUserId, blockedTelegramUserId string) (*entity.BlockEntity, error) {
 	p := &entity.BlockEntity{}
 	query := "SELECT id, telegram_user_id, blocked_telegram_user_id, is_blocked, created_at, updated_at " +
 		" FROM dating.profile_blocks" +

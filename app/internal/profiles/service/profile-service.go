@@ -470,15 +470,6 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUse
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	likeEntity, err := s.likeRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileDetail",
-			"likeRepository.FindByTelegramUserId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	likeMapper := &mapper.LikeMapper{}
-	likeResponse := likeMapper.MapToResponse(likeEntity)
 	imageEntityList, err := s.imageRepository.SelectListByTelegramUserId(ctx, viewedTelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail",
@@ -487,7 +478,7 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUse
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileResponse := profileMapper.MapToDetailResponse(profileDetail, likeResponse, imageEntityList)
+	profileResponse := profileMapper.MapToDetailResponse(profileDetail, imageEntityList)
 	return profileResponse, err
 }
 

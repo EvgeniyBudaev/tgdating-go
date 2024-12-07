@@ -213,12 +213,9 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 	var likeResponse *response.LikeResponseDto
 	if r.Like != nil {
 		likeResponse = &response.LikeResponseDto{
-			Id:                  r.Like.Id,
-			TelegramUserId:      r.TelegramUserId,
-			LikedTelegramUserId: r.Like.LikedTelegramUserId,
-			IsLiked:             r.Like.IsLiked,
-			CreatedAt:           r.Like.CreatedAt.AsTime(),
-			UpdatedAt:           r.Like.UpdatedAt.AsTime(),
+			Id:        r.Like.Id,
+			IsLiked:   r.Like.IsLiked,
+			UpdatedAt: r.Like.UpdatedAt.AsTime(),
 		}
 	}
 	images := make([]*response.ImageResponseDto, 0)
@@ -345,12 +342,9 @@ func (pm *ProfileMapper) MapToLikeAddResponse(r *pb.LikeAddResponse) *response.L
 		return nil
 	}
 	return &response.LikeResponseDto{
-		Id:                  r.Id,
-		TelegramUserId:      r.TelegramUserId,
-		LikedTelegramUserId: r.LikedTelegramUserId,
-		IsLiked:             r.IsLiked,
-		CreatedAt:           r.CreatedAt.AsTime(),
-		UpdatedAt:           r.UpdatedAt.AsTime(),
+		Id:        r.Id,
+		IsLiked:   r.IsLiked,
+		UpdatedAt: r.UpdatedAt.AsTime(),
 	}
 }
 
@@ -364,12 +358,9 @@ func (pm *ProfileMapper) MapToLikeUpdateRequest(r *request.LikeUpdateRequestDto)
 
 func (pm *ProfileMapper) MapToLikeUpdateResponse(r *pb.LikeUpdateResponse) *response.LikeResponseDto {
 	return &response.LikeResponseDto{
-		Id:                  r.Id,
-		TelegramUserId:      r.TelegramUserId,
-		LikedTelegramUserId: r.LikedTelegramUserId,
-		IsLiked:             r.IsLiked,
-		CreatedAt:           r.CreatedAt.AsTime(),
-		UpdatedAt:           r.UpdatedAt.AsTime(),
+		Id:        r.Id,
+		IsLiked:   r.IsLiked,
+		UpdatedAt: r.UpdatedAt.AsTime(),
 	}
 }
 

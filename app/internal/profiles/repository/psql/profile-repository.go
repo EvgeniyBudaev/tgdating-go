@@ -10,6 +10,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"go.uber.org/zap"
+	"time"
 )
 
 const (
@@ -117,6 +118,9 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 	telegramUserId, viewedTelegramUserId string) (*response.ProfileDetailResponseRepositoryDto, error) {
 	var distance *float64
 	var isViewedBlocked *bool
+	var likeId *uint64
+	var isLiked *bool
+	var likeUpdatedAt *time.Time
 	s := &response.StatusResponseDto{}
 	p := &response.ProfileDetailResponseRepositoryDto{}
 	query := "WITH user_details AS (" +
@@ -138,6 +142,9 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		" WHEN p2.last_online >= NOW() AT TIME ZONE 'UTC' - INTERVAL '5 minutes' THEN true ELSE false" +
 		" END) AS is_online," +
 		" pb2.is_blocked AS is_viewed_blocked," +
+		" pl2.id AS like_id," +
+		" pl2.is_liked AS is_liked," +
+		" pl2.updated_at AS like_updated_at," +
 		" pn2.location AS user2_location" +
 		" FROM dating.profiles p1" +
 		" JOIN dating.profiles p2 ON p2.telegram_user_id = $2" +
@@ -145,11 +152,13 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		" LEFT JOIN dating.profile_navigators pn1 ON pn1.telegram_user_id = p1.telegram_user_id" +
 		" LEFT JOIN dating.profile_navigators pn2 ON pn2.telegram_user_id = p2.telegram_user_id" +
 		" LEFT JOIN dating.profile_blocks pb2 ON pb2.blocked_telegram_user_id = p1.telegram_user_id" +
+		" LEFT JOIN dating.profile_likes pl2 ON pl2.telegram_user_id = p1.telegram_user_id" +
 		" WHERE p1.telegram_user_id = $1" +
 		" )" +
 		" SELECT " +
 		" telegram_user_id, display_name, birthday, location, description, height, weight," +
 		" is_blocked, is_frozen, is_invisible, is_online, is_premium, is_show_distance, is_viewed_blocked," +
+		" like_id, is_liked, like_updated_at," +
 		" ST_DistanceSphere(user1_location, user2_location) AS distance" +
 		" FROM user_details"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId, viewedTelegramUserId)
@@ -160,7 +169,7 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 	}
 	err := row.Scan(&p.TelegramUserId, &p.DisplayName, &p.Birthday, &p.Location, &p.Description, &p.Height, &p.Weight,
 		&s.IsBlocked, &s.IsFrozen, &s.IsInvisible, &s.IsOnline, &s.IsPremium, &s.IsShowDistance, &isViewedBlocked,
-		&distance)
+		&likeId, &isLiked, &likeUpdatedAt, &distance)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("GetDetail", "Scan")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
@@ -176,10 +185,17 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		Distance: distance,
 	}
 	var b *response.BlockResponseDto
-	fmt.Println("isViewedBlocked: ", isViewedBlocked)
 	if isViewedBlocked != nil {
 		b = &response.BlockResponseDto{
 			IsBlocked: *isViewedBlocked,
+		}
+	}
+	var l *response.LikeResponseDto
+	if likeId != nil && isLiked != nil && likeUpdatedAt != nil {
+		l = &response.LikeResponseDto{
+			Id:        *likeId,
+			IsLiked:   *isLiked,
+			UpdatedAt: *likeUpdatedAt,
 		}
 	}
 	p = &response.ProfileDetailResponseRepositoryDto{
@@ -193,6 +209,7 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		Navigator:      n,
 		Status:         s,
 		Block:          b,
+		Like:           l,
 	}
 	return p, nil
 }

@@ -78,11 +78,8 @@ message BlockResponse {
 
 message LikeResponse {
   uint64 id = 1; // id лайка
-  string telegramUserId = 2; // id пользователя в телеграме
-  string likedTelegramUserId = 3; // id сессии того, кого лайкнули
-  bool isLiked = 4; // установлен лайк да/нет
-  google.protobuf.Timestamp createdAt = 5; // дата создания
-  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+  bool isLiked = 2; // установлен лайк да/нет
+  google.protobuf.Timestamp updatedAt = 3; // дата обновления
 }
 
 message ProfileAddRequest {
