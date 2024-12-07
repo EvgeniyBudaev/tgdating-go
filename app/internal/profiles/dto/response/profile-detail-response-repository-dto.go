@@ -14,4 +14,5 @@ type ProfileDetailResponseRepositoryDto struct {
 	Weight         float64                                 `json:"weight"`
 	Navigator      *NavigatorDistanceResponseRepositoryDto `json:"navigator"`
 	Status         *StatusResponseDto                      `json:"status"`
+	Block          *BlockResponseDto                       `json:"block"`
 }

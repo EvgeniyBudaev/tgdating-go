@@ -116,6 +116,7 @@ func (r *ProfileRepository) FindByTelegramUserId(
 func (r *ProfileRepository) GetDetail(ctx context.Context,
 	telegramUserId, viewedTelegramUserId string) (*response.ProfileDetailResponseRepositoryDto, error) {
 	var distance *float64
+	var isViewedBlocked *bool
 	s := &response.StatusResponseDto{}
 	p := &response.ProfileDetailResponseRepositoryDto{}
 	query := "WITH user_details AS (" +
@@ -136,17 +137,19 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		" (CASE" +
 		" WHEN p2.last_online >= NOW() AT TIME ZONE 'UTC' - INTERVAL '5 minutes' THEN true ELSE false" +
 		" END) AS is_online," +
+		" pb2.is_blocked AS is_viewed_blocked," +
 		" pn2.location AS user2_location" +
 		" FROM dating.profiles p1" +
 		" JOIN dating.profiles p2 ON p2.telegram_user_id = $2" +
 		" JOIN dating.profile_statuses ps2 ON ps2.telegram_user_id = p2.telegram_user_id" +
 		" LEFT JOIN dating.profile_navigators pn1 ON pn1.telegram_user_id = p1.telegram_user_id" +
 		" LEFT JOIN dating.profile_navigators pn2 ON pn2.telegram_user_id = p2.telegram_user_id" +
+		" LEFT JOIN dating.profile_blocks pb2 ON pb2.blocked_telegram_user_id = p1.telegram_user_id" +
 		" WHERE p1.telegram_user_id = $1" +
 		" )" +
 		" SELECT " +
 		" telegram_user_id, display_name, birthday, location, description, height, weight," +
-		" is_blocked, is_frozen, is_invisible, is_online, is_premium, is_show_distance," +
+		" is_blocked, is_frozen, is_invisible, is_online, is_premium, is_show_distance, is_viewed_blocked," +
 		" ST_DistanceSphere(user1_location, user2_location) AS distance" +
 		" FROM user_details"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId, viewedTelegramUserId)
@@ -156,7 +159,8 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		return nil, ErrNotRowFound
 	}
 	err := row.Scan(&p.TelegramUserId, &p.DisplayName, &p.Birthday, &p.Location, &p.Description, &p.Height, &p.Weight,
-		&s.IsBlocked, &s.IsFrozen, &s.IsInvisible, &s.IsOnline, &s.IsPremium, &s.IsShowDistance, &distance)
+		&s.IsBlocked, &s.IsFrozen, &s.IsInvisible, &s.IsOnline, &s.IsPremium, &s.IsShowDistance, &isViewedBlocked,
+		&distance)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("GetDetail", "Scan")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
@@ -171,6 +175,13 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 	n = &response.NavigatorDistanceResponseRepositoryDto{
 		Distance: distance,
 	}
+	var b *response.BlockResponseDto
+	fmt.Println("isViewedBlocked: ", isViewedBlocked)
+	if isViewedBlocked != nil {
+		b = &response.BlockResponseDto{
+			IsBlocked: *isViewedBlocked,
+		}
+	}
 	p = &response.ProfileDetailResponseRepositoryDto{
 		TelegramUserId: p.TelegramUserId,
 		DisplayName:    p.DisplayName,
@@ -181,6 +192,7 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		Weight:         p.Weight,
 		Navigator:      n,
 		Status:         s,
+		Block:          b,
 	}
 	return p, nil
 }

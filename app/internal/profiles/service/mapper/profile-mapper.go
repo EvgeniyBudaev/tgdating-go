@@ -35,7 +35,7 @@ func (pm *ProfileMapper) MapToResponse(
 }
 
 func (pm *ProfileMapper) MapToDetailResponse(
-	p *response.ProfileDetailResponseRepositoryDto, br *response.BlockResponseDto,
+	p *response.ProfileDetailResponseRepositoryDto,
 	lr *response.LikeResponseDto,
 	il []*response.ImageResponseDto,
 ) *response.ProfileDetailResponseDto {
@@ -52,7 +52,7 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		Weight:         p.Weight,
 		Navigator:      navigator,
 		Status:         p.Status,
-		Block:          br,
+		Block:          p.Block,
 		Like:           lr,
 		Images:         il,
 	}

@@ -470,15 +470,6 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUse
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	blockEntity, err := s.blockRepository.Find(ctx, pr.TelegramUserId, viewedTelegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileDetail",
-			"blockRepository.Find")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	blockMapper := mapper.BlockMapper{}
-	blockResponse := blockMapper.MapToResponse(blockEntity)
 	likeEntity, err := s.likeRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail",
@@ -496,7 +487,7 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUse
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileResponse := profileMapper.MapToDetailResponse(profileDetail, blockResponse, likeResponse, imageEntityList)
+	profileResponse := profileMapper.MapToDetailResponse(profileDetail, likeResponse, imageEntityList)
 	return profileResponse, err
 }
 
@@ -839,7 +830,7 @@ func (s *ProfileService) deleteFile(filePath string) error {
 	return os.Remove(filePath)
 }
 
-func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*entity.BlockEntity, error) {
+func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*response.ResponseDto, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddBlock", "Begin")
@@ -849,12 +840,12 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddReque
 	defer tx.Rollback()
 	blockMapper := &mapper.BlockMapper{}
 	blockRequest := blockMapper.MapToAddRequest(pr)
-	prForTwoUser := &request.BlockAddRequestDto{
+	prForViewedUser := &request.BlockAddRequestDto{
 		TelegramUserId:        pr.BlockedTelegramUserId,
 		BlockedTelegramUserId: pr.TelegramUserId,
 	}
-	blockForTwoUserRequest := blockMapper.MapToAddRequest(prForTwoUser)
-	_, err = s.blockRepository.Add(ctx, blockForTwoUserRequest)
+	blockForViewedUserRequest := blockMapper.MapToAddRequest(prForViewedUser)
+	_, err = s.blockRepository.Add(ctx, blockForViewedUserRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddBlock", "blockRepository.Add")
 		s.logger.Debug(errorMessage, zap.Error(err))

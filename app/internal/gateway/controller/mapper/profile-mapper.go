@@ -332,17 +332,6 @@ func (pm *ProfileMapper) MapToBlockAddRequest(r *request.BlockAddRequestDto) *pb
 	}
 }
 
-func (pm *ProfileMapper) MapToBlockAddResponse(r *pb.BlockAddResponse) *entity.BlockEntity {
-	return &entity.BlockEntity{
-		Id:                    r.Id,
-		TelegramUserId:        r.TelegramUserId,
-		BlockedTelegramUserId: r.BlockedTelegramUserId,
-		IsBlocked:             r.IsBlocked,
-		CreatedAt:             r.CreatedAt.AsTime(),
-		UpdatedAt:             r.UpdatedAt.AsTime(),
-	}
-}
-
 func (pm *ProfileMapper) MapToLikeAddRequest(r *request.LikeAddRequestDto, locale string) *pb.LikeAddRequest {
 	return &pb.LikeAddRequest{
 		TelegramUserId:      r.TelegramUserId,

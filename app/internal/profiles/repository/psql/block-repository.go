@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"go.uber.org/zap"
@@ -28,7 +29,7 @@ func NewBlockRepository(l logger.Logger, db *sql.DB) *BlockRepository {
 }
 
 func (r *BlockRepository) Add(
-	ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*entity.BlockEntity, error) {
+	ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "INSERT INTO dating.profile_blocks (telegram_user_id, blocked_telegram_user_id, is_blocked, created_at," +
 		" updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5)" +
@@ -47,7 +48,10 @@ func (r *BlockRepository) Add(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindById(ctx, id)
+	blockResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return blockResponse, nil
 }
 
 func (r *BlockRepository) Find(ctx context.Context, telegramUserId, blockedTelegramUserId string) (*entity.BlockEntity, error) {

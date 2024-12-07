@@ -440,8 +440,7 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		blockResponse := profileMapper.MapToBlockAddResponse(blockAdded)
-		return v1.ResponseCreated(ctf, blockResponse)
+		return v1.ResponseCreated(ctf, blockAdded)
 	}
 }
 

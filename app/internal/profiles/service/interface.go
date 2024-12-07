@@ -64,7 +64,7 @@ type LikeRepository interface {
 }
 
 type BlockRepository interface {
-	Add(ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*entity.BlockEntity, error)
+	Add(ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*response.ResponseDto, error)
 	Find(ctx context.Context, telegramUserId, blockedTelegramUserId string) (*entity.BlockEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.BlockEntity, error)
 }

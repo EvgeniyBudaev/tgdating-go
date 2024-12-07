@@ -274,16 +274,9 @@ func (pm *ProfileControllerMapper) MapControllerToFilterUpdateResponse(
 	}
 }
 
-func (pm *ProfileControllerMapper) MapControllerToBlockAddResponse(r *entity.BlockEntity) *pb.BlockAddResponse {
-	createdAtTimestamp := timestamppb.New(r.CreatedAt)
-	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
+func (pm *ProfileControllerMapper) MapControllerToBlockAddResponse(r *response.ResponseDto) *pb.BlockAddResponse {
 	return &pb.BlockAddResponse{
-		Id:                    r.Id,
-		TelegramUserId:        r.TelegramUserId,
-		BlockedTelegramUserId: r.BlockedTelegramUserId,
-		IsBlocked:             r.IsBlocked,
-		CreatedAt:             createdAtTimestamp,
-		UpdatedAt:             updatedAtTimestamp,
+		Success: r.Success,
 	}
 }
 

@@ -308,12 +308,7 @@ message BlockAddRequest {
 }
 
 message BlockAddResponse {
-  uint64 id = 1; // id блока
-  string telegramUserId = 2; // id пользователя в телеграм
-  string blockedTelegramUserId = 3; // id заблокированного пользователя
-  bool isBlocked = 4; // заблокирован пользователь да/нет
-  google.protobuf.Timestamp createdAt = 5; // дата создания
-  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+  bool success = 1; // успешно заблокирован да/нет
 }
 
 message LikeAddRequest {
