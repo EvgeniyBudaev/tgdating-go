@@ -358,17 +358,6 @@ func (pm *ProfileMapper) MapToComplaintAddRequest(r *request.ComplaintAddRequest
 	}
 }
 
-func (pm *ProfileMapper) MapToComplaintAddResponse(r *pb.ComplaintAddResponse) *entity.ComplaintEntity {
-	return &entity.ComplaintEntity{
-		Id:                     r.Id,
-		TelegramUserId:         r.TelegramUserId,
-		CriminalTelegramUserId: r.CriminalTelegramUserId,
-		Reason:                 r.Reason,
-		CreatedAt:              r.CreatedAt.AsTime(),
-		UpdatedAt:              r.UpdatedAt.AsTime(),
-	}
-}
-
 func (pm *ProfileMapper) MapToUpdateCoordinatesRequest(
 	r *request.NavigatorUpdateRequestDto) *pb.NavigatorUpdateRequest {
 	return &pb.NavigatorUpdateRequest{

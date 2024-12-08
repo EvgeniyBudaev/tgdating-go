@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 )
 
 type ProfileService interface {
@@ -26,7 +25,7 @@ type ProfileService interface {
 	AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*response.ResponseDto, error)
 	AddLike(ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error)
 	UpdateLike(ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.LikeResponseDto, error)
-	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error)
+	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*response.ResponseDto, error)
 	UpdateCoordinates(
 		ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error)
 }

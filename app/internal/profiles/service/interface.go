@@ -61,18 +61,14 @@ type LikeRepository interface {
 	Add(ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*entity.LikeEntity, error)
 	Update(ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*entity.LikeEntity, error)
 	FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error)
-	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.LikeEntity, error)
 }
 
 type BlockRepository interface {
 	Add(ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*response.ResponseDto, error)
-	Find(ctx context.Context, telegramUserId, blockedTelegramUserId string) (*entity.BlockEntity, error)
-	FindById(ctx context.Context, id uint64) (*entity.BlockEntity, error)
 }
 
 type ComplaintRepository interface {
-	Add(ctx context.Context, p *request.ComplaintAddRequestRepositoryDto) (*entity.ComplaintEntity, error)
-	FindById(ctx context.Context, id uint64) (*entity.ComplaintEntity, error)
+	Add(ctx context.Context, p *request.ComplaintAddRequestRepositoryDto) (*response.ResponseDto, error)
 	GetCountUserComplaintsByToday(ctx context.Context, telegramUserId string) (uint64, error)
 }
 

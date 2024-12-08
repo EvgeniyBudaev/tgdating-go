@@ -916,7 +916,7 @@ func (s *ProfileService) UpdateLike(
 }
 
 func (s *ProfileService) AddComplaint(
-	ctx context.Context, pr *request.ComplaintAddRequestDto) (*entity.ComplaintEntity, error) {
+	ctx context.Context, pr *request.ComplaintAddRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
 	complaintMapper := &mapper.ComplaintMapper{}
 	complaintRequest := complaintMapper.MapToAddRequest(pr)

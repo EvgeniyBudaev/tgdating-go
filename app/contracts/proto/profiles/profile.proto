@@ -339,12 +339,7 @@ message ComplaintAddRequest {
 }
 
 message ComplaintAddResponse {
-  uint64 id = 1; // id блока
-  string telegramUserId = 2; // id пользователя в телеграм
-  string criminalTelegramUserId = 3; // id мошенника
-  string reason = 4; // причина жалобы
-  google.protobuf.Timestamp createdAt = 5; // дата создания
-  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+  bool success = 1; // успешно заблокирован да/нет
 }
 
 message NavigatorUpdateRequest {

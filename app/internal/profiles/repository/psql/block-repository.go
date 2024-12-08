@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"go.uber.org/zap"
 )
@@ -52,43 +51,6 @@ func (r *BlockRepository) Add(
 		Success: true,
 	}
 	return blockResponse, nil
-}
-
-func (r *BlockRepository) Find(
-	ctx context.Context, telegramUserId, blockedTelegramUserId string) (*entity.BlockEntity, error) {
-	p := &entity.BlockEntity{}
-	query := "SELECT id, telegram_user_id, blocked_telegram_user_id, is_blocked, created_at, updated_at " +
-		" FROM dating.profile_blocks" +
-		" WHERE telegram_user_id = $1 AND blocked_telegram_user_id = $2"
-	row := r.db.QueryRowContext(ctx, query, telegramUserId, blockedTelegramUserId)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.BlockedTelegramUserId, &p.IsBlocked, &p.CreatedAt, &p.UpdatedAt)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
-		errorMessage := r.getErrorMessage("Find", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return p, nil
-}
-
-func (r *BlockRepository) FindById(ctx context.Context, id uint64) (*entity.BlockEntity, error) {
-	p := &entity.BlockEntity{}
-	query := "SELECT id, telegram_user_id, blocked_telegram_user_id, is_blocked, created_at, updated_at " +
-		" FROM dating.profile_blocks" +
-		" WHERE id = $1"
-	row := r.db.QueryRowContext(ctx, query, id)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.BlockedTelegramUserId, &p.IsBlocked, &p.CreatedAt, &p.UpdatedAt)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
-		errorMessage := r.getErrorMessage("FindById", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return p, nil
 }
 
 func (r *BlockRepository) getErrorMessage(repositoryMethodName string, callMethodName string) string {

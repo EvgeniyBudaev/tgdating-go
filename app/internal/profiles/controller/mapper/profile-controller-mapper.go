@@ -278,16 +278,9 @@ func (pm *ProfileControllerMapper) MapControllerToLikeUpdateResponse(
 }
 
 func (pm *ProfileControllerMapper) MapControllerToComplaintAddResponse(
-	r *entity.ComplaintEntity) *pb.ComplaintAddResponse {
-	createdAtTimestamp := timestamppb.New(r.CreatedAt)
-	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
+	r *response.ResponseDto) *pb.ComplaintAddResponse {
 	return &pb.ComplaintAddResponse{
-		Id:                     r.Id,
-		TelegramUserId:         r.TelegramUserId,
-		CriminalTelegramUserId: r.CriminalTelegramUserId,
-		Reason:                 r.Reason,
-		CreatedAt:              createdAtTimestamp,
-		UpdatedAt:              updatedAtTimestamp,
+		Success: r.Success,
 	}
 }
 

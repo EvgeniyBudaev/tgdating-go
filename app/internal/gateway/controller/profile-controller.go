@@ -528,8 +528,7 @@ func (pc *ProfileController) AddComplaint() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		complaintResponse := profileMapper.MapToComplaintAddResponse(complaintAdded)
-		return v1.ResponseCreated(ctf, complaintResponse)
+		return v1.ResponseCreated(ctf, complaintAdded)
 	}
 }
 
