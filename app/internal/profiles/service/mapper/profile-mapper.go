@@ -11,26 +11,21 @@ type ProfileMapper struct {
 }
 
 func (pm *ProfileMapper) MapToResponse(
-	pe *entity.ProfileEntity, nr *response.NavigatorResponseDto, fr *response.FilterResponseDto,
-	tr *response.TelegramResponseDto, sr *response.StatusResponseDto, il []*response.ImageResponseDto,
+	p *response.ProfileResponseRepositoryDto, i []*response.ImageResponseDto,
 ) *response.ProfileResponseDto {
 	return &response.ProfileResponseDto{
-		TelegramUserId: pe.TelegramUserId,
-		DisplayName:    pe.DisplayName,
-		Birthday:       pe.Birthday,
-		Gender:         pe.Gender,
-		Location:       pe.Location,
-		Description:    pe.Description,
-		Height:         pe.Height,
-		Weight:         pe.Weight,
-		CreatedAt:      pe.CreatedAt,
-		UpdatedAt:      pe.UpdatedAt,
-		LastOnline:     pe.LastOnline,
-		Navigator:      nr,
-		Filter:         fr,
-		Telegram:       tr,
-		Status:         sr,
-		Images:         il,
+		TelegramUserId: p.TelegramUserId,
+		DisplayName:    p.DisplayName,
+		Birthday:       p.Birthday,
+		Gender:         p.Gender,
+		Location:       p.Location,
+		Description:    p.Description,
+		Height:         p.Height,
+		Weight:         p.Weight,
+		Navigator:      p.Navigator,
+		Filter:         p.Filter,
+		Status:         p.Status,
+		Images:         i,
 	}
 }
 

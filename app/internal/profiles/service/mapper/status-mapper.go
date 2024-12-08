@@ -23,13 +23,13 @@ func (pm *StatusMapper) MapToAddRequest(pr *request.ProfileAddRequestDto) *reque
 		UpdatedAt:      time.Now().UTC(),
 	}
 }
-func (pm *StatusMapper) MapToResponse(pe *entity.StatusEntity, isOnline bool) *response.StatusResponseDto {
+func (pm *StatusMapper) MapToResponse(p *entity.StatusEntity) *response.StatusResponseDto {
 	return &response.StatusResponseDto{
-		IsBlocked:      pe.IsBlocked,
-		IsFrozen:       pe.IsFrozen,
-		IsInvisible:    pe.IsInvisible,
-		IsOnline:       isOnline,
-		IsPremium:      pe.IsPremium,
-		IsShowDistance: pe.IsShowDistance,
+		IsBlocked:      p.IsBlocked,
+		IsFrozen:       p.IsFrozen,
+		IsInvisible:    p.IsInvisible,
+		IsOnline:       p.IsOnline,
+		IsPremium:      p.IsPremium,
+		IsShowDistance: p.IsShowDistance,
 	}
 }

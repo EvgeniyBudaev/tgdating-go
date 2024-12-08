@@ -19,8 +19,7 @@ func (pm *NavigatorMapper) MapToResponse(
 			Latitude:  latitude,
 		}
 		navigatorResponse = &response.NavigatorResponseDto{
-			TelegramUserId: telegramUserId,
-			Location:       location,
+			Location: location,
 		}
 	}
 

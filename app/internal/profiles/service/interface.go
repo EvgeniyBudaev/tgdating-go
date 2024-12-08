@@ -9,9 +9,10 @@ import (
 
 type ProfileRepository interface {
 	Add(ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*response.ResponseDto, error)
-	Update(ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*entity.ProfileEntity, error)
+	Update(ctx context.Context,
+		p *request.ProfileUpdateRequestRepositoryDto) (*response.ProfileResponseRepositoryDto, error)
 	Delete(ctx context.Context, p *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
-	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.ProfileEntity, error)
+	GetProfile(ctx context.Context, telegramUserId string) (*response.ProfileResponseRepositoryDto, error)
 	GetDetail(ctx context.Context,
 		telegramUserId, viewedTelegramUserId string) (*response.ProfileDetailResponseRepositoryDto, error)
 	GetShortInfo(ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseDto, error)

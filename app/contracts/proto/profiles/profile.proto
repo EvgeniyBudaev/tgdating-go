@@ -35,22 +35,20 @@ message Point {
 }
 
 message NavigatorResponse {
-  string telegramUserId = 1; // id пользователя в телеграм
-  Point location = 2; // объект с координатами
+  Point location = 1; // объект с координатами
 }
 message NavigatorDetailResponse {
   optional double distance = 1; // расстояние до просматриваемого пользователя
 }
 
 message FilterResponse {
-  string telegramUserId = 1; // id пользователя в телеграм
-  string searchGender = 2; // поиск по половому признаку
-  string lookingFor = 3; // цель поиска
-  uint64 ageFrom = 4; // возраст от`
-  uint64 ageTo = 5; // возраст до
-  double distance = 6; // дистанция
-  uint64 page = 7; // номер текущей страницы
-  uint64 size = 8; // количество элементов на странице
+  string searchGender = 1; // поиск по половому признаку
+  string lookingFor = 2; // цель поиска
+  uint64 ageFrom = 3; // возраст от`
+  uint64 ageTo = 4; // возраст до
+  double distance = 5; // дистанция
+  uint64 page = 6; // номер текущей страницы
+  uint64 size = 7; // количество элементов на странице
 }
 
 message TelegramResponse {
@@ -165,13 +163,13 @@ message ProfileDeleteResponse {
   bool success = 1; // успешно удалено да/нет
 }
 
-message ProfileGetByTelegramUserIdRequest {
+message ProfileGetRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   optional double latitude = 2; // широта
   optional double longitude = 3; // долгота
 }
 
-message ProfileByTelegramUserIdResponse {
+message ProfileResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   string displayName = 2; // Имя для отображения
   google.protobuf.Timestamp birthday = 3; // дата для рождения
@@ -180,14 +178,10 @@ message ProfileByTelegramUserIdResponse {
   string description = 6; // описание
   double height = 7; // рост
   double weight = 8; // вес
-  google.protobuf.Timestamp createdAt = 9; // дата создания
-  google.protobuf.Timestamp updatedAt = 10; // дата обновления
-  google.protobuf.Timestamp lastOnline = 11; // дата последнего входа в систему
-  NavigatorResponse navigator = 12; // объект навигатор
-  FilterResponse filter = 13; // объект фильтр
-  TelegramResponse telegram = 14; // объект телеграм
-  StatusResponse status = 15; // статус пользователя
-  repeated ImageResponse images = 16; // список изображений
+  NavigatorResponse navigator = 9; // объект навигатор
+  FilterResponse filter = 10; // объект фильтр
+  StatusResponse status = 11; // статус пользователя
+  repeated ImageResponse images = 12; // список изображений
 }
 
 message ProfileGetDetailRequest {
@@ -369,11 +363,11 @@ message NavigatorUpdateResponse {
 */
 service Profile {
   rpc AddProfile(ProfileAddRequest) returns (ProfileAddResponse); // добавление нового пользователя
-  rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileByTelegramUserIdResponse); // обновление данных пользователя
+  rpc UpdateProfile(ProfileUpdateRequest) returns (ProfileResponse); // обновление данных пользователя
   rpc FreezeProfile(ProfileFreezeRequest) returns (ProfileFreezeResponse); // заморозка пользователя
   rpc RestoreProfile(ProfileRestoreRequest) returns (ProfileRestoreResponse); // восстановление пользователя
   rpc DeleteProfile(ProfileDeleteRequest) returns (ProfileDeleteResponse); // удаление пользователя
-  rpc GetProfileByTelegramUserId(ProfileGetByTelegramUserIdRequest) returns (ProfileByTelegramUserIdResponse); // получение профиля по id сессии
+  rpc GetProfile(ProfileGetRequest) returns (ProfileResponse); // получение профиля по id сессии
   rpc GetProfileDetail(ProfileGetDetailRequest) returns (ProfileDetailResponse); // получение карточки профиля
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю
   rpc GetProfileList(ProfileGetListRequest) returns (ProfileListResponse); // получение списка профилей

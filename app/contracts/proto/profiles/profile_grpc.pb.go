@@ -19,24 +19,24 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Profile_AddProfile_FullMethodName                 = "/protobuf.Profile/AddProfile"
-	Profile_UpdateProfile_FullMethodName              = "/protobuf.Profile/UpdateProfile"
-	Profile_FreezeProfile_FullMethodName              = "/protobuf.Profile/FreezeProfile"
-	Profile_RestoreProfile_FullMethodName             = "/protobuf.Profile/RestoreProfile"
-	Profile_DeleteProfile_FullMethodName              = "/protobuf.Profile/DeleteProfile"
-	Profile_GetProfileByTelegramUserId_FullMethodName = "/protobuf.Profile/GetProfileByTelegramUserId"
-	Profile_GetProfileDetail_FullMethodName           = "/protobuf.Profile/GetProfileDetail"
-	Profile_GetProfileShortInfo_FullMethodName        = "/protobuf.Profile/GetProfileShortInfo"
-	Profile_GetProfileList_FullMethodName             = "/protobuf.Profile/GetProfileList"
-	Profile_GetImageByTelegramUserId_FullMethodName   = "/protobuf.Profile/GetImageByTelegramUserId"
-	Profile_GetImageById_FullMethodName               = "/protobuf.Profile/GetImageById"
-	Profile_DeleteImage_FullMethodName                = "/protobuf.Profile/DeleteImage"
-	Profile_UpdateFilter_FullMethodName               = "/protobuf.Profile/UpdateFilter"
-	Profile_AddBlock_FullMethodName                   = "/protobuf.Profile/AddBlock"
-	Profile_AddLike_FullMethodName                    = "/protobuf.Profile/AddLike"
-	Profile_UpdateLike_FullMethodName                 = "/protobuf.Profile/UpdateLike"
-	Profile_AddComplaint_FullMethodName               = "/protobuf.Profile/AddComplaint"
-	Profile_UpdateCoordinates_FullMethodName          = "/protobuf.Profile/UpdateCoordinates"
+	Profile_AddProfile_FullMethodName               = "/protobuf.Profile/AddProfile"
+	Profile_UpdateProfile_FullMethodName            = "/protobuf.Profile/UpdateProfile"
+	Profile_FreezeProfile_FullMethodName            = "/protobuf.Profile/FreezeProfile"
+	Profile_RestoreProfile_FullMethodName           = "/protobuf.Profile/RestoreProfile"
+	Profile_DeleteProfile_FullMethodName            = "/protobuf.Profile/DeleteProfile"
+	Profile_GetProfile_FullMethodName               = "/protobuf.Profile/GetProfile"
+	Profile_GetProfileDetail_FullMethodName         = "/protobuf.Profile/GetProfileDetail"
+	Profile_GetProfileShortInfo_FullMethodName      = "/protobuf.Profile/GetProfileShortInfo"
+	Profile_GetProfileList_FullMethodName           = "/protobuf.Profile/GetProfileList"
+	Profile_GetImageByTelegramUserId_FullMethodName = "/protobuf.Profile/GetImageByTelegramUserId"
+	Profile_GetImageById_FullMethodName             = "/protobuf.Profile/GetImageById"
+	Profile_DeleteImage_FullMethodName              = "/protobuf.Profile/DeleteImage"
+	Profile_UpdateFilter_FullMethodName             = "/protobuf.Profile/UpdateFilter"
+	Profile_AddBlock_FullMethodName                 = "/protobuf.Profile/AddBlock"
+	Profile_AddLike_FullMethodName                  = "/protobuf.Profile/AddLike"
+	Profile_UpdateLike_FullMethodName               = "/protobuf.Profile/UpdateLike"
+	Profile_AddComplaint_FullMethodName             = "/protobuf.Profile/AddComplaint"
+	Profile_UpdateCoordinates_FullMethodName        = "/protobuf.Profile/UpdateCoordinates"
 )
 
 // ProfileClient is the client API for Profile service.
@@ -44,11 +44,11 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProfileClient interface {
 	AddProfile(ctx context.Context, in *ProfileAddRequest, opts ...grpc.CallOption) (*ProfileAddResponse, error)
-	UpdateProfile(ctx context.Context, in *ProfileUpdateRequest, opts ...grpc.CallOption) (*ProfileByTelegramUserIdResponse, error)
+	UpdateProfile(ctx context.Context, in *ProfileUpdateRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
 	FreezeProfile(ctx context.Context, in *ProfileFreezeRequest, opts ...grpc.CallOption) (*ProfileFreezeResponse, error)
 	RestoreProfile(ctx context.Context, in *ProfileRestoreRequest, opts ...grpc.CallOption) (*ProfileRestoreResponse, error)
 	DeleteProfile(ctx context.Context, in *ProfileDeleteRequest, opts ...grpc.CallOption) (*ProfileDeleteResponse, error)
-	GetProfileByTelegramUserId(ctx context.Context, in *ProfileGetByTelegramUserIdRequest, opts ...grpc.CallOption) (*ProfileByTelegramUserIdResponse, error)
+	GetProfile(ctx context.Context, in *ProfileGetRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
 	GetProfileDetail(ctx context.Context, in *ProfileGetDetailRequest, opts ...grpc.CallOption) (*ProfileDetailResponse, error)
 	GetProfileShortInfo(ctx context.Context, in *ProfileGetShortInfoRequest, opts ...grpc.CallOption) (*ProfileShortInfoResponse, error)
 	GetProfileList(ctx context.Context, in *ProfileGetListRequest, opts ...grpc.CallOption) (*ProfileListResponse, error)
@@ -80,8 +80,8 @@ func (c *profileClient) AddProfile(ctx context.Context, in *ProfileAddRequest, o
 	return out, nil
 }
 
-func (c *profileClient) UpdateProfile(ctx context.Context, in *ProfileUpdateRequest, opts ...grpc.CallOption) (*ProfileByTelegramUserIdResponse, error) {
-	out := new(ProfileByTelegramUserIdResponse)
+func (c *profileClient) UpdateProfile(ctx context.Context, in *ProfileUpdateRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
 	err := c.cc.Invoke(ctx, Profile_UpdateProfile_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -116,9 +116,9 @@ func (c *profileClient) DeleteProfile(ctx context.Context, in *ProfileDeleteRequ
 	return out, nil
 }
 
-func (c *profileClient) GetProfileByTelegramUserId(ctx context.Context, in *ProfileGetByTelegramUserIdRequest, opts ...grpc.CallOption) (*ProfileByTelegramUserIdResponse, error) {
-	out := new(ProfileByTelegramUserIdResponse)
-	err := c.cc.Invoke(ctx, Profile_GetProfileByTelegramUserId_FullMethodName, in, out, opts...)
+func (c *profileClient) GetProfile(ctx context.Context, in *ProfileGetRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, Profile_GetProfile_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -238,11 +238,11 @@ func (c *profileClient) UpdateCoordinates(ctx context.Context, in *NavigatorUpda
 // for forward compatibility
 type ProfileServer interface {
 	AddProfile(context.Context, *ProfileAddRequest) (*ProfileAddResponse, error)
-	UpdateProfile(context.Context, *ProfileUpdateRequest) (*ProfileByTelegramUserIdResponse, error)
+	UpdateProfile(context.Context, *ProfileUpdateRequest) (*ProfileResponse, error)
 	FreezeProfile(context.Context, *ProfileFreezeRequest) (*ProfileFreezeResponse, error)
 	RestoreProfile(context.Context, *ProfileRestoreRequest) (*ProfileRestoreResponse, error)
 	DeleteProfile(context.Context, *ProfileDeleteRequest) (*ProfileDeleteResponse, error)
-	GetProfileByTelegramUserId(context.Context, *ProfileGetByTelegramUserIdRequest) (*ProfileByTelegramUserIdResponse, error)
+	GetProfile(context.Context, *ProfileGetRequest) (*ProfileResponse, error)
 	GetProfileDetail(context.Context, *ProfileGetDetailRequest) (*ProfileDetailResponse, error)
 	GetProfileShortInfo(context.Context, *ProfileGetShortInfoRequest) (*ProfileShortInfoResponse, error)
 	GetProfileList(context.Context, *ProfileGetListRequest) (*ProfileListResponse, error)
@@ -265,7 +265,7 @@ type UnimplementedProfileServer struct {
 func (UnimplementedProfileServer) AddProfile(context.Context, *ProfileAddRequest) (*ProfileAddResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddProfile not implemented")
 }
-func (UnimplementedProfileServer) UpdateProfile(context.Context, *ProfileUpdateRequest) (*ProfileByTelegramUserIdResponse, error) {
+func (UnimplementedProfileServer) UpdateProfile(context.Context, *ProfileUpdateRequest) (*ProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
 }
 func (UnimplementedProfileServer) FreezeProfile(context.Context, *ProfileFreezeRequest) (*ProfileFreezeResponse, error) {
@@ -277,8 +277,8 @@ func (UnimplementedProfileServer) RestoreProfile(context.Context, *ProfileRestor
 func (UnimplementedProfileServer) DeleteProfile(context.Context, *ProfileDeleteRequest) (*ProfileDeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProfile not implemented")
 }
-func (UnimplementedProfileServer) GetProfileByTelegramUserId(context.Context, *ProfileGetByTelegramUserIdRequest) (*ProfileByTelegramUserIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetProfileByTelegramUserId not implemented")
+func (UnimplementedProfileServer) GetProfile(context.Context, *ProfileGetRequest) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
 func (UnimplementedProfileServer) GetProfileDetail(context.Context, *ProfileGetDetailRequest) (*ProfileDetailResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfileDetail not implemented")
@@ -419,20 +419,20 @@ func _Profile_DeleteProfile_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Profile_GetProfileByTelegramUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ProfileGetByTelegramUserIdRequest)
+func _Profile_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileGetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ProfileServer).GetProfileByTelegramUserId(ctx, in)
+		return srv.(ProfileServer).GetProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Profile_GetProfileByTelegramUserId_FullMethodName,
+		FullMethod: Profile_GetProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProfileServer).GetProfileByTelegramUserId(ctx, req.(*ProfileGetByTelegramUserIdRequest))
+		return srv.(ProfileServer).GetProfile(ctx, req.(*ProfileGetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -681,8 +681,8 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Profile_DeleteProfile_Handler,
 		},
 		{
-			MethodName: "GetProfileByTelegramUserId",
-			Handler:    _Profile_GetProfileByTelegramUserId_Handler,
+			MethodName: "GetProfile",
+			Handler:    _Profile_GetProfile_Handler,
 		},
 		{
 			MethodName: "GetProfileDetail",

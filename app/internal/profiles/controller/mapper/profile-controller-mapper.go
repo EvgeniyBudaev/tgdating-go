@@ -78,12 +78,9 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateRequest(
 	}
 }
 
-func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
-	r *response.ProfileResponseDto) *pb.ProfileByTelegramUserIdResponse {
+func (pm *ProfileControllerMapper) MapControllerResponse(
+	r *response.ProfileResponseDto) *pb.ProfileResponse {
 	birthdayTimestamp := timestamppb.New(r.Birthday)
-	createdAtTimestamp := timestamppb.New(r.CreatedAt)
-	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
-	lastOnlineTimestamp := timestamppb.New(r.LastOnline)
 	var navigatorResponse *pb.NavigatorResponse
 	if r.Navigator != nil {
 		location := &pb.Point{
@@ -91,8 +88,7 @@ func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
 			Longitude: r.Navigator.Location.Longitude,
 		}
 		navigatorResponse = &pb.NavigatorResponse{
-			TelegramUserId: r.Navigator.TelegramUserId,
-			Location:       location,
+			Location: location,
 		}
 	}
 	images := make([]*pb.ImageResponse, 0)
@@ -105,7 +101,7 @@ func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
 			})
 		}
 	}
-	return &pb.ProfileByTelegramUserIdResponse{
+	return &pb.ProfileResponse{
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
 		Birthday:       birthdayTimestamp,
@@ -114,28 +110,15 @@ func (pm *ProfileControllerMapper) MapControllerToByTelegramUserIdResponse(
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		CreatedAt:      createdAtTimestamp,
-		UpdatedAt:      updatedAtTimestamp,
-		LastOnline:     lastOnlineTimestamp,
 		Navigator:      navigatorResponse,
 		Filter: &pb.FilterResponse{
-			TelegramUserId: r.Filter.TelegramUserId,
-			SearchGender:   r.Filter.SearchGender,
-			LookingFor:     r.Filter.LookingFor,
-			AgeFrom:        r.Filter.AgeFrom,
-			AgeTo:          r.Filter.AgeTo,
-			Distance:       r.Filter.Distance,
-			Page:           r.Filter.Page,
-			Size:           r.Filter.Size,
-		},
-		Telegram: &pb.TelegramResponse{
-			UserId:          r.Telegram.UserId,
-			Username:        r.Telegram.Username,
-			FirstName:       r.Telegram.FirstName,
-			LastName:        r.Telegram.LastName,
-			LanguageCode:    r.Telegram.LanguageCode,
-			AllowsWriteToPm: r.Telegram.AllowsWriteToPm,
-			QueryId:         r.Telegram.QueryId,
+			SearchGender: r.Filter.SearchGender,
+			LookingFor:   r.Filter.LookingFor,
+			AgeFrom:      r.Filter.AgeFrom,
+			AgeTo:        r.Filter.AgeTo,
+			Distance:     r.Filter.Distance,
+			Page:         r.Filter.Page,
+			Size:         r.Filter.Size,
 		},
 		Status: &pb.StatusResponse{
 			IsBlocked:      r.Status.IsBlocked,
@@ -259,14 +242,13 @@ func (pm *ProfileControllerMapper) MapControllerToImageResponse(r *response.Imag
 func (pm *ProfileControllerMapper) MapControllerToFilterUpdateResponse(
 	r *response.FilterResponseDto) *pb.FilterUpdateResponse {
 	return &pb.FilterUpdateResponse{
-		TelegramUserId: r.TelegramUserId,
-		SearchGender:   r.SearchGender,
-		LookingFor:     r.LookingFor,
-		AgeFrom:        r.AgeFrom,
-		AgeTo:          r.AgeTo,
-		Distance:       r.Distance,
-		Page:           r.Page,
-		Size:           r.Size,
+		SearchGender: r.SearchGender,
+		LookingFor:   r.LookingFor,
+		AgeFrom:      r.AgeFrom,
+		AgeTo:        r.AgeTo,
+		Distance:     r.Distance,
+		Page:         r.Page,
+		Size:         r.Size,
 	}
 }
 
@@ -316,7 +298,6 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateCoordinatesResponse(
 		Longitude: r.Location.Longitude,
 	}
 	return &pb.NavigatorUpdateResponse{
-		TelegramUserId: r.TelegramUserId,
-		Location:       location,
+		Location: location,
 	}
 }

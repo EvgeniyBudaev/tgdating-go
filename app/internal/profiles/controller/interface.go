@@ -13,8 +13,8 @@ type ProfileService interface {
 	FreezeProfile(ctx context.Context, pr *request.ProfileFreezeRequestDto) (*response.ResponseDto, error)
 	RestoreProfile(ctx context.Context, pr *request.ProfileRestoreRequestDto) (*response.ResponseDto, error)
 	DeleteProfile(ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error)
-	GetProfileByTelegramUserId(ctx context.Context, telegramUserId string,
-		pr *request.ProfileGetByTelegramUserIdRequestDto) (*response.ProfileResponseDto, error)
+	GetProfile(ctx context.Context, telegramUserId string,
+		pr *request.ProfileGetRequestDto) (*response.ProfileResponseDto, error)
 	GetProfileDetail(ctx context.Context, telegramUserId string,
 		pr *request.ProfileGetDetailRequestDto) (*response.ProfileDetailResponseDto, error)
 	GetProfileShortInfo(ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseDto, error)

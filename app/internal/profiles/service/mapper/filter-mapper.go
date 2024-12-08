@@ -13,14 +13,13 @@ type FilterMapper struct {
 func (pm *FilterMapper) MapToResponse(
 	pe *entity.FilterEntity) *response.FilterResponseDto {
 	return &response.FilterResponseDto{
-		TelegramUserId: pe.TelegramUserId,
-		SearchGender:   pe.SearchGender,
-		LookingFor:     pe.LookingFor,
-		AgeFrom:        pe.AgeFrom,
-		AgeTo:          pe.AgeTo,
-		Distance:       pe.Distance,
-		Page:           pe.Page,
-		Size:           pe.Size,
+		SearchGender: pe.SearchGender,
+		LookingFor:   pe.LookingFor,
+		AgeFrom:      pe.AgeFrom,
+		AgeTo:        pe.AgeTo,
+		Distance:     pe.Distance,
+		Page:         pe.Page,
+		Size:         pe.Size,
 	}
 }
 

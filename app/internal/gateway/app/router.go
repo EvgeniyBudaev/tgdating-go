@@ -9,7 +9,7 @@ var prefix = "/api/v1"
 
 func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileController) {
 	router := app.Group(prefix)
-	router.Get("/profiles/telegram/:telegramUserId", profileController.GetProfileByTelegramUserId())
+	router.Get("/profiles/telegram/:telegramUserId", profileController.GetProfile())
 	router.Get("/profiles/detail/:viewedTelegramUserId", profileController.GetProfileDetail())
 	router.Get("/profiles/short/:telegramUserId", profileController.GetProfileShortInfo())
 	router.Get("/profiles/list", profileController.GetProfileList())

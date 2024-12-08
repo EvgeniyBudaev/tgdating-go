@@ -56,7 +56,7 @@ func (pc *ProfileController) AddProfile(ctx context.Context, in *pb.ProfileAddRe
 }
 
 func (pc *ProfileController) UpdateProfile(
-	ctx context.Context, in *pb.ProfileUpdateRequest) (*pb.ProfileByTelegramUserIdResponse, error) {
+	ctx context.Context, in *pb.ProfileUpdateRequest) (*pb.ProfileResponse, error) {
 	pc.logger.Info("PUT /api/v1/profiles")
 	fileList := make([]*entity.FileMetadata, 0)
 	if len(in.Files) > 0 {
@@ -74,7 +74,7 @@ func (pc *ProfileController) UpdateProfile(
 	if err != nil {
 		return nil, err
 	}
-	profileResponse := profileMapper.MapControllerToByTelegramUserIdResponse(profileUpdated)
+	profileResponse := profileMapper.MapControllerResponse(profileUpdated)
 	return profileResponse, nil
 }
 
@@ -123,14 +123,14 @@ func (pc *ProfileController) DeleteProfile(
 	}, nil
 }
 
-func (pc *ProfileController) GetProfileByTelegramUserId(
-	ctx context.Context, in *pb.ProfileGetByTelegramUserIdRequest) (*pb.ProfileByTelegramUserIdResponse, error) {
+func (pc *ProfileController) GetProfile(
+	ctx context.Context, in *pb.ProfileGetRequest) (*pb.ProfileResponse, error) {
 	pc.logger.Info("GET /api/v1/profiles/telegram/:telegramUserId")
-	req := &request.ProfileGetByTelegramUserIdRequestDto{
+	req := &request.ProfileGetRequestDto{
 		Latitude:  in.Latitude,
 		Longitude: in.Longitude,
 	}
-	profileByTelegramUserId, err := pc.service.GetProfileByTelegramUserId(ctx, in.TelegramUserId, req)
+	profileByTelegramUserId, err := pc.service.GetProfile(ctx, in.TelegramUserId, req)
 	if err != nil {
 		if errors.Is(err, psql.ErrNotRowFound) {
 			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
@@ -138,7 +138,7 @@ func (pc *ProfileController) GetProfileByTelegramUserId(
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileControllerMapper{}
-	profileResponse := profileMapper.MapControllerToByTelegramUserIdResponse(profileByTelegramUserId)
+	profileResponse := profileMapper.MapControllerResponse(profileByTelegramUserId)
 	return profileResponse, nil
 }
 

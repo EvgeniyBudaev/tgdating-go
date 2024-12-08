@@ -205,25 +205,23 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 	}
 }
 
-func (pc *ProfileController) GetProfileByTelegramUserId() fiber.Handler {
+func (pc *ProfileController) GetProfile() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("GET /api/v1/profiles/telegram/:telegramUserId")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
 		req := &request.ProfileGetByTelegramUserIdRequestDto{}
 		if err := ctf.QueryParser(req); err != nil {
-			errorMessage := pc.getErrorMessage("GetProfileByTelegramUserId",
-				"QueryParser")
+			errorMessage := pc.getErrorMessage("GetProfile", "QueryParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
 		telegramUserId := ctf.Params("telegramUserId")
 		profileMapper := &mapper.ProfileMapper{}
-		profileRequest := profileMapper.MapToGetByTelegramUserIdRequest(req, telegramUserId)
-		profileByTelegramUserId, err := pc.proto.GetProfileByTelegramUserId(ctx, profileRequest)
+		profileRequest := profileMapper.MapToGetRequest(req, telegramUserId)
+		profileByTelegramUserId, err := pc.proto.GetProfile(ctx, profileRequest)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("GetProfileByTelegramUserId",
-				"proto.GetProfileByTelegramUserId")
+			errorMessage := pc.getErrorMessage("GetProfile", "proto.GetProfile")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			if e, ok := status.FromError(err); ok {
 				if e.Code() == codes.NotFound {

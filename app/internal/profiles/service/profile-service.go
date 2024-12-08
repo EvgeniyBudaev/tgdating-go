@@ -163,6 +163,37 @@ func (s *ProfileService) UpdateProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	if err := s.updateImageList(ctx, unitOfWork, pr.TelegramUserId, pr.Files); err != nil {
+		return nil, err
+	}
+	if pr.Longitude != nil && pr.Latitude != nil {
+		longitude := *pr.Longitude
+		latitude := *pr.Latitude
+		_, err := s.updateNavigator(ctx, pr.TelegramUserId, longitude, latitude)
+		if err != nil {
+			errorMessage := s.getErrorMessage("UpdateProfile", "updateNavigator")
+			s.logger.Debug(errorMessage, zap.Error(err))
+			return nil, err
+		}
+	}
+	filterMapper := &mapper.FilterMapper{}
+	filterRequest := filterMapper.MapProfileToUpdateRequest(pr)
+	_, err := unitOfWork.FilterRepository().Update(ctx, filterRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile",
+			"FilterRepository().Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	telegramMapper := &mapper.TelegramMapper{}
+	telegramRequest := telegramMapper.MapToUpdateRequest(pr)
+	_, err = unitOfWork.TelegramRepository().Update(ctx, telegramRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile",
+			"telegramRepository.Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToUpdateRequest(pr)
 	profileEntity, err := unitOfWork.ProfileRepository().Update(ctx, profileRequest)
@@ -172,50 +203,6 @@ func (s *ProfileService) UpdateProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	if err := s.updateImageList(ctx, unitOfWork, profileEntity.TelegramUserId, pr.Files); err != nil {
-		return nil, err
-	}
-	var navigatorResponse *response.NavigatorResponseDto
-	if pr.Longitude != nil && pr.Latitude != nil {
-		longitude := *pr.Longitude
-		latitude := *pr.Latitude
-		navigatorResponse, err = s.updateNavigator(ctx, pr.TelegramUserId, longitude, latitude)
-		if err != nil {
-			errorMessage := s.getErrorMessage("UpdateProfile", "updateNavigator")
-			s.logger.Debug(errorMessage, zap.Error(err))
-			return nil, err
-		}
-	}
-	filterMapper := &mapper.FilterMapper{}
-	filterRequest := filterMapper.MapProfileToUpdateRequest(pr)
-	filterEntity, err := unitOfWork.FilterRepository().Update(ctx, filterRequest)
-	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateProfile",
-			"FilterRepository().Update")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	filterResponse := filterMapper.MapToResponse(filterEntity)
-	telegramMapper := &mapper.TelegramMapper{}
-	telegramRequest := telegramMapper.MapToUpdateRequest(pr)
-	telegramEntity, err := unitOfWork.TelegramRepository().Update(ctx, telegramRequest)
-	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateProfile",
-			"telegramRepository.Update")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
-	isOnline := s.checkIsOnline(profileEntity.LastOnline)
-	statusMapper := &mapper.StatusMapper{}
-	statusEntity, err := unitOfWork.StatusRepository().FindByTelegramUserId(ctx, pr.TelegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("UpdateProfile",
-			"StatusRepository().FindByTelegramUserId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	statusResponse := statusMapper.MapToResponse(statusEntity, isOnline)
 	imageEntityList, err := unitOfWork.ImageRepository().SelectListByTelegramUserId(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile",
@@ -223,8 +210,7 @@ func (s *ProfileService) UpdateProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	profileResponse := profileMapper.MapToResponse(profileEntity, navigatorResponse, filterResponse, telegramResponse,
-		statusResponse, imageEntityList)
+	profileResponse := profileMapper.MapToResponse(profileEntity, imageEntityList)
 	defer func() {
 		if err != nil {
 			if err := unitOfWork.Rollback(ctx); err != nil {
@@ -366,8 +352,8 @@ func (s *ProfileService) DeleteProfile(
 	return profileResponse, err
 }
 
-func (s *ProfileService) GetProfileByTelegramUserId(ctx context.Context, telegramUserId string,
-	pr *request.ProfileGetByTelegramUserIdRequestDto) (*response.ProfileResponseDto, error) {
+func (s *ProfileService) GetProfile(ctx context.Context, telegramUserId string,
+	pr *request.ProfileGetRequestDto) (*response.ProfileResponseDto, error) {
 	if err := s.checkProfileExists(ctx, telegramUserId); err != nil {
 		return nil, err
 	}
@@ -380,65 +366,27 @@ func (s *ProfileService) GetProfileByTelegramUserId(ctx context.Context, telegra
 		latitude := *pr.Latitude
 		_, err = s.updateNavigator(ctx, telegramUserId, longitude, latitude)
 		if err != nil {
-			errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
-				"updateNavigator")
+			errorMessage := s.getErrorMessage("GetProfile", "updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
-	profileEntity, err := s.profileRepository.FindByTelegramUserId(ctx, telegramUserId)
+	profileEntity, err := s.profileRepository.GetProfile(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
-			"profileRepository.FindByTelegramUserId")
+		errorMessage := s.getErrorMessage("GetProfile",
+			"profileRepository.GetProfile")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	navigatorEntity, _ := s.navigatorRepository.FindByTelegramUserId(ctx, telegramUserId)
-	var navigatorResponse *response.NavigatorResponseDto
-	if navigatorEntity != nil {
-		longitude := navigatorEntity.Location.Longitude
-		latitude := navigatorEntity.Location.Latitude
-		navigatorMapper := &mapper.NavigatorMapper{}
-		navigatorResponse = navigatorMapper.MapToResponse(telegramUserId, longitude, latitude)
-	}
-	filterMapper := &mapper.FilterMapper{}
-	filterEntity, err := s.filterRepository.FindByTelegramUserId(ctx, telegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
-			"filterRepository.FindByTelegramUserId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	filterResponse := filterMapper.MapToResponse(filterEntity)
-	telegramEntity, err := s.telegramRepository.FindByTelegramUserId(ctx, telegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
-			"telegramRepository.FindByTelegramUserId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	telegramMapper := &mapper.TelegramMapper{}
-	telegramResponse := telegramMapper.MapToResponse(telegramEntity)
-	isOnline := s.checkIsOnline(profileEntity.LastOnline)
-	statusMapper := &mapper.StatusMapper{}
-	statusEntity, err := s.statusRepository.FindByTelegramUserId(ctx, telegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
-			"statusRepository.FindByTelegramUserId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	statusResponse := statusMapper.MapToResponse(statusEntity, isOnline)
 	imageList, err := s.imageRepository.SelectListByTelegramUserId(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileByTelegramUserId",
+		errorMessage := s.getErrorMessage("GetProfile",
 			"imageRepository.SelectListByTelegramUserId")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileResponse := profileMapper.MapToResponse(
-		profileEntity, navigatorResponse, filterResponse, telegramResponse, statusResponse, imageList)
+	profileResponse := profileMapper.MapToResponse(profileEntity, imageList)
 	return profileResponse, err
 }
 
@@ -1075,8 +1023,7 @@ func (s *ProfileService) updateNavigator(
 		}
 		location := &entity.PointEntity{Longitude: longitude, Latitude: latitude}
 		r = &response.NavigatorResponseDto{
-			TelegramUserId: telegramUserId,
-			Location:       location,
+			Location: location,
 		}
 	}
 	tx.Commit()

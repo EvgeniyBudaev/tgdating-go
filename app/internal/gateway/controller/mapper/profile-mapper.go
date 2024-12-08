@@ -92,9 +92,9 @@ func (pm *ProfileMapper) MapToDeleteRequest(r *request.ProfileDeleteRequestDto) 
 	}
 }
 
-func (pm *ProfileMapper) MapToGetByTelegramUserIdRequest(
-	r *request.ProfileGetByTelegramUserIdRequestDto, telegramUserId string) *pb.ProfileGetByTelegramUserIdRequest {
-	return &pb.ProfileGetByTelegramUserIdRequest{
+func (pm *ProfileMapper) MapToGetRequest(
+	r *request.ProfileGetByTelegramUserIdRequestDto, telegramUserId string) *pb.ProfileGetRequest {
+	return &pb.ProfileGetRequest{
 		TelegramUserId: telegramUserId,
 		Latitude:       r.Latitude,
 		Longitude:      r.Longitude,
@@ -102,7 +102,7 @@ func (pm *ProfileMapper) MapToGetByTelegramUserIdRequest(
 }
 
 func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
-	r *pb.ProfileByTelegramUserIdResponse) *response.ProfileResponseDto {
+	r *pb.ProfileResponse) *response.ProfileResponseDto {
 	var navigatorResponse *response.NavigatorResponseDto
 	if r.Navigator != nil {
 		location := &entity.PointEntity{
@@ -110,8 +110,7 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
 			Longitude: r.Navigator.Location.Longitude,
 		}
 		navigatorResponse = &response.NavigatorResponseDto{
-			TelegramUserId: r.Navigator.TelegramUserId,
-			Location:       location,
+			Location: location,
 		}
 	}
 	images := make([]*entity.ImageEntity, 0)
@@ -137,28 +136,15 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
 		Description:    r.Description,
 		Height:         r.Height,
 		Weight:         r.Weight,
-		CreatedAt:      r.CreatedAt.AsTime(),
-		UpdatedAt:      r.UpdatedAt.AsTime(),
-		LastOnline:     r.LastOnline.AsTime(),
 		Navigator:      navigatorResponse,
 		Filter: &response.FilterResponseDto{
-			TelegramUserId: r.Filter.TelegramUserId,
-			SearchGender:   r.Filter.SearchGender,
-			LookingFor:     r.Filter.LookingFor,
-			AgeFrom:        r.Filter.AgeFrom,
-			AgeTo:          r.Filter.AgeTo,
-			Distance:       r.Filter.Distance,
-			Page:           r.Filter.Page,
-			Size:           r.Filter.Size,
-		},
-		Telegram: &response.TelegramResponseDto{
-			UserId:          r.Telegram.UserId,
-			Username:        r.Telegram.Username,
-			FirstName:       r.Telegram.FirstName,
-			LastName:        r.Telegram.LastName,
-			LanguageCode:    r.Telegram.LanguageCode,
-			AllowsWriteToPm: r.Telegram.AllowsWriteToPm,
-			QueryId:         r.Telegram.QueryId,
+			SearchGender: r.Filter.SearchGender,
+			LookingFor:   r.Filter.LookingFor,
+			AgeFrom:      r.Filter.AgeFrom,
+			AgeTo:        r.Filter.AgeTo,
+			Distance:     r.Filter.Distance,
+			Page:         r.Filter.Page,
+			Size:         r.Filter.Size,
 		},
 		Status: &response.StatusResponseDto{
 			IsBlocked:      r.Status.IsBlocked,

@@ -1,10 +1,8 @@
 package response
 
-import (
-	"time"
-)
+import "time"
 
-type ProfileResponseDto struct {
+type ProfileResponseRepositoryDto struct {
 	TelegramUserId string                `json:"telegramUserId"`
 	DisplayName    string                `json:"displayName"`
 	Birthday       time.Time             `json:"birthday"`
@@ -16,5 +14,4 @@ type ProfileResponseDto struct {
 	Navigator      *NavigatorResponseDto `json:"navigator"`
 	Filter         *FilterResponseDto    `json:"filter"`
 	Status         *StatusResponseDto    `json:"status"`
-	Images         []*ImageResponseDto   `json:"images"`
 }

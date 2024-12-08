@@ -14,12 +14,8 @@ type ProfileResponseDto struct {
 	Description    string                `json:"description"`
 	Height         float64               `json:"height"`
 	Weight         float64               `json:"weight"`
-	CreatedAt      time.Time             `json:"createdAt"`
-	UpdatedAt      time.Time             `json:"updatedAt"`
-	LastOnline     time.Time             `json:"lastOnline"`
 	Navigator      *NavigatorResponseDto `json:"navigator"`
 	Filter         *FilterResponseDto    `json:"filter"`
-	Telegram       *TelegramResponseDto  `json:"telegram"`
 	Status         *StatusResponseDto    `json:"status"`
 	Images         []*entity.ImageEntity `json:"images"`
 }
