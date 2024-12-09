@@ -113,17 +113,14 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
 			Location: location,
 		}
 	}
-	images := make([]*entity.ImageEntity, 0)
+	images := make([]*response.ImageResponseDto, 0)
 	if len(r.Images) > 0 {
 		for _, image := range r.Images {
-			images = append(images, &entity.ImageEntity{
+			images = append(images, &response.ImageResponseDto{
 				Id:             image.Id,
 				TelegramUserId: image.TelegramUserId,
 				Name:           image.Name,
 				Url:            image.Url,
-				Size:           image.Size,
-				CreatedAt:      image.CreatedAt.AsTime(),
-				UpdatedAt:      image.UpdatedAt.AsTime(),
 			})
 		}
 	}
@@ -208,9 +205,10 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 	if len(r.Images) > 0 {
 		for _, image := range r.Images {
 			images = append(images, &response.ImageResponseDto{
-				Id:   image.Id,
-				Name: image.Name,
-				Url:  image.Url,
+				Id:             image.Id,
+				TelegramUserId: image.TelegramUserId,
+				Name:           image.Name,
+				Url:            image.Url,
 			})
 		}
 	}

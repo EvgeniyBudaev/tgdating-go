@@ -38,7 +38,6 @@ type FilterRepository interface {
 type TelegramRepository interface {
 	Add(ctx context.Context, p *request.TelegramAddRequestRepositoryDto) (*response.ResponseDto, error)
 	Update(ctx context.Context, p *request.TelegramUpdateRequestRepositoryDto) (*entity.TelegramEntity, error)
-	FindById(ctx context.Context, id uint64) (*entity.TelegramEntity, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.TelegramEntity, error)
 }
 
@@ -73,12 +72,11 @@ type ComplaintRepository interface {
 }
 
 type StatusRepository interface {
-	Add(ctx context.Context, p *request.StatusAddRequestRepositoryDto) (*entity.StatusEntity, error)
+	Add(ctx context.Context, p *request.StatusAddRequestRepositoryDto) (*response.ResponseDto, error)
 	Update(ctx context.Context, p *request.StatusUpdateRequestRepositoryDto) (*entity.StatusEntity, error)
 	Block(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
 	Freeze(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
 	Restore(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
-	FindById(ctx context.Context, id uint64) (*entity.StatusEntity, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
 	CheckProfileExists(ctx context.Context, telegramUserId string) (*response.CheckExistsDto, error)
 }

@@ -1,7 +1,6 @@
 package response
 
 import (
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/entity"
 	"time"
 )
 
@@ -17,5 +16,5 @@ type ProfileResponseDto struct {
 	Navigator      *NavigatorResponseDto `json:"navigator"`
 	Filter         *FilterResponseDto    `json:"filter"`
 	Status         *StatusResponseDto    `json:"status"`
-	Images         []*entity.ImageEntity `json:"images"`
+	Images         []*ImageResponseDto   `json:"images"`
 }

@@ -59,7 +59,7 @@ func New() *App {
 	// Rate limiter to prevent DDOS attacks
 	// https://docs.gofiber.io/api/middleware/limiter/
 	f.Use(limiter.New(limiter.Config{
-		Max:        60,
+		Max:        300,
 		Expiration: 30 * time.Second,
 	}))
 

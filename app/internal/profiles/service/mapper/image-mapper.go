@@ -9,8 +9,9 @@ type ImageMapper struct {
 
 func (pm *ImageMapper) MapToResponse(i *response.ImageResponseRepositoryDto) *response.ImageResponseDto {
 	return &response.ImageResponseDto{
-		Id:   i.Id,
-		Name: i.Name,
-		Url:  i.Url,
+		Id:             i.Id,
+		TelegramUserId: i.TelegramUserId,
+		Name:           i.Name,
+		Url:            i.Url,
 	}
 }

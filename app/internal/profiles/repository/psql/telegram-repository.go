@@ -62,23 +62,6 @@ func (r *TelegramRepository) Update(
 	return r.FindByTelegramUserId(ctx, p.UserId)
 }
 
-func (r *TelegramRepository) FindById(ctx context.Context, id uint64) (*entity.TelegramEntity, error) {
-	p := &entity.TelegramEntity{}
-	query := "SELECT id, user_id, username, first_name, last_name, language_code, allows_write_to_pm," +
-		" query_id, created_at, updated_at" +
-		" FROM dating.profile_telegrams" +
-		" WHERE id = $1"
-	row := r.db.QueryRowContext(ctx, query, id)
-	err := row.Scan(&p.Id, &p.UserId, &p.UserName, &p.FirstName, &p.LastName, &p.LanguageCode,
-		&p.AllowsWriteToPm, &p.QueryId, &p.CreatedAt, &p.UpdatedAt)
-	if err != nil {
-		errorMessage := r.getErrorMessage("FindById", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return p, nil
-}
-
 func (r *TelegramRepository) FindByTelegramUserId(
 	ctx context.Context, telegramUserId string) (*entity.TelegramEntity, error) {
 	p := &entity.TelegramEntity{}

@@ -30,7 +30,7 @@ func NewStatusRepository(l logger.Logger, db *sql.DB) *StatusRepository {
 }
 
 func (r *StatusRepository) Add(
-	ctx context.Context, p *request.StatusAddRequestRepositoryDto) (*entity.StatusEntity, error) {
+	ctx context.Context, p *request.StatusAddRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "INSERT INTO dating.profile_statuses (telegram_user_id, is_blocked, is_frozen, is_invisible, is_online," +
 		"  is_premium, is_show_distance, created_at, updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
@@ -43,7 +43,10 @@ func (r *StatusRepository) Add(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindById(ctx, id)
+	statusResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return statusResponse, nil
 }
 
 func (r *StatusRepository) Update(
@@ -95,23 +98,6 @@ func (r *StatusRepository) Restore(
 		return nil, err
 	}
 	return r.FindByTelegramUserId(ctx, telegramUserId)
-}
-
-func (r *StatusRepository) FindById(ctx context.Context, id uint64) (*entity.StatusEntity, error) {
-	p := &entity.StatusEntity{}
-	query := "SELECT id, telegram_user_id, is_blocked, is_frozen, is_invisible, is_online, is_premium," +
-		" is_show_distance, created_at, updated_at" +
-		" FROM dating.profile_statuses" +
-		" WHERE id = $1"
-	row := r.db.QueryRowContext(ctx, query, id)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.IsBlocked, &p.IsFrozen, &p.IsInvisible, &p.IsOnline, &p.IsPremium,
-		&p.IsShowDistance, &p.CreatedAt, &p.UpdatedAt)
-	if err != nil {
-		errorMessage := r.getErrorMessage("FindById", "Scan")
-		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	return p, nil
 }
 
 func (r *StatusRepository) FindByTelegramUserId(

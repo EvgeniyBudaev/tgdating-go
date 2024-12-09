@@ -152,14 +152,10 @@ type ImageResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id             uint64               `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                        // id изображения
-	TelegramUserId string               `protobuf:"bytes,2,opt,name=telegramUserId,proto3" json:"telegramUserId,omitempty"` // id пользователя в телеграм
-	Name           string               `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                     // название файла
-	Url            string               `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`                       // url файла
-	Size           int64                `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`                    // Размер файла в байтах
-	Status         *ImageStatusResponse `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`                 // статусы изображений
-	CreatedAt      *timestamp.Timestamp `protobuf:"bytes,7,opt,name=createdAt,proto3" json:"createdAt,omitempty"`           // дата создания
-	UpdatedAt      *timestamp.Timestamp `protobuf:"bytes,8,opt,name=updatedAt,proto3" json:"updatedAt,omitempty"`           // дата обновления
+	Id             uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                        // id изображения
+	TelegramUserId string `protobuf:"bytes,2,opt,name=telegramUserId,proto3" json:"telegramUserId,omitempty"` // id пользователя в телеграм
+	Name           string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                     // название файла
+	Url            string `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`                       // url файла
 }
 
 func (x *ImageResponse) Reset() {
@@ -220,34 +216,6 @@ func (x *ImageResponse) GetUrl() string {
 		return x.Url
 	}
 	return ""
-}
-
-func (x *ImageResponse) GetSize() int64 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *ImageResponse) GetStatus() *ImageStatusResponse {
-	if x != nil {
-		return x.Status
-	}
-	return nil
-}
-
-func (x *ImageResponse) GetCreatedAt() *timestamp.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *ImageResponse) GetUpdatedAt() *timestamp.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
 }
 
 type Point struct {
@@ -3515,26 +3483,14 @@ var file_contracts_proto_profiles_profile_proto_rawDesc = []byte{
 	0x65, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x69, 0x73, 0x50, 0x72, 0x69, 0x6d, 0x61, 0x72, 0x79, 0x18,
 	0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x69, 0x73, 0x50, 0x72, 0x69, 0x6d, 0x61, 0x72, 0x79,
 	0x12, 0x1c, 0x0a, 0x09, 0x69, 0x73, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x08, 0x52, 0x09, 0x69, 0x73, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x22, 0xac,
-	0x02, 0x0a, 0x0d, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64,
-	0x12, 0x26, 0x0a, 0x0e, 0x74, 0x65, 0x6c, 0x65, 0x67, 0x72, 0x61, 0x6d, 0x55, 0x73, 0x65, 0x72,
-	0x49, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x74, 0x65, 0x6c, 0x65, 0x67, 0x72,
-	0x61, 0x6d, 0x55, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03,
-	0x75, 0x72, 0x6c, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x6c, 0x12, 0x12,
-	0x0a, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x03, 0x52, 0x04, 0x73, 0x69,
-	0x7a, 0x65, 0x12, 0x35, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x06, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x49, 0x6d,
-	0x61, 0x67, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x38, 0x0a, 0x09, 0x63, 0x72, 0x65,
-	0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67,
-	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54,
-	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65,
-	0x64, 0x41, 0x74, 0x12, 0x38, 0x0a, 0x09, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74,
-	0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
-	0x6d, 0x70, 0x52, 0x09, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x22, 0x41, 0x0a,
+	0x01, 0x28, 0x08, 0x52, 0x09, 0x69, 0x73, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x22, 0x6d,
+	0x0a, 0x0d, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x26, 0x0a, 0x0e, 0x74, 0x65, 0x6c, 0x65, 0x67, 0x72, 0x61, 0x6d, 0x55, 0x73, 0x65, 0x72, 0x49,
+	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x74, 0x65, 0x6c, 0x65, 0x67, 0x72, 0x61,
+	0x6d, 0x55, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x75,
+	0x72, 0x6c, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x6c, 0x22, 0x41, 0x0a,
 	0x05, 0x50, 0x6f, 0x69, 0x6e, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x6c, 0x61, 0x74, 0x69, 0x74, 0x75,
 	0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x01, 0x52, 0x08, 0x6c, 0x61, 0x74, 0x69, 0x74, 0x75,
 	0x64, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6c, 0x6f, 0x6e, 0x67, 0x69, 0x74, 0x75, 0x64, 0x65, 0x18,
@@ -4188,74 +4144,71 @@ var file_contracts_proto_profiles_profile_proto_goTypes = []interface{}{
 	(*timestamp.Timestamp)(nil),             // 46: google.protobuf.Timestamp
 }
 var file_contracts_proto_profiles_profile_proto_depIdxs = []int32{
-	1,  // 0: protobuf.ImageResponse.status:type_name -> protobuf.ImageStatusResponse
-	46, // 1: protobuf.ImageResponse.createdAt:type_name -> google.protobuf.Timestamp
-	46, // 2: protobuf.ImageResponse.updatedAt:type_name -> google.protobuf.Timestamp
-	3,  // 3: protobuf.NavigatorResponse.location:type_name -> protobuf.Point
-	46, // 4: protobuf.LikeResponse.updatedAt:type_name -> google.protobuf.Timestamp
-	46, // 5: protobuf.ProfileAddRequest.birthday:type_name -> google.protobuf.Timestamp
-	0,  // 6: protobuf.ProfileAddRequest.files:type_name -> protobuf.FileMetadata
-	46, // 7: protobuf.ProfileUpdateRequest.birthday:type_name -> google.protobuf.Timestamp
-	0,  // 8: protobuf.ProfileUpdateRequest.files:type_name -> protobuf.FileMetadata
-	46, // 9: protobuf.ProfileResponse.birthday:type_name -> google.protobuf.Timestamp
-	4,  // 10: protobuf.ProfileResponse.navigator:type_name -> protobuf.NavigatorResponse
-	6,  // 11: protobuf.ProfileResponse.filter:type_name -> protobuf.FilterResponse
-	8,  // 12: protobuf.ProfileResponse.status:type_name -> protobuf.StatusResponse
-	2,  // 13: protobuf.ProfileResponse.images:type_name -> protobuf.ImageResponse
-	46, // 14: protobuf.ProfileDetailResponse.birthday:type_name -> google.protobuf.Timestamp
-	5,  // 15: protobuf.ProfileDetailResponse.navigator:type_name -> protobuf.NavigatorDetailResponse
-	8,  // 16: protobuf.ProfileDetailResponse.status:type_name -> protobuf.StatusResponse
-	9,  // 17: protobuf.ProfileDetailResponse.block:type_name -> protobuf.BlockResponse
-	10, // 18: protobuf.ProfileDetailResponse.like:type_name -> protobuf.LikeResponse
-	2,  // 19: protobuf.ProfileDetailResponse.images:type_name -> protobuf.ImageResponse
-	46, // 20: protobuf.ProfileListItemResponse.lastOnline:type_name -> google.protobuf.Timestamp
-	27, // 21: protobuf.ProfileListResponse.content:type_name -> protobuf.ProfileListItemResponse
-	46, // 22: protobuf.LikeAddResponse.createdAt:type_name -> google.protobuf.Timestamp
-	46, // 23: protobuf.LikeAddResponse.updatedAt:type_name -> google.protobuf.Timestamp
-	46, // 24: protobuf.LikeUpdateResponse.createdAt:type_name -> google.protobuf.Timestamp
-	46, // 25: protobuf.LikeUpdateResponse.updatedAt:type_name -> google.protobuf.Timestamp
-	3,  // 26: protobuf.NavigatorUpdateResponse.location:type_name -> protobuf.Point
-	11, // 27: protobuf.Profile.AddProfile:input_type -> protobuf.ProfileAddRequest
-	13, // 28: protobuf.Profile.UpdateProfile:input_type -> protobuf.ProfileUpdateRequest
-	14, // 29: protobuf.Profile.FreezeProfile:input_type -> protobuf.ProfileFreezeRequest
-	16, // 30: protobuf.Profile.RestoreProfile:input_type -> protobuf.ProfileRestoreRequest
-	18, // 31: protobuf.Profile.DeleteProfile:input_type -> protobuf.ProfileDeleteRequest
-	20, // 32: protobuf.Profile.GetProfile:input_type -> protobuf.ProfileGetRequest
-	22, // 33: protobuf.Profile.GetProfileDetail:input_type -> protobuf.ProfileGetDetailRequest
-	24, // 34: protobuf.Profile.GetProfileShortInfo:input_type -> protobuf.ProfileGetShortInfoRequest
-	26, // 35: protobuf.Profile.GetProfileList:input_type -> protobuf.ProfileGetListRequest
-	29, // 36: protobuf.Profile.GetImageByTelegramUserId:input_type -> protobuf.GetImageByTelegramUserIdRequest
-	31, // 37: protobuf.Profile.GetImageById:input_type -> protobuf.GetImageByIdRequest
-	32, // 38: protobuf.Profile.DeleteImage:input_type -> protobuf.ImageDeleteRequest
-	34, // 39: protobuf.Profile.UpdateFilter:input_type -> protobuf.FilterUpdateRequest
-	36, // 40: protobuf.Profile.AddBlock:input_type -> protobuf.BlockAddRequest
-	38, // 41: protobuf.Profile.AddLike:input_type -> protobuf.LikeAddRequest
-	40, // 42: protobuf.Profile.UpdateLike:input_type -> protobuf.LikeUpdateRequest
-	42, // 43: protobuf.Profile.AddComplaint:input_type -> protobuf.ComplaintAddRequest
-	44, // 44: protobuf.Profile.UpdateCoordinates:input_type -> protobuf.NavigatorUpdateRequest
-	12, // 45: protobuf.Profile.AddProfile:output_type -> protobuf.ProfileAddResponse
-	21, // 46: protobuf.Profile.UpdateProfile:output_type -> protobuf.ProfileResponse
-	15, // 47: protobuf.Profile.FreezeProfile:output_type -> protobuf.ProfileFreezeResponse
-	17, // 48: protobuf.Profile.RestoreProfile:output_type -> protobuf.ProfileRestoreResponse
-	19, // 49: protobuf.Profile.DeleteProfile:output_type -> protobuf.ProfileDeleteResponse
-	21, // 50: protobuf.Profile.GetProfile:output_type -> protobuf.ProfileResponse
-	23, // 51: protobuf.Profile.GetProfileDetail:output_type -> protobuf.ProfileDetailResponse
-	25, // 52: protobuf.Profile.GetProfileShortInfo:output_type -> protobuf.ProfileShortInfoResponse
-	28, // 53: protobuf.Profile.GetProfileList:output_type -> protobuf.ProfileListResponse
-	30, // 54: protobuf.Profile.GetImageByTelegramUserId:output_type -> protobuf.ImageByTelegramUserIdResponse
-	2,  // 55: protobuf.Profile.GetImageById:output_type -> protobuf.ImageResponse
-	33, // 56: protobuf.Profile.DeleteImage:output_type -> protobuf.ImageDeleteResponse
-	35, // 57: protobuf.Profile.UpdateFilter:output_type -> protobuf.FilterUpdateResponse
-	37, // 58: protobuf.Profile.AddBlock:output_type -> protobuf.BlockAddResponse
-	39, // 59: protobuf.Profile.AddLike:output_type -> protobuf.LikeAddResponse
-	41, // 60: protobuf.Profile.UpdateLike:output_type -> protobuf.LikeUpdateResponse
-	43, // 61: protobuf.Profile.AddComplaint:output_type -> protobuf.ComplaintAddResponse
-	45, // 62: protobuf.Profile.UpdateCoordinates:output_type -> protobuf.NavigatorUpdateResponse
-	45, // [45:63] is the sub-list for method output_type
-	27, // [27:45] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	3,  // 0: protobuf.NavigatorResponse.location:type_name -> protobuf.Point
+	46, // 1: protobuf.LikeResponse.updatedAt:type_name -> google.protobuf.Timestamp
+	46, // 2: protobuf.ProfileAddRequest.birthday:type_name -> google.protobuf.Timestamp
+	0,  // 3: protobuf.ProfileAddRequest.files:type_name -> protobuf.FileMetadata
+	46, // 4: protobuf.ProfileUpdateRequest.birthday:type_name -> google.protobuf.Timestamp
+	0,  // 5: protobuf.ProfileUpdateRequest.files:type_name -> protobuf.FileMetadata
+	46, // 6: protobuf.ProfileResponse.birthday:type_name -> google.protobuf.Timestamp
+	4,  // 7: protobuf.ProfileResponse.navigator:type_name -> protobuf.NavigatorResponse
+	6,  // 8: protobuf.ProfileResponse.filter:type_name -> protobuf.FilterResponse
+	8,  // 9: protobuf.ProfileResponse.status:type_name -> protobuf.StatusResponse
+	2,  // 10: protobuf.ProfileResponse.images:type_name -> protobuf.ImageResponse
+	46, // 11: protobuf.ProfileDetailResponse.birthday:type_name -> google.protobuf.Timestamp
+	5,  // 12: protobuf.ProfileDetailResponse.navigator:type_name -> protobuf.NavigatorDetailResponse
+	8,  // 13: protobuf.ProfileDetailResponse.status:type_name -> protobuf.StatusResponse
+	9,  // 14: protobuf.ProfileDetailResponse.block:type_name -> protobuf.BlockResponse
+	10, // 15: protobuf.ProfileDetailResponse.like:type_name -> protobuf.LikeResponse
+	2,  // 16: protobuf.ProfileDetailResponse.images:type_name -> protobuf.ImageResponse
+	46, // 17: protobuf.ProfileListItemResponse.lastOnline:type_name -> google.protobuf.Timestamp
+	27, // 18: protobuf.ProfileListResponse.content:type_name -> protobuf.ProfileListItemResponse
+	46, // 19: protobuf.LikeAddResponse.createdAt:type_name -> google.protobuf.Timestamp
+	46, // 20: protobuf.LikeAddResponse.updatedAt:type_name -> google.protobuf.Timestamp
+	46, // 21: protobuf.LikeUpdateResponse.createdAt:type_name -> google.protobuf.Timestamp
+	46, // 22: protobuf.LikeUpdateResponse.updatedAt:type_name -> google.protobuf.Timestamp
+	3,  // 23: protobuf.NavigatorUpdateResponse.location:type_name -> protobuf.Point
+	11, // 24: protobuf.Profile.AddProfile:input_type -> protobuf.ProfileAddRequest
+	13, // 25: protobuf.Profile.UpdateProfile:input_type -> protobuf.ProfileUpdateRequest
+	14, // 26: protobuf.Profile.FreezeProfile:input_type -> protobuf.ProfileFreezeRequest
+	16, // 27: protobuf.Profile.RestoreProfile:input_type -> protobuf.ProfileRestoreRequest
+	18, // 28: protobuf.Profile.DeleteProfile:input_type -> protobuf.ProfileDeleteRequest
+	20, // 29: protobuf.Profile.GetProfile:input_type -> protobuf.ProfileGetRequest
+	22, // 30: protobuf.Profile.GetProfileDetail:input_type -> protobuf.ProfileGetDetailRequest
+	24, // 31: protobuf.Profile.GetProfileShortInfo:input_type -> protobuf.ProfileGetShortInfoRequest
+	26, // 32: protobuf.Profile.GetProfileList:input_type -> protobuf.ProfileGetListRequest
+	29, // 33: protobuf.Profile.GetImageByTelegramUserId:input_type -> protobuf.GetImageByTelegramUserIdRequest
+	31, // 34: protobuf.Profile.GetImageById:input_type -> protobuf.GetImageByIdRequest
+	32, // 35: protobuf.Profile.DeleteImage:input_type -> protobuf.ImageDeleteRequest
+	34, // 36: protobuf.Profile.UpdateFilter:input_type -> protobuf.FilterUpdateRequest
+	36, // 37: protobuf.Profile.AddBlock:input_type -> protobuf.BlockAddRequest
+	38, // 38: protobuf.Profile.AddLike:input_type -> protobuf.LikeAddRequest
+	40, // 39: protobuf.Profile.UpdateLike:input_type -> protobuf.LikeUpdateRequest
+	42, // 40: protobuf.Profile.AddComplaint:input_type -> protobuf.ComplaintAddRequest
+	44, // 41: protobuf.Profile.UpdateCoordinates:input_type -> protobuf.NavigatorUpdateRequest
+	12, // 42: protobuf.Profile.AddProfile:output_type -> protobuf.ProfileAddResponse
+	21, // 43: protobuf.Profile.UpdateProfile:output_type -> protobuf.ProfileResponse
+	15, // 44: protobuf.Profile.FreezeProfile:output_type -> protobuf.ProfileFreezeResponse
+	17, // 45: protobuf.Profile.RestoreProfile:output_type -> protobuf.ProfileRestoreResponse
+	19, // 46: protobuf.Profile.DeleteProfile:output_type -> protobuf.ProfileDeleteResponse
+	21, // 47: protobuf.Profile.GetProfile:output_type -> protobuf.ProfileResponse
+	23, // 48: protobuf.Profile.GetProfileDetail:output_type -> protobuf.ProfileDetailResponse
+	25, // 49: protobuf.Profile.GetProfileShortInfo:output_type -> protobuf.ProfileShortInfoResponse
+	28, // 50: protobuf.Profile.GetProfileList:output_type -> protobuf.ProfileListResponse
+	30, // 51: protobuf.Profile.GetImageByTelegramUserId:output_type -> protobuf.ImageByTelegramUserIdResponse
+	2,  // 52: protobuf.Profile.GetImageById:output_type -> protobuf.ImageResponse
+	33, // 53: protobuf.Profile.DeleteImage:output_type -> protobuf.ImageDeleteResponse
+	35, // 54: protobuf.Profile.UpdateFilter:output_type -> protobuf.FilterUpdateResponse
+	37, // 55: protobuf.Profile.AddBlock:output_type -> protobuf.BlockAddResponse
+	39, // 56: protobuf.Profile.AddLike:output_type -> protobuf.LikeAddResponse
+	41, // 57: protobuf.Profile.UpdateLike:output_type -> protobuf.LikeUpdateResponse
+	43, // 58: protobuf.Profile.AddComplaint:output_type -> protobuf.ComplaintAddResponse
+	45, // 59: protobuf.Profile.UpdateCoordinates:output_type -> protobuf.NavigatorUpdateResponse
+	42, // [42:60] is the sub-list for method output_type
+	24, // [24:42] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_contracts_proto_profiles_profile_proto_init() }

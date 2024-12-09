@@ -23,10 +23,6 @@ message ImageResponse {
   string telegramUserId = 2; // id пользователя в телеграм
   string name = 3; // название файла
   string url = 4; // url файла
-  int64 size = 5; // Размер файла в байтах
-  ImageStatusResponse status = 6; // статусы изображений
-  google.protobuf.Timestamp createdAt = 7; // дата создания
-  google.protobuf.Timestamp updatedAt = 8; // дата обновления
 }
 
 message Point {

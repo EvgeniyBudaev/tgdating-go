@@ -95,9 +95,10 @@ func (pm *ProfileControllerMapper) MapControllerResponse(
 	if len(r.Images) > 0 {
 		for _, image := range r.Images {
 			images = append(images, &pb.ImageResponse{
-				Id:   image.Id,
-				Name: image.Name,
-				Url:  image.Url,
+				Id:             image.Id,
+				TelegramUserId: image.TelegramUserId,
+				Name:           image.Name,
+				Url:            image.Url,
 			})
 		}
 	}
@@ -160,9 +161,10 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 	if len(r.Images) > 0 {
 		for _, image := range r.Images {
 			images = append(images, &pb.ImageResponse{
-				Id:   image.Id,
-				Name: image.Name,
-				Url:  image.Url,
+				Id:             image.Id,
+				TelegramUserId: image.TelegramUserId,
+				Name:           image.Name,
+				Url:            image.Url,
 			})
 		}
 	}
@@ -233,9 +235,10 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 
 func (pm *ProfileControllerMapper) MapControllerToImageResponse(r *response.ImageResponseDto) *pb.ImageResponse {
 	return &pb.ImageResponse{
-		Id:   r.Id,
-		Name: r.Name,
-		Url:  r.Url,
+		Id:             r.Id,
+		TelegramUserId: r.TelegramUserId,
+		Name:           r.Name,
+		Url:            r.Url,
 	}
 }
 
