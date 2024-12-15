@@ -29,10 +29,10 @@ func NewFilterRepository(l logger.Logger, db *sql.DB) *FilterRepository {
 
 func (r *FilterRepository) Add(
 	ctx context.Context, p *request.FilterAddRequestRepositoryDto) (*response.ResponseDto, error) {
-	query := "INSERT INTO dating.profile_filters (telegram_user_id, search_gender, looking_for, age_from, age_to," +
+	query := "INSERT INTO dating.profile_filters (telegram_user_id, search_gender, age_from, age_to," +
 		" distance, page, size, created_at, updated_at)" +
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo,
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
+	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.SearchGender, &p.AgeFrom, &p.AgeTo,
 		&p.Distance, &p.Page, &p.Size, &p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
@@ -65,13 +65,13 @@ func (r *FilterRepository) Update(
 func (r *FilterRepository) FindById(
 	ctx context.Context, id uint64) (*entity.FilterEntity, error) {
 	p := &entity.FilterEntity{}
-	query := "SELECT id, telegram_user_id, search_gender, looking_for, age_from, age_to, distance, page, size," +
+	query := "SELECT id, telegram_user_id, search_gender, age_from, age_to, distance, page, size," +
 		" created_at, updated_at" +
 		" FROM dating.profile_filters" +
 		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo, &p.Distance, &p.Page,
-		&p.Size, &p.CreatedAt, &p.UpdatedAt)
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.SearchGender, &p.AgeFrom, &p.AgeTo, &p.Distance, &p.Page, &p.Size,
+		&p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -83,12 +83,12 @@ func (r *FilterRepository) FindById(
 func (r *FilterRepository) FindByTelegramUserId(
 	ctx context.Context, telegramUserId string) (*entity.FilterEntity, error) {
 	p := &entity.FilterEntity{}
-	query := "SELECT id, telegram_user_id, search_gender, looking_for, age_from, age_to, distance, page, size," +
+	query := "SELECT id, telegram_user_id, search_gender, age_from, age_to, distance, page, size," +
 		" created_at, updated_at" +
 		" FROM dating.profile_filters" +
 		" WHERE telegram_user_id = $1"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.SearchGender, &p.LookingFor, &p.AgeFrom, &p.AgeTo, &p.Distance, &p.Page,
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.SearchGender, &p.AgeFrom, &p.AgeTo, &p.Distance, &p.Page,
 		&p.Size, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindByTelegramUserId", "Scan")

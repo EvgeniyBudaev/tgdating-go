@@ -15,14 +15,11 @@ func (pm *ProfileControllerMapper) MapControllerToAddRequest(
 	in *pb.ProfileAddRequest, fileList []*entity.FileMetadata) *request.ProfileAddRequestDto {
 	return &request.ProfileAddRequestDto{
 		DisplayName:             in.DisplayName,
-		Birthday:                in.Birthday.AsTime(),
+		Age:                     in.Age,
 		Gender:                  in.Gender,
 		SearchGender:            in.SearchGender,
 		Location:                in.Location,
 		Description:             in.Description,
-		Height:                  in.Height,
-		Weight:                  in.Weight,
-		LookingFor:              in.LookingFor,
 		TelegramUserId:          in.TelegramUserId,
 		TelegramUsername:        in.TelegramUsername,
 		TelegramFirstName:       in.TelegramFirstName,
@@ -51,14 +48,11 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateRequest(
 	in *pb.ProfileUpdateRequest, fileList []*entity.FileMetadata) *request.ProfileUpdateRequestDto {
 	return &request.ProfileUpdateRequestDto{
 		DisplayName:             in.DisplayName,
-		Birthday:                in.Birthday.AsTime(),
+		Age:                     in.Age,
 		Gender:                  in.Gender,
 		SearchGender:            in.SearchGender,
 		Location:                in.Location,
 		Description:             in.Description,
-		Height:                  in.Height,
-		Weight:                  in.Weight,
-		LookingFor:              in.LookingFor,
 		TelegramUserId:          in.TelegramUserId,
 		TelegramUsername:        in.TelegramUsername,
 		TelegramFirstName:       in.TelegramFirstName,
@@ -80,7 +74,6 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateRequest(
 
 func (pm *ProfileControllerMapper) MapControllerResponse(
 	r *response.ProfileResponseDto) *pb.ProfileResponse {
-	birthdayTimestamp := timestamppb.New(r.Birthday)
 	var navigatorResponse *pb.NavigatorResponse
 	if r.Navigator != nil {
 		location := &pb.Point{
@@ -105,16 +98,13 @@ func (pm *ProfileControllerMapper) MapControllerResponse(
 	return &pb.ProfileResponse{
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
-		Birthday:       birthdayTimestamp,
+		Age:            r.Age,
 		Gender:         r.Gender,
 		Location:       r.Location,
 		Description:    r.Description,
-		Height:         r.Height,
-		Weight:         r.Weight,
 		Navigator:      navigatorResponse,
 		Filter: &pb.FilterResponse{
 			SearchGender: r.Filter.SearchGender,
-			LookingFor:   r.Filter.LookingFor,
 			AgeFrom:      r.Filter.AgeFrom,
 			AgeTo:        r.Filter.AgeTo,
 			Distance:     r.Filter.Distance,
@@ -135,7 +125,6 @@ func (pm *ProfileControllerMapper) MapControllerResponse(
 
 func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 	r *response.ProfileDetailResponseDto) *pb.ProfileDetailResponse {
-	birthdayTimestamp := timestamppb.New(r.Birthday)
 	var navigatorResponse *pb.NavigatorDetailResponse
 	if r.Navigator != nil {
 		navigatorResponse = &pb.NavigatorDetailResponse{
@@ -171,11 +160,9 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 	return &pb.ProfileDetailResponse{
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
-		Birthday:       birthdayTimestamp,
+		Age:            r.Age,
 		Location:       r.Location,
 		Description:    r.Description,
-		Height:         r.Height,
-		Weight:         r.Weight,
 		Navigator:      navigatorResponse,
 		Status: &pb.StatusResponse{
 			IsBlocked:      r.Status.IsBlocked,
@@ -198,7 +185,6 @@ func (pm *ProfileControllerMapper) MapControllerToShortInfoResponse(
 		IsBlocked:      r.IsBlocked,
 		IsFrozen:       r.IsFrozen,
 		SearchGender:   r.SearchGender,
-		LookingFor:     r.LookingFor,
 		AgeFrom:        r.AgeFrom,
 		AgeTo:          r.AgeTo,
 		Distance:       r.Distance,
@@ -246,7 +232,6 @@ func (pm *ProfileControllerMapper) MapControllerToFilterUpdateResponse(
 	r *response.FilterResponseDto) *pb.FilterUpdateResponse {
 	return &pb.FilterUpdateResponse{
 		SearchGender: r.SearchGender,
-		LookingFor:   r.LookingFor,
 		AgeFrom:      r.AgeFrom,
 		AgeTo:        r.AgeTo,
 		Distance:     r.Distance,

@@ -5,7 +5,6 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/entity"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ProfileMapper struct {
@@ -13,17 +12,13 @@ type ProfileMapper struct {
 
 func (pm *ProfileMapper) MapToAddRequest(
 	r *request.ProfileAddRequestDto, fileList []*pb.FileMetadata) *pb.ProfileAddRequest {
-	newTimestampBirthday := timestamppb.New(r.Birthday)
 	return &pb.ProfileAddRequest{
 		DisplayName:             r.DisplayName,
-		Birthday:                newTimestampBirthday,
+		Age:                     r.Age,
 		Gender:                  string(r.Gender),
 		SearchGender:            string(r.SearchGender),
 		Location:                r.Location,
 		Description:             r.Description,
-		Height:                  r.Height,
-		Weight:                  r.Weight,
-		LookingFor:              string(r.LookingFor),
 		TelegramUserId:          r.TelegramUserId,
 		TelegramUsername:        r.TelegramUsername,
 		TelegramFirstName:       r.TelegramFirstName,
@@ -44,17 +39,13 @@ func (pm *ProfileMapper) MapToAddRequest(
 
 func (pm *ProfileMapper) MapToUpdateRequest(
 	r *request.ProfileUpdateRequestDto, fileList []*pb.FileMetadata) *pb.ProfileUpdateRequest {
-	newTimestampBirthday := timestamppb.New(r.Birthday)
 	return &pb.ProfileUpdateRequest{
 		DisplayName:             r.DisplayName,
-		Birthday:                newTimestampBirthday,
+		Age:                     r.Age,
 		Gender:                  string(r.Gender),
 		SearchGender:            string(r.SearchGender),
 		Location:                r.Location,
 		Description:             r.Description,
-		Height:                  r.Height,
-		Weight:                  r.Weight,
-		LookingFor:              string(r.LookingFor),
 		TelegramUserId:          r.TelegramUserId,
 		TelegramUsername:        r.TelegramUsername,
 		TelegramFirstName:       r.TelegramFirstName,
@@ -127,16 +118,13 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
 	return &response.ProfileResponseDto{
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
-		Birthday:       r.Birthday.AsTime(),
+		Age:            r.Age,
 		Gender:         r.Gender,
 		Location:       r.Location,
 		Description:    r.Description,
-		Height:         r.Height,
-		Weight:         r.Weight,
 		Navigator:      navigatorResponse,
 		Filter: &response.FilterResponseDto{
 			SearchGender: r.Filter.SearchGender,
-			LookingFor:   r.Filter.LookingFor,
 			AgeFrom:      r.Filter.AgeFrom,
 			AgeTo:        r.Filter.AgeTo,
 			Distance:     r.Filter.Distance,
@@ -161,7 +149,6 @@ func (pm *ProfileMapper) MapToShortInfoResponse(r *pb.ProfileShortInfoResponse) 
 		IsBlocked:      r.IsBlocked,
 		IsFrozen:       r.IsFrozen,
 		SearchGender:   r.SearchGender,
-		LookingFor:     r.LookingFor,
 		AgeFrom:        r.AgeFrom,
 		AgeTo:          r.AgeTo,
 		Distance:       r.Distance,
@@ -215,11 +202,9 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 	return &response.ProfileDetailResponseDto{
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
-		Birthday:       r.Birthday.AsTime(),
+		Age:            r.Age,
 		Location:       r.Location,
 		Description:    r.Description,
-		Height:         r.Height,
-		Weight:         r.Weight,
 		Navigator:      navigatorResponse,
 		Status: &response.StatusResponseDto{
 			IsBlocked:      r.Status.IsBlocked,
@@ -246,7 +231,6 @@ func (pm *ProfileMapper) MapToListRequest(
 	return &pb.ProfileGetListRequest{
 		TelegramUserId: r.TelegramUserId,
 		SearchGender:   r.SearchGender,
-		LookingFor:     r.LookingFor,
 		AgeFrom:        r.AgeFrom,
 		AgeTo:          r.AgeTo,
 		Distance:       r.Distance,

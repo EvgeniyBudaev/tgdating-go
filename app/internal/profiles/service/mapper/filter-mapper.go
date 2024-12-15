@@ -14,7 +14,6 @@ func (pm *FilterMapper) MapToResponse(
 	pe *entity.FilterEntity) *response.FilterResponseDto {
 	return &response.FilterResponseDto{
 		SearchGender: pe.SearchGender,
-		LookingFor:   pe.LookingFor,
 		AgeFrom:      pe.AgeFrom,
 		AgeTo:        pe.AgeTo,
 		Distance:     pe.Distance,
@@ -28,7 +27,6 @@ func (pm *FilterMapper) MapToAddRequest(
 	return &request.FilterAddRequestRepositoryDto{
 		TelegramUserId: pr.TelegramUserId,
 		SearchGender:   pr.SearchGender,
-		LookingFor:     pr.LookingFor,
 		AgeFrom:        pr.AgeFrom,
 		AgeTo:          pr.AgeTo,
 		Distance:       pr.Distance,

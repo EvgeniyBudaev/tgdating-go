@@ -39,12 +39,11 @@ message NavigatorDetailResponse {
 
 message FilterResponse {
   string searchGender = 1; // поиск по половому признаку
-  string lookingFor = 2; // цель поиска
-  uint64 ageFrom = 3; // возраст от`
-  uint64 ageTo = 4; // возраст до
-  double distance = 5; // дистанция
-  uint64 page = 6; // номер текущей страницы
-  uint64 size = 7; // количество элементов на странице
+  uint64 ageFrom = 2; // возраст от`
+  uint64 ageTo = 3; // возраст до
+  double distance = 4; // дистанция
+  uint64 page = 5; // номер текущей страницы
+  uint64 size = 6; // количество элементов на странице
 }
 
 message TelegramResponse {
@@ -78,29 +77,26 @@ message LikeResponse {
 
 message ProfileAddRequest {
   string displayName = 1; // Имя для отображения
-  google.protobuf.Timestamp birthday = 2; // дата для рождения
+  uint64 age = 2; // возраст
   string gender = 3; // пол
   string searchGender = 4; // поиск по половому признаку
   string location = 5; // местоположение
   string description = 6; // описание
-  double height = 7; // рост
-  double weight = 8; // вес
-  string lookingFor = 9; // цель поиска
-  string telegramUserId = 10; // id пользователя в телеграм
-  string telegramUsername = 11; // username пользователя в телеграм
-  string telegramFirstName = 12; // имя пользователя в телеграм
-  string telegramLastName = 13; // фамилия пользователя в телеграм
-  string telegramLanguageCode = 14; // язык пользователя в телеграм
-  bool telegramAllowsWriteToPm = 15; // true, если этот пользователь разрешил боту отправлять ему сообщения
-  string telegramQueryId = 16; // id чата в телеграм
-  optional double latitude = 17; // широта
-  optional double longitude = 18; // долгота
-  uint64 ageFrom = 19; // возраст от
-  uint64 ageTo = 20; // возраст до
-  double distance = 21; // дистанция
-  uint64 page = 22; // номер текущей страницы
-  uint64 size = 23; // количество элементов на странице
-  repeated FileMetadata files = 24; // список файлов-изображений
+  string telegramUserId = 7; // id пользователя в телеграм
+  string telegramUsername = 8; // username пользователя в телеграм
+  string telegramFirstName = 9; // имя пользователя в телеграм
+  string telegramLastName = 10; // фамилия пользователя в телеграм
+  string telegramLanguageCode = 11; // язык пользователя в телеграм
+  bool telegramAllowsWriteToPm = 12; // true, если этот пользователь разрешил боту отправлять ему сообщения
+  string telegramQueryId = 13; // id чата в телеграм
+  optional double latitude = 14; // широта
+  optional double longitude = 15; // долгота
+  uint64 ageFrom = 16; // возраст от
+  uint64 ageTo = 17; // возраст до
+  double distance = 18; // дистанция
+  uint64 page = 19; // номер текущей страницы
+  uint64 size = 20; // количество элементов на странице
+  repeated FileMetadata files = 21; // список файлов-изображений
 }
 
 message ProfileAddResponse {
@@ -109,30 +105,27 @@ message ProfileAddResponse {
 
 message ProfileUpdateRequest {
   string displayName = 1; // Имя для отображения
-  google.protobuf.Timestamp birthday = 2; // дата для рождения
+  uint64 age = 2; // возраст
   string gender = 3; // пол
   string searchGender = 4; // поиск по половому признаку
   string location = 5; // местоположение
   string description = 6; // описание
-  double height = 7; // рост
-  double weight = 8; // вес
-  string lookingFor = 9; // цель поиска
-  string telegramUserId = 10; // id пользователя в телеграм
-  string telegramUsername = 11; // username пользователя в телеграм
-  string telegramFirstName = 12; // имя пользователя в телеграм
-  string telegramLastName = 13; // фамилия пользователя в телеграм
-  string telegramLanguageCode = 14; // язык пользователя в телеграм
-  bool telegramAllowsWriteToPm = 15; // true, если этот пользователь разрешил боту отправлять ему сообщения
-  string telegramQueryId = 16; // id чата в телеграм
-  optional double latitude = 17; // широта
-  optional double longitude = 18; // долгота
-  uint64 ageFrom = 19; // возраст от
-  uint64 ageTo = 20; // возраст до
-  double distance = 21; // дистанция
-  uint64 page = 22; // номер текущей страницы
-  uint64 size = 23; // количество элементов на странице
-  bool isImages = 24; // наличие ранее сохранненых фотографий
-  repeated FileMetadata files = 25;
+  string telegramUserId = 7; // id пользователя в телеграм
+  string telegramUsername = 8; // username пользователя в телеграм
+  string telegramFirstName = 9; // имя пользователя в телеграм
+  string telegramLastName = 10; // фамилия пользователя в телеграм
+  string telegramLanguageCode = 11; // язык пользователя в телеграм
+  bool telegramAllowsWriteToPm = 12; // true, если этот пользователь разрешил боту отправлять ему сообщения
+  string telegramQueryId = 13; // id чата в телеграм
+  optional double latitude = 14; // широта
+  optional double longitude = 15; // долгота
+  uint64 ageFrom = 16; // возраст от
+  uint64 ageTo = 17; // возраст до
+  double distance = 18; // дистанция
+  uint64 page = 19; // номер текущей страницы
+  uint64 size = 20; // количество элементов на странице
+  bool isImages = 21; // наличие ранее сохранненых фотографий
+  repeated FileMetadata files = 22;
 }
 
 message ProfileFreezeRequest {
@@ -168,16 +161,14 @@ message ProfileGetRequest {
 message ProfileResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   string displayName = 2; // Имя для отображения
-  google.protobuf.Timestamp birthday = 3; // дата для рождения
+  uint64 age = 3; // возраст
   string gender = 4; // пол
   string location = 5; // местоположение
   string description = 6; // описание
-  double height = 7; // рост
-  double weight = 8; // вес
-  NavigatorResponse navigator = 9; // объект навигатор
-  FilterResponse filter = 10; // объект фильтр
-  StatusResponse status = 11; // статус пользователя
-  repeated ImageResponse images = 12; // список изображений
+  NavigatorResponse navigator = 7; // объект навигатор
+  FilterResponse filter = 8; // объект фильтр
+  StatusResponse status = 9; // статус пользователя
+  repeated ImageResponse images = 10; // список изображений
 }
 
 message ProfileGetDetailRequest {
@@ -190,16 +181,14 @@ message ProfileGetDetailRequest {
 message ProfileDetailResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   string displayName = 2; // Имя для отображения
-  google.protobuf.Timestamp birthday = 3; // дата для рождения
+  uint64 age = 3; // возраст
   string location = 4; // местоположение
   string description = 5; // описание
-  double height = 6; // рост
-  double weight = 7; // вес
-  NavigatorDetailResponse navigator = 8; // объект навигатор
-  StatusResponse status = 9; // статус пользователя
-  BlockResponse block = 10; // объект блок
-  LikeResponse like = 11; //  объект дайк
-  repeated ImageResponse images = 12; // список изображений
+  NavigatorDetailResponse navigator = 6; // объект навигатор
+  StatusResponse status = 7; // статус пользователя
+  BlockResponse block = 8; // объект блок
+  LikeResponse like = 9; //  объект дайк
+  repeated ImageResponse images = 10; // список изображений
 }
 
 message ProfileGetShortInfoRequest {
@@ -211,25 +200,23 @@ message ProfileShortInfoResponse {
   bool isBlocked = 2; // заблокирован пользователь да/нет
   bool isFrozen = 3; // заморожен пользователь да/нет
   string searchGender = 4; // поиск по половому признаку
-  string lookingFor = 5; // цель поиска
-  uint64 ageFrom = 6; // возраст от
-  uint64 ageTo = 7; // возраст до
-  double distance = 8; // дистанция
-  uint64 page = 9; // номер текущей страницы
-  uint64 size = 10; // количество элементов на странице
+  uint64 ageFrom = 5; // возраст от
+  uint64 ageTo = 6; // возраст до
+  double distance = 7; // дистанция
+  uint64 page = 8; // номер текущей страницы
+  uint64 size = 9; // количество элементов на странице
 }
 
 message ProfileGetListRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   string searchGender = 2; // поиск по половому признаку
-  string lookingFor = 3; // цель поиска
-  uint64 ageFrom = 4; // возраст от
-  uint64 ageTo = 5; // возраст до
-  double distance = 6; // дистанция
-  uint64 page = 7; // номер текущей страницы
-  uint64 size = 8; // количество элементов на странице
-  optional double latitude = 9; // широта
-  optional double longitude = 10; // долгота
+  uint64 ageFrom = 3; // возраст от
+  uint64 ageTo = 4; // возраст до
+  double distance = 5; // дистанция
+  uint64 page = 6; // номер текущей страницы
+  uint64 size = 7; // количество элементов на странице
+  optional double latitude = 8; // широта
+  optional double longitude = 9; // долгота
 }
 
 message ProfileListItemResponse {
@@ -281,12 +268,11 @@ message FilterUpdateRequest {
 message FilterUpdateResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   string searchGender = 2; // поиск по половому признаку
-  string lookingFor = 3; // цель поиска
-  uint64 ageFrom = 4; // возраст от
-  uint64 ageTo = 5; // возраст до
-  double distance = 6; // дистанция
-  uint64 page = 7; // номер текущей страницы
-  uint64 size = 8; // количество элементов на странице
+  uint64 ageFrom = 3; // возраст от
+  uint64 ageTo = 4; // возраст до
+  double distance = 5; // дистанция
+  uint64 page = 6; // номер текущей страницы
+  uint64 size = 7; // количество элементов на странице
 }
 
 message BlockAddRequest {

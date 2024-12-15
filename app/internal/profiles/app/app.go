@@ -20,6 +20,7 @@ import (
 
 const (
 	errorFilePathApp = "internal/profiles/app/app.go"
+	bodyLimit        = 61 * 1024 * 1024 // 61 MB
 )
 
 // App - application structure
@@ -110,7 +111,8 @@ func New() *App {
 
 	// Kafka
 	w := &kafka.Writer{
-		Addr:         kafka.TCP("127.0.0.1:9095", "27.0.0.1:9096", "127.0.0.1:9097"),
+		//Addr:         kafka.TCP("172.18.0.1:10095", "172.18.0.1:10096", "172.18.0.1:10097"), // docker inspect network web-network
+		Addr:         kafka.TCP("127.0.0.1:10095", "127.0.0.1:10096", "127.0.0.1:10097"),
 		Topic:        "like_topic",
 		Balancer:     &kafka.LeastBytes{},
 		BatchSize:    1048576,
@@ -122,7 +124,7 @@ func New() *App {
 	// Fiber
 	f := fiber.New(fiber.Config{
 		ReadBufferSize: 256 << 8,
-		BodyLimit:      50 * 1024 * 1024, // 50 MB
+		BodyLimit:      bodyLimit,
 	})
 
 	// CORS

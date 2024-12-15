@@ -6,12 +6,10 @@ CREATE TABLE IF NOT EXISTS dating.profiles
     id               BIGSERIAL    NOT NULL,
     telegram_user_id VARCHAR(255) NOT NULL UNIQUE PRIMARY KEY,
     display_name     VARCHAR(255) NOT NULL,
-    birthday         DATE         NOT NULL,
-    gender           VARCHAR(100) NOT NULL,
+    age              BIGINT       NOT NULL,
+    gender           VARCHAR(50)  NOT NULL,
     location         TEXT,
     description      TEXT,
-    height           REAL         NOT NULL,
-    weight           REAL         NOT NULL,
     created_at       TIMESTAMP    NOT NULL,
     updated_at       TIMESTAMP    NOT NULL,
     last_online      TIMESTAMP    NOT NULL
@@ -46,13 +44,13 @@ CREATE TABLE IF NOT EXISTS dating.profile_images
 
 CREATE TABLE IF NOT EXISTS dating.profile_image_statuses
 (
-    id               BIGSERIAL    NOT NULL PRIMARY KEY,
-    image_id         BIGINT        NOT NULL,
-    is_blocked       BOOL         NOT NULL,
-    is_primary       BOOL         NOT NULL,
-    is_private       BOOL         NOT NULL,
-    created_at       TIMESTAMP    NOT NULL,
-    updated_at       TIMESTAMP    NOT NULL,
+    id         BIGSERIAL NOT NULL PRIMARY KEY,
+    image_id   BIGINT    NOT NULL,
+    is_blocked BOOL      NOT NULL,
+    is_primary BOOL      NOT NULL,
+    is_private BOOL      NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
     CONSTRAINT fk_profile_image_statuses_id FOREIGN KEY (image_id) REFERENCES dating.profile_images (id) ON DELETE CASCADE
 );
 
@@ -70,8 +68,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_filters
 (
     id               BIGSERIAL    NOT NULL PRIMARY KEY,
     telegram_user_id VARCHAR(255) NOT NULL,
-    search_gender    VARCHAR(100) NOT NULL,
-    looking_for      VARCHAR(100) NOT NULL,
+    search_gender    VARCHAR(50)  NOT NULL,
     age_from         INTEGER      NOT NULL,
     age_to           INTEGER      NOT NULL,
     distance         REAL         NOT NULL,

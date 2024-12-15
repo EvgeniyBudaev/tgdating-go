@@ -5,7 +5,6 @@ type ProfileShortInfoResponseDto struct {
 	IsFrozen       bool    `json:"isFrozen"`
 	IsBlocked      bool    `json:"isBlocked"`
 	SearchGender   string  `json:"searchGender"`
-	LookingFor     string  `json:"lookingFor"`
 	AgeFrom        uint64  `json:"ageFrom"`
 	AgeTo          uint64  `json:"ageTo"`
 	Distance       float64 `json:"distance"`

@@ -53,7 +53,7 @@ func New() *App {
 	// Fiber
 	f := fiber.New(fiber.Config{
 		ReadBufferSize: 256 << 8,
-		BodyLimit:      50 * 1024 * 1024, // 50 MB
+		BodyLimit:      61 * 1024 * 1024, // 61 MB
 	})
 
 	// Rate limiter to prevent DDOS attacks

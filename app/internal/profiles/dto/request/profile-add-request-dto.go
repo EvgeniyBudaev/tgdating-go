@@ -2,20 +2,16 @@ package request
 
 import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
-	"time"
 )
 
 type ProfileAddRequestDto struct {
 	TelegramUserId          string                 `json:"telegramUserId"`
 	DisplayName             string                 `json:"displayName"`
-	Birthday                time.Time              `json:"birthday"`
+	Age                     uint64                 `json:"age"`
 	Gender                  string                 `json:"gender"`
 	SearchGender            string                 `json:"searchGender"`
 	Location                string                 `json:"location"`
 	Description             string                 `json:"description"`
-	Height                  float64                `json:"height"`
-	Weight                  float64                `json:"weight"`
-	LookingFor              string                 `json:"lookingFor"`
 	TelegramUsername        string                 `json:"telegramUsername"`
 	TelegramFirstName       string                 `json:"telegramFirstName"`
 	TelegramLastName        string                 `json:"telegramLastName"`

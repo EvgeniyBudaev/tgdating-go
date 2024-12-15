@@ -183,7 +183,6 @@ func (pc *ProfileController) GetProfileList(
 	req := &request.ProfileGetListRequestDto{
 		TelegramUserId: in.TelegramUserId,
 		SearchGender:   in.SearchGender,
-		LookingFor:     in.LookingFor,
 		AgeFrom:        in.AgeFrom,
 		AgeTo:          in.AgeTo,
 		Distance:       in.Distance,

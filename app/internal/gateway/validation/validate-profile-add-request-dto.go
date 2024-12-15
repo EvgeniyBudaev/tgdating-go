@@ -4,17 +4,12 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/entity"
 	"github.com/gofiber/fiber/v2"
-	"time"
 )
 
 var (
-	fileMaxSizeMb    = 50
+	fileMaxSizeMb    = 20
 	fileMaxSizeBytes = int64(fileMaxSizeMb * 1024 * 1024)
 	fileMaxAmount    = 3
-	minHeight        = 50
-	maxHeight        = 250
-	minWeight        = 40
-	maxWeight        = 650
 	minAge           = uint64(18)
 	maxAge           = uint64(100)
 	maxCharacters    = 1000
@@ -42,24 +37,14 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 			errorMessages.GetMaxSymbols(locale, 64))
 	}
 
-	birthday := req.Birthday.Format("2006-01-02")
-	now := time.Now()
-	eighteenYearsAgo := now.AddDate(-18, 0, 1)
-	hundredYearsAgo := now.AddDate(-100, 0, 0)
-
-	if birthday == "" {
-		fieldErrorsLanguages["birthday"] = append(fieldErrorsLanguages["birthday"],
-			errorMessages.GetNotEmpty(locale))
+	if req.Age < minAge {
+		fieldErrorsLanguages["age"] = append(fieldErrorsLanguages["age"],
+			errorMessages.GetMoreOrEqualMinUint64Number(locale, maxAge))
 	}
 
-	if req.Birthday.After(eighteenYearsAgo) {
-		fieldErrorsLanguages["birthday"] = append(fieldErrorsLanguages["birthday"],
-			errorMessages.GetMoreOrEqualMinNumber(locale, 18))
-	}
-
-	if req.Birthday.Before(hundredYearsAgo) {
-		fieldErrorsLanguages["birthday"] = append(fieldErrorsLanguages["birthday"],
-			errorMessages.GetLessOrEqualMaxNumber(locale, 100))
+	if req.Age > maxAge {
+		fieldErrorsLanguages["age"] = append(fieldErrorsLanguages["age"],
+			errorMessages.GetLessOrEqualMaxUint64Number(locale, maxAge))
 	}
 
 	if req.Gender == "" {
@@ -82,49 +67,9 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 			errorMessages.GetBadRequest(locale))
 	}
 
-	if req.LookingFor == "" {
-		fieldErrorsLanguages["lookingFor"] = append(fieldErrorsLanguages["lookingFor"],
-			errorMessages.GetNotEmpty(locale))
-	}
-
-	if req.LookingFor != "" && !req.LookingFor.IsValid() {
-		fieldErrorsLanguages["lookingFor"] = append(fieldErrorsLanguages["lookingFor"],
-			errorMessages.GetBadRequest(locale))
-	}
-
 	if req.Description != "" && len(req.Description) > maxCharacters {
 		fieldErrorsLanguages["description"] = append(fieldErrorsLanguages["description"],
 			errorMessages.GetMaxSymbols(locale, maxCharacters))
-	}
-
-	if req.Height != 0 && req.Height < 0 {
-		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
-			errorMessages.GetNonNegativeNumber(locale))
-	}
-
-	if req.Height != 0 && req.Height > 0 && int(req.Height) < minHeight {
-		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
-			errorMessages.GetMoreOrEqualMinNumber(locale, minHeight))
-	}
-
-	if req.Height != 0 && int(req.Height) > maxHeight {
-		fieldErrorsLanguages["height"] = append(fieldErrorsLanguages["height"],
-			errorMessages.GetLessOrEqualMaxNumber(locale, maxHeight))
-	}
-
-	if req.Weight != 0 && req.Weight < 0 {
-		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
-			errorMessages.GetNonNegativeNumber(locale))
-	}
-
-	if req.Weight != 0 && req.Weight > 0 && int(req.Weight) < minWeight {
-		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
-			errorMessages.GetMoreOrEqualMinNumber(locale, minWeight))
-	}
-
-	if req.Weight != 0 && int(req.Weight) > maxWeight {
-		fieldErrorsLanguages["weight"] = append(fieldErrorsLanguages["weight"],
-			errorMessages.GetLessOrEqualMaxNumber(locale, maxWeight))
 	}
 
 	if req.TelegramUsername == "" {
