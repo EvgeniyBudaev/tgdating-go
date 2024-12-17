@@ -291,12 +291,7 @@ message LikeAddRequest {
 }
 
 message LikeAddResponse {
-  uint64 id = 1; // id блока
-  string telegramUserId = 2; // id пользователя в телеграм
-  string likedTelegramUserId = 3; // id понравившегося пользователя
-  bool isLiked = 4; // есть лайк да/нет
-  google.protobuf.Timestamp createdAt = 5; // дата создания
-  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+  bool success = 1; // успешно добавлен да/нет
 }
 
 message LikeUpdateRequest {
@@ -306,12 +301,7 @@ message LikeUpdateRequest {
 }
 
 message LikeUpdateResponse {
-  uint64 id = 1; // id блока
-  string telegramUserId = 2; // id пользователя в телеграм
-  string likedTelegramUserId = 3; // id понравившегося пользователя
-  bool isLiked = 4; // есть лайк да/нет
-  google.protobuf.Timestamp createdAt = 5; // дата создания
-  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+  bool success = 1; // успешно обновлен да/нет
 }
 
 message ComplaintAddRequest {

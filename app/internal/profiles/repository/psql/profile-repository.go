@@ -193,26 +193,28 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		" (CASE" +
 		" WHEN p2.last_online >= NOW() AT TIME ZONE 'UTC' - INTERVAL '5 minutes' THEN true ELSE false" +
 		" END) AS is_online," +
-		" pb2.is_blocked AS is_viewed_blocked," +
-		" pl2.id AS like_id," +
-		" pl2.is_liked AS is_liked," +
-		" pl2.updated_at AS like_updated_at," +
+		" pb.is_blocked AS is_viewed_blocked," +
+		" pl.id AS like_id," +
+		" pl.is_liked AS is_liked," +
+		" pl.updated_at AS like_updated_at," +
 		" pn2.location AS user2_location" +
 		" FROM dating.profiles p1" +
 		" JOIN dating.profiles p2 ON p2.telegram_user_id = $2" +
 		" JOIN dating.profile_statuses ps2 ON ps2.telegram_user_id = p2.telegram_user_id" +
 		" LEFT JOIN dating.profile_navigators pn1 ON pn1.telegram_user_id = p1.telegram_user_id" +
 		" LEFT JOIN dating.profile_navigators pn2 ON pn2.telegram_user_id = p2.telegram_user_id" +
-		" LEFT JOIN dating.profile_blocks pb2 ON pb2.blocked_telegram_user_id = p1.telegram_user_id" +
-		" LEFT JOIN dating.profile_likes pl2 ON pl2.telegram_user_id = p1.telegram_user_id" +
+		" LEFT JOIN dating.profile_blocks pb ON pb.telegram_user_id = p1.telegram_user_id" +
+		" AND pb.blocked_telegram_user_id = p2.telegram_user_id" +
+		" LEFT JOIN dating.profile_likes pl ON pl.telegram_user_id = p1.telegram_user_id" +
+		" AND pl.liked_telegram_user_id = p2.telegram_user_id" +
 		" WHERE p1.telegram_user_id = $1" +
 		" )" +
 		" SELECT " +
-		" telegram_user_id, display_name, age, location, description," +
-		" is_blocked, is_frozen, is_invisible, is_online, is_premium, is_show_distance, is_viewed_blocked," +
-		" like_id, is_liked, like_updated_at," +
+		" pd.telegram_user_id, pd.display_name, pd.age, pd.location, pd.description," +
+		" pd.is_blocked, pd.is_frozen, pd.is_invisible, pd.is_online, pd.is_premium, pd.is_show_distance," +
+		" pd.is_viewed_blocked, pd.like_id, pd.is_liked, pd.like_updated_at," +
 		" ST_DistanceSphere(user1_location, user2_location) AS distance" +
-		" FROM profile_details"
+		" FROM profile_details pd"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId, viewedTelegramUserId)
 	if row == nil {
 		errorMessage := r.getErrorMessage("GetDetail", "QueryRowContext")

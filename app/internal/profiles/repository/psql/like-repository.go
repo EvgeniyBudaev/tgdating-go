@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"go.uber.org/zap"
@@ -28,7 +29,7 @@ func NewLikeRepository(l logger.Logger, db *sql.DB) *LikeRepository {
 }
 
 func (r *LikeRepository) Add(
-	ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*entity.LikeEntity, error) {
+	ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "INSERT INTO dating.profile_likes (telegram_user_id, liked_telegram_user_id, is_liked, created_at," +
 		" updated_at)" +
 		" VALUES ($1, $2, $3, $4, $5)" +
@@ -42,11 +43,14 @@ func (r *LikeRepository) Add(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindById(ctx, id)
+	likeResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return likeResponse, nil
 }
 
 func (r *LikeRepository) Update(
-	ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*entity.LikeEntity, error) {
+	ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "UPDATE dating.profile_likes SET is_liked = $1, updated_at = $2" +
 		" WHERE id = $3"
 	_, err := r.db.ExecContext(ctx, query, &p.IsLiked, &p.UpdatedAt, &p.Id)
@@ -55,7 +59,10 @@ func (r *LikeRepository) Update(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindById(ctx, p.Id)
+	likeResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return likeResponse, nil
 }
 
 func (r *LikeRepository) FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error) {

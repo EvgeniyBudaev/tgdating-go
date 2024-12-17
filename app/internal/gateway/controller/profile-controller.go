@@ -56,11 +56,11 @@ func (pc *ProfileController) AddProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
-			errorMessage := pc.getErrorMessage("AddProfile", "validateAuthUser")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		}
+		//if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+		//	errorMessage := pc.getErrorMessage("AddProfile", "validateAuthUser")
+		//	pc.logger.Debug(errorMessage, zap.Error(err))
+		//	return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		//}
 		validateErr := validation.ValidateProfileAddRequestDto(ctf, req, locale)
 		if validateErr != nil {
 			errorMessage := pc.getErrorMessage("AddProfile",
@@ -425,11 +425,11 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
-			errorMessage := pc.getErrorMessage("AddBlock", "validateAuthUser")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		}
+		//if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+		//	errorMessage := pc.getErrorMessage("AddBlock", "validateAuthUser")
+		//	pc.logger.Debug(errorMessage, zap.Error(err))
+		//	return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		//}
 		profileMapper := &mapper.ProfileMapper{}
 		blockRequest := profileMapper.MapToBlockAddRequest(req)
 		blockAdded, err := pc.proto.AddBlock(ctx, blockRequest)
@@ -470,8 +470,7 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		likeResponse := profileMapper.MapToLikeAddResponse(likeAdded)
-		return v1.ResponseCreated(ctf, likeResponse)
+		return v1.ResponseCreated(ctf, likeAdded)
 	}
 }
 
@@ -499,8 +498,7 @@ func (pc *ProfileController) UpdateLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		likeResponse := profileMapper.MapToLikeUpdateResponse(likeUpdated)
-		return v1.ResponseCreated(ctf, likeResponse)
+		return v1.ResponseCreated(ctf, likeUpdated)
 	}
 }
 

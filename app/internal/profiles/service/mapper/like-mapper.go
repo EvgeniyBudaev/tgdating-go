@@ -2,24 +2,10 @@ package mapper
 
 import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
-	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"time"
 )
 
 type LikeMapper struct {
-}
-
-func (pm *LikeMapper) MapToResponse(
-	pe *entity.LikeEntity) *response.LikeResponseDto {
-	if pe == nil {
-		return nil
-	}
-	return &response.LikeResponseDto{
-		Id:        pe.Id,
-		IsLiked:   pe.IsLiked,
-		UpdatedAt: pe.UpdatedAt,
-	}
 }
 
 func (pm *LikeMapper) MapToAddRequest(

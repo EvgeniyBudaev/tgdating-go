@@ -23,8 +23,8 @@ type ProfileService interface {
 	DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error)
 	UpdateFilter(ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error)
 	AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*response.ResponseDto, error)
-	AddLike(ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error)
-	UpdateLike(ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.LikeResponseDto, error)
+	AddLike(ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.ResponseDto, error)
+	UpdateLike(ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.ResponseDto, error)
 	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*response.ResponseDto, error)
 	UpdateCoordinates(
 		ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error)

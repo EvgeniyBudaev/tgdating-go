@@ -57,8 +57,8 @@ type ImageStatusRepository interface {
 }
 
 type LikeRepository interface {
-	Add(ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*entity.LikeEntity, error)
-	Update(ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*entity.LikeEntity, error)
+	Add(ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*response.ResponseDto, error)
+	Update(ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*response.ResponseDto, error)
 	FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error)
 }
 

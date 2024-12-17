@@ -246,22 +246,16 @@ func (pm *ProfileControllerMapper) MapControllerToBlockAddResponse(r *response.R
 	}
 }
 
-func (pm *ProfileControllerMapper) MapControllerToLikeAddResponse(r *response.LikeResponseDto) *pb.LikeAddResponse {
-	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
+func (pm *ProfileControllerMapper) MapControllerToLikeAddResponse(r *response.ResponseDto) *pb.LikeAddResponse {
 	return &pb.LikeAddResponse{
-		Id:        r.Id,
-		IsLiked:   r.IsLiked,
-		UpdatedAt: updatedAtTimestamp,
+		Success: r.Success,
 	}
 }
 
 func (pm *ProfileControllerMapper) MapControllerToLikeUpdateResponse(
-	r *response.LikeResponseDto) *pb.LikeUpdateResponse {
-	updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
+	r *response.ResponseDto) *pb.LikeUpdateResponse {
 	return &pb.LikeUpdateResponse{
-		Id:        r.Id,
-		IsLiked:   r.IsLiked,
-		UpdatedAt: updatedAtTimestamp,
+		Success: r.Success,
 	}
 }
 

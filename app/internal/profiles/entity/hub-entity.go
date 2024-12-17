@@ -7,3 +7,13 @@ type HubContent struct {
 	UserImageUrl        string `json:"userImageUrl"`
 	Username            string `json:"username"`
 }
+
+type Hub struct {
+	Broadcast chan *HubContent
+}
+
+func NewHub() *Hub {
+	return &Hub{
+		Broadcast: make(chan *HubContent, 5),
+	}
+}

@@ -305,30 +305,11 @@ func (pm *ProfileMapper) MapToLikeAddRequest(r *request.LikeAddRequestDto, local
 	}
 }
 
-func (pm *ProfileMapper) MapToLikeAddResponse(r *pb.LikeAddResponse) *response.LikeResponseDto {
-	if r == nil {
-		return nil
-	}
-	return &response.LikeResponseDto{
-		Id:        r.Id,
-		IsLiked:   r.IsLiked,
-		UpdatedAt: r.UpdatedAt.AsTime(),
-	}
-}
-
 func (pm *ProfileMapper) MapToLikeUpdateRequest(r *request.LikeUpdateRequestDto) *pb.LikeUpdateRequest {
 	return &pb.LikeUpdateRequest{
 		Id:             r.Id,
 		TelegramUserId: r.TelegramUserId,
 		IsLiked:        r.IsLiked,
-	}
-}
-
-func (pm *ProfileMapper) MapToLikeUpdateResponse(r *pb.LikeUpdateResponse) *response.LikeResponseDto {
-	return &response.LikeResponseDto{
-		Id:        r.Id,
-		IsLiked:   r.IsLiked,
-		UpdatedAt: r.UpdatedAt.AsTime(),
 	}
 }
 

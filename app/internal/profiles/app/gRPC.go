@@ -5,6 +5,7 @@ import (
 	pb "github.com/EvgeniyBudaev/tgdating-go/app/contracts/proto/profiles"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/config"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/controller"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/repository/psql"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/service"
 	"go.uber.org/zap"
@@ -15,7 +16,7 @@ const (
 	errorFilePathHttp = "internal/profiles/app/gRPC.go"
 )
 
-func (app *App) StartServer(ctx context.Context) error {
+func (app *App) StartServer(ctx context.Context, hub *entity.Hub) error {
 	app.fiber.Static("/static", "./static")
 	s3Client := config.NewS3(app.config)
 	ufw := service.NewUnitOfWorkFactory(app.Logger, app.db.psql)
@@ -29,7 +30,11 @@ func (app *App) StartServer(ctx context.Context) error {
 	complaintRepository := psql.NewComplaintRepository(app.Logger, app.db.psql)
 	statusRepository := psql.NewStatusRepository(app.Logger, app.db.psql)
 	profileRepository := psql.NewProfileRepository(app.Logger, app.db.psql)
-	profileService := service.NewProfileService(app.Logger, app.db.psql, app.config, app.kafkaWriter, s3Client, ufw,
+	profileService := service.NewProfileService(
+		app.Logger, app.db.psql, app.config,
+		hub,
+		//app.kafkaWriter,
+		s3Client, ufw,
 		profileRepository, navigatorRepository, filterRepository, telegramRepository, imageRepository,
 		imageStatusRepository, likeRepository, blockRepository, complaintRepository, statusRepository)
 	profileController := controller.NewProfileController(app.Logger, profileService)

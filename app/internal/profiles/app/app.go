@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/config"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -11,6 +12,8 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/segmentio/kafka-go"
+
+	//"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -110,16 +113,16 @@ func New() *App {
 	s := grpc.NewServer()
 
 	// Kafka
-	w := &kafka.Writer{
-		//Addr:         kafka.TCP("172.18.0.1:10095", "172.18.0.1:10096", "172.18.0.1:10097"), // docker inspect network web-network
-		Addr:         kafka.TCP("127.0.0.1:10095", "127.0.0.1:10096", "127.0.0.1:10097"),
-		Topic:        "like_topic",
-		Balancer:     &kafka.LeastBytes{},
-		BatchSize:    1048576,
-		BatchTimeout: 1000,
-		Compression:  kafka.Gzip,
-		RequiredAcks: kafka.RequireOne,
-	}
+	//w := &kafka.Writer{
+	//	//Addr:         kafka.TCP("172.18.0.1:10095", "172.18.0.1:10096", "172.18.0.1:10097"), // docker inspect network web-network
+	//	Addr:         kafka.TCP("127.0.0.1:10095", "127.0.0.1:10096", "127.0.0.1:10097"),
+	//	Topic:        "like_topic",
+	//	Balancer:     &kafka.LeastBytes{},
+	//	BatchSize:    1048576,
+	//	BatchTimeout: 1000,
+	//	Compression:  kafka.Gzip,
+	//	RequiredAcks: kafka.RequireOne,
+	//}
 
 	// Fiber
 	f := fiber.New(fiber.Config{
@@ -135,22 +138,25 @@ func New() *App {
 	}))
 
 	return &App{
-		config:      cfg,
-		db:          database,
-		fiber:       f,
-		gRPCServer:  s,
-		kafkaWriter: w,
-		Logger:      loggerLevel,
+		config:     cfg,
+		db:         database,
+		fiber:      f,
+		gRPCServer: s,
+		//kafkaWriter: w,
+		Logger: loggerLevel,
 	}
 }
 
 // Run launches the application
 func (app *App) Run(ctx context.Context) {
 	g, ctx := errgroup.WithContext(ctx)
+	// Hub for telegram bot
+	hub := entity.NewHub()
+	msgChan := make(chan *entity.HubContent, 1) // msgChan - канал для передачи сообщений
 
 	// Start server
 	g.Go(func() error {
-		if err := app.StartServer(ctx); err != nil {
+		if err := app.StartServer(ctx, hub); err != nil {
 			errorMessage := getErrorMessage("Run", "StartServer",
 				errorFilePathApp)
 			app.Logger.Fatal(errorMessage, zap.Error(err))
@@ -159,18 +165,43 @@ func (app *App) Run(ctx context.Context) {
 		return nil
 	})
 
-	// Close kafka writer when context done
+	// Start telegram bot
 	g.Go(func() error {
-		select {
-		case <-ctx.Done():
-			if err := app.kafkaWriter.Close(); err != nil {
-				errorMessage := getErrorMessage("Run", "kafkaWriter.Close",
-					errorFilePathApp)
-				app.Logger.Fatal(errorMessage, zap.Error(err))
-			}
+		if err := app.StartBot(ctx, msgChan); err != nil {
+			errorMessage := getErrorMessage("Run", "StartServer",
+				errorFilePathApp)
+			app.Logger.Fatal(errorMessage, zap.Error(err))
+			return err
 		}
 		return nil
 	})
+
+	// Start Hub
+	g.Go(func() error {
+		select {
+		case <-ctx.Done():
+			return nil
+		case c, ok := <-hub.Broadcast:
+			if !ok {
+				return nil
+			}
+			msgChan <- c
+		}
+		return nil
+	})
+
+	// Close kafka writer when context done
+	//g.Go(func() error {
+	//	select {
+	//	case <-ctx.Done():
+	//		if err := app.kafkaWriter.Close(); err != nil {
+	//			errorMessage := getErrorMessage("Run", "kafkaWriter.Close",
+	//				errorFilePathApp)
+	//			app.Logger.Fatal(errorMessage, zap.Error(err))
+	//		}
+	//	}
+	//	return nil
+	//})
 
 	if err := g.Wait(); err != nil {
 		errorMessage := getErrorMessage("Run", "g.Wait",

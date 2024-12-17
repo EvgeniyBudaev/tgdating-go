@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/config"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
@@ -14,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/h2non/bimg"
 	"github.com/pkg/errors"
-	"github.com/segmentio/kafka-go"
+	//"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	"os"
 	"path/filepath"
@@ -29,10 +28,11 @@ const (
 )
 
 type ProfileService struct {
-	logger                logger.Logger
-	db                    *sql.DB
-	config                *config.Config
-	kafkaWriter           *kafka.Writer
+	logger logger.Logger
+	db     *sql.DB
+	config *config.Config
+	hub    *entity.Hub
+	//kafkaWriter           *kafka.Writer
 	s3                    *config.S3
 	uwf                   *UnitOfWorkFactory
 	profileRepository     ProfileRepository
@@ -51,7 +51,8 @@ func NewProfileService(
 	l logger.Logger,
 	db *sql.DB,
 	cfg *config.Config,
-	kw *kafka.Writer,
+	h *entity.Hub,
+	//kw *kafka.Writer,
 	s3 *config.S3,
 	uwf *UnitOfWorkFactory,
 	pr ProfileRepository,
@@ -65,10 +66,11 @@ func NewProfileService(
 	cr ComplaintRepository,
 	sr StatusRepository) *ProfileService {
 	return &ProfileService{
-		logger:                l,
-		db:                    db,
-		config:                cfg,
-		kafkaWriter:           kw,
+		logger: l,
+		db:     db,
+		config: cfg,
+		hub:    h,
+		//kafkaWriter:           kw,
 		s3:                    s3,
 		uwf:                   uwf,
 		profileRepository:     pr,
@@ -795,7 +797,7 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddReque
 }
 
 func (s *ProfileService) AddLike(
-	ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.LikeResponseDto, error) {
+	ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
 	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("AddLike", "checkUserExists")
@@ -837,35 +839,38 @@ func (s *ProfileService) AddLike(
 		UserImageUrl:        lastImageProfile.Url,
 		Username:            telegramProfile.UserName,
 	}
-	hubContentJson, err := json.Marshal(hc)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddLike", "json.Marshal")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
 	if !statusProfile.IsBlocked {
-		err = s.kafkaWriter.WriteMessages(context.Background(),
-			kafka.Message{
-				Key:   []byte(likedTelegramProfile.UserId),
-				Value: hubContentJson,
-			},
-		)
-		if err != nil {
-			errorMessage := s.getErrorMessage("AddLike", "kafkaWriter.WriteMessages")
-			s.logger.Debug(errorMessage, zap.Error(err))
-			return nil, err
-		}
+		go func() {
+			s.hub.Broadcast <- hc
+		}()
+		// For kafka
+		//hubContentJson, err := json.Marshal(hc)
+		//if err != nil {
+		//	errorMessage := s.getErrorMessage("AddLike", "json.Marshal")
+		//	s.logger.Debug(errorMessage, zap.Error(err))
+		//	return nil, err
+		//}
+		//err = s.kafkaWriter.WriteMessages(context.Background(),
+		//	kafka.Message{
+		//		Key:   []byte(likedTelegramProfile.UserId),
+		//		Value: hubContentJson,
+		//	},
+		//)
+		//if err != nil {
+		//	errorMessage := s.getErrorMessage("AddLike", "kafkaWriter.WriteMessages")
+		//	s.logger.Debug(errorMessage, zap.Error(err))
+		//	return nil, err
+		//}
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToAddRequest(pr)
-	likeAdded, err := unitOfWork.LikeRepository().Add(ctx, likeRequest)
+	likeResponse, err := unitOfWork.LikeRepository().Add(ctx, likeRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddLike",
 			"LikeRepository().Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	likeResponse := likeMapper.MapToResponse(likeAdded)
 	defer func() {
 		if err != nil {
 			if err := unitOfWork.Rollback(ctx); err != nil {
@@ -883,7 +888,7 @@ func (s *ProfileService) AddLike(
 }
 
 func (s *ProfileService) UpdateLike(
-	ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.LikeResponseDto, error) {
+	ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
 	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("UpdateLike", "checkUserExists")
@@ -892,13 +897,12 @@ func (s *ProfileService) UpdateLike(
 	}
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToUpdateRequest(pr)
-	likeUpdated, err := unitOfWork.LikeRepository().Update(ctx, likeRequest)
+	likeResponse, err := unitOfWork.LikeRepository().Update(ctx, likeRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateLike", "likeRepository.Update")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	likeResponse := likeMapper.MapToResponse(likeUpdated)
 	defer func() {
 		if err != nil {
 			if err := unitOfWork.Rollback(ctx); err != nil {
