@@ -209,14 +209,8 @@ message ProfileShortInfoResponse {
 
 message ProfileGetListRequest {
   string telegramUserId = 1; // id пользователя в телеграм
-  string searchGender = 2; // поиск по половому признаку
-  uint64 ageFrom = 3; // возраст от
-  uint64 ageTo = 4; // возраст до
-  double distance = 5; // дистанция
-  uint64 page = 6; // номер текущей страницы
-  uint64 size = 7; // количество элементов на странице
-  optional double latitude = 8; // широта
-  optional double longitude = 9; // долгота
+  optional double latitude = 2; // широта
+  optional double longitude = 3; // долгота
 }
 
 message ProfileListItemResponse {

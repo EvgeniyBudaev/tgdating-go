@@ -230,12 +230,6 @@ func (pm *ProfileMapper) MapToListRequest(
 	r *request.ProfileGetListRequestDto) *pb.ProfileGetListRequest {
 	return &pb.ProfileGetListRequest{
 		TelegramUserId: r.TelegramUserId,
-		SearchGender:   r.SearchGender,
-		AgeFrom:        r.AgeFrom,
-		AgeTo:          r.AgeTo,
-		Distance:       r.Distance,
-		Page:           r.Page,
-		Size:           r.Size,
 		Latitude:       r.Latitude,
 		Longitude:      r.Longitude,
 	}

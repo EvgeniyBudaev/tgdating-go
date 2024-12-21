@@ -103,11 +103,11 @@ func (pc *ProfileController) UpdateProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
-			errorMessage := pc.getErrorMessage("UpdateProfile", "validateAuthUser")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		}
+		//if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+		//	errorMessage := pc.getErrorMessage("UpdateProfile", "validateAuthUser")
+		//	pc.logger.Debug(errorMessage, zap.Error(err))
+		//	return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		//}
 		validateErr := validation.ValidateProfileEditRequestDto(ctf, req, locale)
 		if validateErr != nil {
 			errorMessage := pc.getErrorMessage("UpdateProfile",
@@ -397,11 +397,11 @@ func (pc *ProfileController) UpdateFilter() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
-			errorMessage := pc.getErrorMessage("UpdateFilter", "validateAuthUser")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		}
+		//if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+		//	errorMessage := pc.getErrorMessage("UpdateFilter", "validateAuthUser")
+		//	pc.logger.Debug(errorMessage, zap.Error(err))
+		//	return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		//}
 		profileMapper := &mapper.ProfileMapper{}
 		filterRequest := profileMapper.MapToFilterUpdateRequest(req)
 		filterResponse, err := pc.proto.UpdateFilter(ctx, filterRequest)
@@ -425,11 +425,11 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		//if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
-		//	errorMessage := pc.getErrorMessage("AddBlock", "validateAuthUser")
-		//	pc.logger.Debug(errorMessage, zap.Error(err))
-		//	return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		//}
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+			errorMessage := pc.getErrorMessage("AddBlock", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		profileMapper := &mapper.ProfileMapper{}
 		blockRequest := profileMapper.MapToBlockAddRequest(req)
 		blockAdded, err := pc.proto.AddBlock(ctx, blockRequest)

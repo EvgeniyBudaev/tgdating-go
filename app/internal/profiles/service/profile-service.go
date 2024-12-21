@@ -639,7 +639,7 @@ func (s *ProfileService) DeleteImage(
 }
 
 func (s *ProfileService) UpdateFilter(
-	ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error) {
+	ctx context.Context, req *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId", "Begin")
@@ -647,7 +647,7 @@ func (s *ProfileService) UpdateFilter(
 		return nil, err
 	}
 	defer tx.Rollback()
-	err = s.updateLastOnline(ctx, fr.TelegramUserId)
+	err = s.updateLastOnline(ctx, req.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId",
 			"updateLastOnline")
@@ -655,7 +655,7 @@ func (s *ProfileService) UpdateFilter(
 		return nil, err
 	}
 	filterMapper := &mapper.FilterMapper{}
-	filterRequest := filterMapper.MapToUpdateRequest(fr)
+	filterRequest := filterMapper.MapToUpdateRequest(req)
 	filterEntity, err := s.filterRepository.Update(ctx, filterRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId",

@@ -87,11 +87,5 @@ func (pm *ProfileMapper) MapToListRequest(
 	pr *request.ProfileGetListRequestDto) *request.ProfileGetListRequestRepositoryDto {
 	return &request.ProfileGetListRequestRepositoryDto{
 		TelegramUserId: pr.TelegramUserId,
-		SearchGender:   pr.SearchGender,
-		AgeFrom:        pr.AgeFrom,
-		AgeTo:          pr.AgeTo,
-		Distance:       pr.Distance,
-		Page:           pr.Page,
-		Size:           pr.Size,
 	}
 }

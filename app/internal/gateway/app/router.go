@@ -13,10 +13,7 @@ func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileContr
 	router.Get("/profiles/detail/:viewedTelegramUserId", profileController.GetProfileDetail())
 	router.Get("/profiles/short/:telegramUserId", profileController.GetProfileShortInfo())
 	router.Get("/profiles/list", profileController.GetProfileList())
-}
 
-func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileController) {
-	router := app.Group(prefix)
 	router.Post("/profiles", profileController.AddProfile())
 	router.Put("/profiles", profileController.UpdateProfile())
 	router.Post("/profiles/freeze", profileController.FreezeProfile())
@@ -29,4 +26,20 @@ func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileCo
 	router.Post("/profiles/likes", profileController.AddLike())
 	router.Put("/profiles/likes", profileController.UpdateLike())
 	router.Post("/profiles/complaints", profileController.AddComplaint())
+}
+
+func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileController) {
+	//router := app.Group(prefix)
+	//router.Post("/profiles", profileController.AddProfile())
+	//router.Put("/profiles", profileController.UpdateProfile())
+	//router.Post("/profiles/freeze", profileController.FreezeProfile())
+	//router.Post("/profiles/restore", profileController.RestoreProfile())
+	//router.Delete("/profiles", profileController.DeleteProfile())
+	//router.Delete("/profiles/images/:id", profileController.DeleteImage())
+	//router.Put("/profiles/filters", profileController.UpdateFilter())
+	//router.Put("/profiles/navigators", profileController.UpdateCoordinates())
+	//router.Post("/profiles/blocks", profileController.AddBlock())
+	//router.Post("/profiles/likes", profileController.AddLike())
+	//router.Put("/profiles/likes", profileController.UpdateLike())
+	//router.Post("/profiles/complaints", profileController.AddComplaint())
 }

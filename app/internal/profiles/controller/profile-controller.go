@@ -182,12 +182,6 @@ func (pc *ProfileController) GetProfileList(
 	pc.logger.Info("GET api/v1/profiles/list")
 	req := &request.ProfileGetListRequestDto{
 		TelegramUserId: in.TelegramUserId,
-		SearchGender:   in.SearchGender,
-		AgeFrom:        in.AgeFrom,
-		AgeTo:          in.AgeTo,
-		Distance:       in.Distance,
-		Page:           in.Page,
-		Size:           in.Size,
 		Latitude:       in.Latitude,
 		Longitude:      in.Longitude,
 	}
