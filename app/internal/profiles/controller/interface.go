@@ -21,6 +21,7 @@ type ProfileService interface {
 	GetImageByTelegramUserId(ctx context.Context, telegramUserId, fileName string) ([]byte, error)
 	GetImageById(ctx context.Context, imageId uint64) (*response.ImageResponseDto, error)
 	DeleteImage(ctx context.Context, id uint64) (*response.ResponseDto, error)
+	GetFilter(ctx context.Context, telegramUserId string) (*response.FilterResponseDto, error)
 	UpdateFilter(ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error)
 	AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*response.ResponseDto, error)
 	AddLike(ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.ResponseDto, error)

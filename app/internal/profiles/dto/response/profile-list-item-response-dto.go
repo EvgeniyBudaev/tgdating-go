@@ -7,5 +7,6 @@ type ProfileListItemResponseDto struct {
 	Distance       *float64  `json:"distance"`
 	Url            string    `json:"url"`
 	IsOnline       bool      `json:"isOnline"`
+	IsLiked        bool      `json:"isLiked"`
 	LastOnline     time.Time `json:"lastOnline"`
 }

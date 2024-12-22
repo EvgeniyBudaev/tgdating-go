@@ -218,7 +218,8 @@ message ProfileListItemResponse {
   optional double distance = 2; // дистанция
   string url = 3; // url изображения
   bool isOnline = 4; // пользователь онлайн да/нет
-  google.protobuf.Timestamp lastOnline = 5; // дата последнего входа в систему
+  bool isLiked = 5; // имеет лайк да/нет
+  google.protobuf.Timestamp lastOnline = 6; // дата последнего входа в систему
 }
 
 message ProfileListResponse {
@@ -252,21 +253,15 @@ message ImageDeleteResponse {
   bool success = 1; // успешно удаление файла да/нет
 }
 
+message FilterGetRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
+}
+
 message FilterUpdateRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   string searchGender = 2; // поиск по половому признаку
   uint64 ageFrom = 3; // возраст от
   uint64 ageTo = 4; // возраст до
-}
-
-message FilterUpdateResponse {
-  string telegramUserId = 1; // id пользователя в телеграм
-  string searchGender = 2; // поиск по половому признаку
-  uint64 ageFrom = 3; // возраст от
-  uint64 ageTo = 4; // возраст до
-  double distance = 5; // дистанция
-  uint64 page = 6; // номер текущей страницы
-  uint64 size = 7; // количество элементов на странице
 }
 
 message BlockAddRequest {
@@ -335,7 +330,8 @@ service Profile {
   rpc GetImageByTelegramUserId(GetImageByTelegramUserIdRequest) returns (ImageByTelegramUserIdResponse); // получение файла
   rpc GetImageById(GetImageByIdRequest) returns (ImageResponse); // получение изображения по id
   rpc DeleteImage(ImageDeleteRequest) returns (ImageDeleteResponse); // удаление файла
-  rpc UpdateFilter(FilterUpdateRequest) returns (FilterUpdateResponse); // получение данных фильтра
+  rpc GetFilter(FilterGetRequest) returns (FilterResponse); // получение данных фильтра
+  rpc UpdateFilter(FilterUpdateRequest) returns (FilterResponse); // обновление фильтра пользователя
   rpc AddBlock(BlockAddRequest) returns (BlockAddResponse); // добавить пользователя в блок лист
   rpc AddLike(LikeAddRequest) returns (LikeAddResponse); // поставить лайк
   rpc UpdateLike(LikeUpdateRequest) returns (LikeUpdateResponse); // обновить лайк

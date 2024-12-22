@@ -252,6 +252,7 @@ func (pm *ProfileMapper) MapToListResponse(r *pb.ProfileListResponse) *response.
 				Distance:       c.Distance,
 				Url:            c.Url,
 				IsOnline:       c.IsOnline,
+				IsLiked:        c.IsLiked,
 				LastOnline:     c.LastOnline.AsTime(),
 			})
 		}
@@ -273,6 +274,12 @@ func (pm *ProfileMapper) MapToImageByTelegramUserIdRequest(
 func (pm *ProfileMapper) MapToImageByTelegramUserIdResponse(
 	r *pb.ImageByTelegramUserIdResponse) []byte {
 	return r.File
+}
+
+func (pm *ProfileMapper) MapToFilterGetRequest(telegramUserId string) *pb.FilterGetRequest {
+	return &pb.FilterGetRequest{
+		TelegramUserId: telegramUserId,
+	}
 }
 
 func (pm *ProfileMapper) MapToFilterUpdateRequest(r *request.FilterUpdateRequestDto) *pb.FilterUpdateRequest {

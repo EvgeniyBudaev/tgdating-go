@@ -386,6 +386,24 @@ func (pc *ProfileController) DeleteImage() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) GetFilter() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /api/v1/profiles/filters/:telegramUserId")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		telegramUserId := ctf.Params("telegramUserId")
+		profileMapper := &mapper.ProfileMapper{}
+		filterRequest := profileMapper.MapToFilterGetRequest(telegramUserId)
+		filterResponse, err := pc.proto.GetFilter(ctx, filterRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("GetFilter", "proto.GetFilter")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, filterResponse)
+	}
+}
+
 func (pc *ProfileController) UpdateFilter() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("PUT /api/v1/profiles/filters")
@@ -453,11 +471,11 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
-			errorMessage := pc.getErrorMessage("AddLike", "validateAuthUser")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
-		}
+		//if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+		//	errorMessage := pc.getErrorMessage("AddLike", "validateAuthUser")
+		//	pc.logger.Debug(errorMessage, zap.Error(err))
+		//	return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		//}
 		locale := ctf.Get("Accept-Language")
 		if locale == "" {
 			locale = defaultLocale

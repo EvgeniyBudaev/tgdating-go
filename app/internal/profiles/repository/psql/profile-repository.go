@@ -299,13 +299,10 @@ func (r *ProfileRepository) GetShortInfo(
 func (r *ProfileRepository) SelectList(ctx context.Context,
 	pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error) {
 	telegramUserId := pr.TelegramUserId
-	page := 1
-	size := 50
-	offset := (page - 1) * size
+	offset := (pr.Page - 1) * pr.Size
 	query := "WITH filtered_profiles AS (" +
 		" SELECT p.id, p.telegram_user_id, p.age, p.gender, ps.is_blocked, ps.is_frozen," +
-		" p.created_at, p.updated_at, p.last_online, pf.search_gender, pf.age_from, pf.age_to," +
-		" pf.distance AS filter_distance, pf.page AS page, pf.size AS page_size," +
+		" p.created_at, p.updated_at, p.last_online," +
 		" COALESCE(" +
 		" ST_Distance(" +
 		" (SELECT location FROM dating.profile_navigators WHERE telegram_user_id = p.telegram_user_id)::geography," +
@@ -319,23 +316,25 @@ func (r *ProfileRepository) SelectList(ctx context.Context,
 		" ORDER BY pi.created_at DESC LIMIT 1) AS url," +
 		" (CASE " +
 		" WHEN p.last_online >= NOW() AT TIME ZONE 'UTC' - INTERVAL '5 minutes' THEN true ELSE false" +
-		" END) AS is_online" +
+		" END) AS is_online," +
+		" COALESCE(pl.is_liked, false) AS is_liked" +
 		" FROM dating.profiles p" +
 		" JOIN dating.profile_statuses ps ON p.telegram_user_id = ps.telegram_user_id" +
-		" JOIN dating.profile_filters pf ON p.telegram_user_id = pf.telegram_user_id" +
 		" LEFT JOIN dating.profile_navigators pn ON p.telegram_user_id = pn.telegram_user_id" +
+		" LEFT JOIN dating.profile_likes pl ON pl.telegram_user_id = $1" +
 		" WHERE ps.is_frozen = false AND ps.is_blocked = false AND" +
-		" (p.age BETWEEN pf.age_from AND pf.age_to) AND" +
-		" (pf.search_gender = 'all' OR p.gender = pf.search_gender) AND p.telegram_user_id <> $1 AND" +
+		" (p.age BETWEEN $3 AND $4) AND" +
+		" ($2 = 'all' OR p.gender = $2) AND p.telegram_user_id <> $1 AND" +
 		" NOT EXISTS (SELECT 1 FROM dating.profile_blocks" +
 		" WHERE telegram_user_id = $1 AND blocked_telegram_user_id = p.telegram_user_id)" +
 		" )" +
-		" SELECT telegram_user_id, last_online, filter_distance, distance, page, page_size, url, is_online" +
+		" SELECT telegram_user_id, last_online, distance, url, is_online, is_liked" +
 		" FROM filtered_profiles" +
-		" WHERE distance IS NULL OR (distance < filter_distance * 1000 AND distance IS NOT NULL)" +
+		" WHERE distance IS NULL OR (distance < $5 * 1000 AND distance IS NOT NULL)" +
 		" ORDER BY CASE WHEN distance IS NULL THEN 1 ELSE 0 END, distance ASC, last_online DESC" +
-		" LIMIT $2 OFFSET $3"
-	rows, err := r.db.QueryContext(ctx, query, telegramUserId, size, offset)
+		" LIMIT $6 OFFSET $7"
+	rows, err := r.db.QueryContext(ctx, query, telegramUserId, pr.SearchGender, pr.AgeFrom, pr.AgeTo, pr.Distance,
+		pr.Size, offset)
 	if err != nil {
 		errorMessage := r.getErrorMessage("SelectListByTelegramUserId",
 			"QueryContext")
@@ -345,28 +344,22 @@ func (r *ProfileRepository) SelectList(ctx context.Context,
 	defer rows.Close()
 	profileContent := make([]*response.ProfileListItemResponseDto, 0)
 	for rows.Next() {
-		p := response.ProfileListItemResponseRepositoryDto{}
-		err := rows.Scan(&p.TelegramUserId, &p.LastOnline, &p.FilterDistance, &p.Distance, &p.Page, &p.Size, &p.Url,
-			&p.IsOnline)
+		p := response.ProfileListItemResponseDto{}
+		err := rows.Scan(&p.TelegramUserId, &p.LastOnline, &p.Distance, &p.Url,
+			&p.IsOnline, &p.IsLiked)
 		if err != nil {
 			errorMessage := r.getErrorMessage("SelectListByTelegramUserId", "Scan")
 			r.logger.Info(errorMessage, zap.Error(ErrNotRowsFound))
 			continue
 		}
-		pr := response.ProfileListItemResponseDto{
-			TelegramUserId: p.TelegramUserId,
-			Distance:       p.Distance,
-			Url:            p.Url,
-			IsOnline:       p.IsOnline,
-			LastOnline:     p.LastOnline,
-		}
-		profileContent = append(profileContent, &pr)
+
+		profileContent = append(profileContent, &p)
 	}
-	totalEntities, err := r.getTotalEntities(ctx, telegramUserId, "all", 18, 100)
+	totalEntities, err := r.getTotalEntities(ctx, telegramUserId, pr.SearchGender, pr.AgeFrom, pr.AgeTo)
 	if err != nil {
 		return nil, err
 	}
-	paginationEntity := entity.GetPagination(uint64(page), uint64(size), totalEntities)
+	paginationEntity := entity.GetPagination(pr.Page, pr.Page, totalEntities)
 	paginationProfileEntityList := &response.ProfileListResponseRepositoryDto{
 		PaginationEntity: paginationEntity,
 		Content:          profileContent,

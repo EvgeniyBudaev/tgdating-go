@@ -240,8 +240,20 @@ func (pc *ProfileController) DeleteImage(
 	return fileResponse, nil
 }
 
+func (pc *ProfileController) GetFilter(
+	ctx context.Context, in *pb.FilterGetRequest) (*pb.FilterResponse, error) {
+	pc.logger.Info("GET /api/v1/profiles/filters/:telegramUserId")
+	filter, err := pc.service.GetFilter(ctx, in.TelegramUserId)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	filterResponse := profileMapper.MapControllerToFilterResponse(filter)
+	return filterResponse, nil
+}
+
 func (pc *ProfileController) UpdateFilter(
-	ctx context.Context, in *pb.FilterUpdateRequest) (*pb.FilterUpdateResponse, error) {
+	ctx context.Context, in *pb.FilterUpdateRequest) (*pb.FilterResponse, error) {
 	pc.logger.Info("PUT /api/v1/profiles/filters")
 	req := &request.FilterUpdateRequestDto{
 		TelegramUserId: in.TelegramUserId,
@@ -254,7 +266,7 @@ func (pc *ProfileController) UpdateFilter(
 		return nil, err
 	}
 	profileMapper := &mapper.ProfileControllerMapper{}
-	filterResponse := profileMapper.MapControllerToFilterUpdateResponse(filterUpdated)
+	filterResponse := profileMapper.MapControllerToFilterResponse(filterUpdated)
 	return filterResponse, nil
 }
 

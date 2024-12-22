@@ -13,6 +13,7 @@ func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileContr
 	router.Get("/profiles/detail/:viewedTelegramUserId", profileController.GetProfileDetail())
 	router.Get("/profiles/short/:telegramUserId", profileController.GetProfileShortInfo())
 	router.Get("/profiles/list", profileController.GetProfileList())
+	router.Get("/profiles/filters/:telegramUserId", profileController.GetFilter())
 
 	router.Post("/profiles", profileController.AddProfile())
 	router.Put("/profiles", profileController.UpdateProfile())

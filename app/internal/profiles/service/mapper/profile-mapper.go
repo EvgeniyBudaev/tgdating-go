@@ -84,8 +84,14 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 }
 
 func (pm *ProfileMapper) MapToListRequest(
-	pr *request.ProfileGetListRequestDto) *request.ProfileGetListRequestRepositoryDto {
+	pr *request.ProfileGetListRequestDto, f *entity.FilterEntity) *request.ProfileGetListRequestRepositoryDto {
 	return &request.ProfileGetListRequestRepositoryDto{
 		TelegramUserId: pr.TelegramUserId,
+		SearchGender:   f.SearchGender,
+		AgeFrom:        f.AgeFrom,
+		AgeTo:          f.AgeTo,
+		Distance:       f.Distance,
+		Page:           f.Page,
+		Size:           f.Size,
 	}
 }

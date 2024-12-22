@@ -204,6 +204,7 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 				Distance:       c.Distance,
 				Url:            c.Url,
 				IsOnline:       c.IsOnline,
+				IsLiked:        c.IsLiked,
 				LastOnline:     lastOnlineTimestamp,
 			})
 		}
@@ -228,9 +229,9 @@ func (pm *ProfileControllerMapper) MapControllerToImageResponse(r *response.Imag
 	}
 }
 
-func (pm *ProfileControllerMapper) MapControllerToFilterUpdateResponse(
-	r *response.FilterResponseDto) *pb.FilterUpdateResponse {
-	return &pb.FilterUpdateResponse{
+func (pm *ProfileControllerMapper) MapControllerToFilterResponse(
+	r *response.FilterResponseDto) *pb.FilterResponse {
+	return &pb.FilterResponse{
 		SearchGender: r.SearchGender,
 		AgeFrom:      r.AgeFrom,
 		AgeTo:        r.AgeTo,

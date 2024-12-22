@@ -465,9 +465,17 @@ func (s *ProfileService) GetProfileList(ctx context.Context,
 			return nil, err
 		}
 	}
-	profileMapper := &mapper.ProfileMapper{}
-	profileRequest := profileMapper.MapToListRequest(pr)
+
 	var paginationProfileEntityList *response.ProfileListResponseRepositoryDto
+	filterEntity, err := s.filterRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileList",
+			"filterRepository.FindByTelegramUserId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileMapper{}
+	profileRequest := profileMapper.MapToListRequest(pr, filterEntity)
 	paginationProfileEntityList, err = s.profileRepository.SelectList(ctx, profileRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileList",
@@ -636,6 +644,19 @@ func (s *ProfileService) DeleteImage(
 		return nil, err
 	}
 	return responseDto, err
+}
+
+func (s *ProfileService) GetFilter(ctx context.Context, telegramUserId string) (*response.FilterResponseDto, error) {
+	filterEntity, err := s.filterRepository.FindByTelegramUserId(ctx, telegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetFilter",
+			"filterRepository.FindByTelegramUserId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	filterMapper := &mapper.FilterMapper{}
+	filterResponse := filterMapper.MapToResponse(filterEntity)
+	return filterResponse, nil
 }
 
 func (s *ProfileService) UpdateFilter(
