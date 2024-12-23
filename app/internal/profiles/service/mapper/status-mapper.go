@@ -12,24 +12,28 @@ type StatusMapper struct {
 
 func (pm *StatusMapper) MapToAddRequest(pr *request.ProfileAddRequestDto) *request.StatusAddRequestRepositoryDto {
 	return &request.StatusAddRequestRepositoryDto{
-		TelegramUserId: pr.TelegramUserId,
-		IsBlocked:      false,
-		IsFrozen:       false,
-		IsInvisible:    false,
-		IsOnline:       false,
-		IsPremium:      false,
-		IsShowDistance: true,
-		CreatedAt:      time.Now().UTC(),
-		UpdatedAt:      time.Now().UTC(),
+		TelegramUserId:   pr.TelegramUserId,
+		IsBlocked:        false,
+		IsFrozen:         false,
+		IsHiddenAge:      false,
+		IsHiddenDistance: false,
+		IsInvisible:      false,
+		IsLeftHand:       pr.IsLeftHand,
+		IsOnline:         false,
+		IsPremium:        false,
+		CreatedAt:        time.Now().UTC(),
+		UpdatedAt:        time.Now().UTC(),
 	}
 }
 func (pm *StatusMapper) MapToResponse(p *entity.StatusEntity) *response.StatusResponseDto {
 	return &response.StatusResponseDto{
-		IsBlocked:      p.IsBlocked,
-		IsFrozen:       p.IsFrozen,
-		IsInvisible:    p.IsInvisible,
-		IsOnline:       p.IsOnline,
-		IsPremium:      p.IsPremium,
-		IsShowDistance: p.IsShowDistance,
+		IsBlocked:        p.IsBlocked,
+		IsFrozen:         p.IsFrozen,
+		IsHiddenAge:      p.IsHiddenAge,
+		IsHiddenDistance: p.IsHiddenDistance,
+		IsInvisible:      p.IsInvisible,
+		IsLeftHand:       p.IsLeftHand,
+		IsOnline:         p.IsOnline,
+		IsPremium:        p.IsPremium,
 	}
 }

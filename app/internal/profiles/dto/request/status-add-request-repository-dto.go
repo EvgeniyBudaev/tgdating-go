@@ -3,13 +3,15 @@ package request
 import "time"
 
 type StatusAddRequestRepositoryDto struct {
-	TelegramUserId string    `json:"telegramUserId"`
-	IsBlocked      bool      `json:"isBlocked"`
-	IsFrozen       bool      `json:"isFrozen"`
-	IsInvisible    bool      `json:"isInvisible"`
-	IsOnline       bool      `json:"isOnline"`
-	IsPremium      bool      `json:"isPremium"`
-	IsShowDistance bool      `json:"isShowDistance"`
-	CreatedAt      time.Time `json:"createdAt"`
-	UpdatedAt      time.Time `json:"updatedAt"`
+	TelegramUserId   string    `json:"telegramUserId"`
+	IsBlocked        bool      `json:"isBlocked"`
+	IsFrozen         bool      `json:"isFrozen"`
+	IsHiddenAge      bool      `json:"isHiddenAge"`
+	IsHiddenDistance bool      `json:"isHiddenDistance"`
+	IsInvisible      bool      `json:"isInvisible"`
+	IsLeftHand       bool      `json:"isLeftHand"`
+	IsOnline         bool      `json:"isOnline"`
+	IsPremium        bool      `json:"isPremium"`
+	CreatedAt        time.Time `json:"createdAt"`
+	UpdatedAt        time.Time `json:"updatedAt"`
 }

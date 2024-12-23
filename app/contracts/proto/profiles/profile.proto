@@ -62,7 +62,9 @@ message StatusResponse {
   bool isInvisible = 3; // неведимка да/нет
   bool isOnline = 4; // онлайн да/нет
   bool isPremium = 5; // наличие премиум аакаунта да/нет
-  bool isShowDistance = 6; // показывать дистанцию до текущего пользваотеля да/нет
+  bool isHiddenDistance = 6; // показывать дистанцию до текущего пользователя да/нет
+  bool isHiddenAge = 7; // показывать дистанцию до текущего пользователя да/нет
+  bool isLeftHand = 8; // интерфейс адаптирован под леую руку да/нет
 }
 
 message BlockResponse {
@@ -96,7 +98,8 @@ message ProfileAddRequest {
   double distance = 18; // дистанция
   uint64 page = 19; // номер текущей страницы
   uint64 size = 20; // количество элементов на странице
-  repeated FileMetadata files = 21; // список файлов-изображений
+  bool isLeftHand = 21; // интерфейс адаптирован под леую руку да/нет
+  repeated FileMetadata files = 22; // список файлов-изображений
 }
 
 message ProfileAddResponse {

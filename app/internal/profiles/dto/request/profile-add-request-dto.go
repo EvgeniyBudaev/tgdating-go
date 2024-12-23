@@ -25,5 +25,6 @@ type ProfileAddRequestDto struct {
 	Distance                float64                `json:"distance"`
 	Page                    uint64                 `json:"page"`
 	Size                    uint64                 `json:"size"`
+	IsLeftHand              bool                   `json:"isLeftHand"`
 	Files                   []*entity.FileMetadata `json:"files"`
 }
