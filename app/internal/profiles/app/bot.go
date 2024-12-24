@@ -107,9 +107,6 @@ func (app *App) StartBot(ctx context.Context, msgChan <-chan *entity.HubContent)
 		for update := range updates {
 			chatId := update.Message.Chat.ID
 			userLanguageCode := update.Message.From.LanguageCode
-			fmt.Println("bot chatId", chatId)
-			fmt.Println("bot isStartMessage", isStartMessage(&update))
-			fmt.Println("bot userLanguageCode", userLanguageCode)
 			if isStartMessage(&update) {
 				//userText := update.Message.Text // userText - сообщение, которое отправил пользователь
 				//app.Logger.Info("Начало общения: ", zap.String("username", update.Message.From.UserName),
