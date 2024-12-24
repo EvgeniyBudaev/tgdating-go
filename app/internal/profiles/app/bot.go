@@ -40,10 +40,24 @@ func printSystemMessageWithDelay(chatId int64, delayInSec uint8, message string)
 }
 
 // printIntro - displays a welcome message
-func printIntro(chatId int64) {
-	printSystemMessageWithDelay(chatId, 1, "Привет! "+EmojiSunglasses)
-	printSystemMessageWithDelay(chatId, 5, "Нажми на кнопку App,"+
-		" чтобы перейти на главную страницу приложения")
+func printIntro(chatId int64, languageCode string) {
+	var welcomeMessage string
+	var instructionMessage string
+	switch languageCode {
+	case "ru":
+		welcomeMessage = "Привет! " + EmojiSunglasses
+		instructionMessage = "При взаимной симпатии ты получишь уведомление в чат этого бота." +
+			" Нажми на кнопку Menu, чтобы начать пользоваться приложением"
+	case "en":
+		welcomeMessage = "Hello! " + EmojiSunglasses
+		instructionMessage = "If you like each other, you will receive a notification in the chat of this bot." +
+			" Click on the Menu button to start using the application"
+	default:
+		welcomeMessage = "Hello! " + EmojiSunglasses
+		instructionMessage = "Click the Menu button to start using the application"
+	}
+	printSystemMessageWithDelay(chatId, 1, welcomeMessage)
+	printSystemMessageWithDelay(chatId, 5, instructionMessage)
 }
 
 // StartBot - launches the telegram
@@ -56,9 +70,9 @@ func (app *App) StartBot(ctx context.Context, msgChan <-chan *entity.HubContent)
 	bot.Debug = true
 	app.Logger.Info("Starting Telegram Bot")
 	app.Logger.Info("Authorized on account:", zap.String("username", bot.Self.UserName))
-	//updateConfig := tgbotapi.NewUpdate(0)
-	//updateConfig.Timeout = UpdateConfigTimeout
-	//updates := bot.GetUpdatesChan(updateConfig) // Получаем все обновления от пользователя
+	updateConfig := tgbotapi.NewUpdate(0)
+	updateConfig.Timeout = UpdateConfigTimeout
+	updates := bot.GetUpdatesChan(updateConfig) // Получаем все обновления от пользователя
 
 	go func() {
 		for {
@@ -89,16 +103,20 @@ func (app *App) StartBot(ctx context.Context, msgChan <-chan *entity.HubContent)
 			}
 		}
 	}()
-
-	//for update := range updates {
-	//	chatId := update.Message.Chat.ID
-	//	if isStartMessage(&update) {
-	//		userText := update.Message.Text // userText - сообщение, которое отправил пользователь
-	//		app.Logger.Info("Начало общения: ", zap.String("username", update.Message.From.UserName),
-	//			zap.String("message", userText))
-	//		printIntro(chatId)
-	//	}
-	//
-	//}
+	go func() {
+		for update := range updates {
+			chatId := update.Message.Chat.ID
+			userLanguageCode := update.Message.From.LanguageCode
+			fmt.Println("bot chatId", chatId)
+			fmt.Println("bot isStartMessage", isStartMessage(&update))
+			fmt.Println("bot userLanguageCode", userLanguageCode)
+			if isStartMessage(&update) {
+				//userText := update.Message.Text // userText - сообщение, которое отправил пользователь
+				//app.Logger.Info("Начало общения: ", zap.String("username", update.Message.From.UserName),
+				//	zap.String("message", userText))
+				printIntro(chatId, userLanguageCode)
+			}
+		}
+	}()
 	return nil
 }
