@@ -79,7 +79,6 @@ func New() *App {
 
 // Run launches the application
 func (app *App) Run(ctx context.Context) {
-	app.Logger.Info("Listening gRPC server on port: ", zap.String("port", app.config.ProfilesPort))
 	addr := fmt.Sprintf("%s:%s", app.config.ProfilesClientName, app.config.ProfilesPort)
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -88,6 +87,7 @@ func (app *App) Run(ctx context.Context) {
 	}
 	defer conn.Close()
 	c := pb.NewProfileClient(conn)
+	app.Logger.Info("Listening gRPC server on port: ", zap.String("port", app.config.ProfilesPort))
 
 	var wg sync.WaitGroup
 	wg.Add(1)

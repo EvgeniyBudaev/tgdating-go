@@ -3,7 +3,6 @@ package middlewares
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/config"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller"
 	v1 "github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller/http/api/v1"
@@ -14,7 +13,7 @@ import (
 	initdata "github.com/telegram-mini-apps/init-data-golang"
 	"go.uber.org/zap"
 	"net/http"
-	//"time"
+	"time"
 )
 
 func InitFiberMiddlewares(
@@ -42,7 +41,6 @@ func NewJwtMiddleware(config *config.Config, logger logger.Logger) fiber.Handler
 func successHandler(c *fiber.Ctx, config *config.Config, logger logger.Logger) error {
 	encryptedToken := c.Get("Authorization")
 	secretKey := config.CryptoSecretKey
-	fmt.Println("encryptedToken: ", encryptedToken)
 	authData, err := decrypt(encryptedToken, secretKey)
 	if err != nil {
 		errorMessage := "invalid decrypt token"
@@ -51,12 +49,12 @@ func successHandler(c *fiber.Ctx, config *config.Config, logger logger.Logger) e
 		return v1.ResponseError(c, err, http.StatusUnauthorized)
 	}
 	// Validate init data. We consider init data sign valid for 1 hour from their creation moment
-	//if err := initdata.Validate(authData, config.TelegramBotToken, time.Hour); err != nil {
-	//	errorMessage := "invalid token"
-	//	err := errors.New(errorMessage)
-	//	logger.Debug(errorMessage, zap.Error(err))
-	//	return v1.ResponseError(c, err, http.StatusUnauthorized)
-	//}
+	if err := initdata.Validate(authData, config.TelegramBotToken, time.Hour*1); err != nil {
+		errorMessage := "invalid token"
+		err := errors.New(errorMessage)
+		logger.Debug(errorMessage, zap.Error(err))
+		return v1.ResponseError(c, err, http.StatusUnauthorized)
+	}
 	// Parse init data
 	telegramInitData, err := initdata.Parse(authData)
 	if err != nil {

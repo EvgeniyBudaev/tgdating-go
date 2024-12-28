@@ -145,6 +145,11 @@ func (pc *ProfileController) FreezeProfile() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+			errorMessage := pc.getErrorMessage("FreezeProfile", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
 		profileMapper := &mapper.ProfileMapper{}
 		profileRequest := profileMapper.MapToFreezeRequest(req)
 		profileResponse, err := pc.proto.FreezeProfile(ctx, profileRequest)
@@ -167,6 +172,11 @@ func (pc *ProfileController) RestoreProfile() fiber.Handler {
 			errorMessage := pc.getErrorMessage("RestoreProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+			errorMessage := pc.getErrorMessage("RestoreProfile", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		profileMapper := &mapper.ProfileMapper{}
 		profileRequest := profileMapper.MapToRestoreRequest(req)
@@ -191,6 +201,11 @@ func (pc *ProfileController) DeleteProfile() fiber.Handler {
 			errorMessage := pc.getErrorMessage("DeleteProfile", "BodyParser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+			errorMessage := pc.getErrorMessage("DeleteProfile", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
 		profileMapper := &mapper.ProfileMapper{}
 		profileRequest := profileMapper.MapToDeleteRequest(req)

@@ -4,6 +4,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/entity"
 	"github.com/gofiber/fiber/v2"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -68,7 +69,8 @@ func ValidateProfileAddRequestDto(ctf *fiber.Ctx, req *request.ProfileAddRequest
 			errorMessages.GetBadRequest(locale))
 	}
 
-	if utf8.RuneCountInString(req.Description) > maxCharacters {
+	cleanedDescription := strings.ReplaceAll(req.Description, "\r", "")
+	if utf8.RuneCountInString(cleanedDescription) > maxCharacters {
 		fieldErrorsLanguages["description"] = append(fieldErrorsLanguages["description"],
 			errorMessages.GetMaxSymbols(locale, maxCharacters))
 	}

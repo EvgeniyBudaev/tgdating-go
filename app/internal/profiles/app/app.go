@@ -11,8 +11,6 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/segmentio/kafka-go"
-
 	//"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -28,12 +26,12 @@ const (
 
 // App - application structure
 type App struct {
-	config      *config.Config
-	db          *Database
-	fiber       *fiber.App
-	gRPCServer  *grpc.Server
-	kafkaWriter *kafka.Writer
-	Logger      logger.Logger
+	config     *config.Config
+	db         *Database
+	fiber      *fiber.App
+	gRPCServer *grpc.Server
+	// kafkaWriter *kafka.Writer
+	Logger logger.Logger
 }
 
 // New - create new application
