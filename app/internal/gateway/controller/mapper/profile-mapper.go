@@ -319,6 +319,26 @@ func (pm *ProfileMapper) MapToLikeUpdateRequest(r *request.LikeUpdateRequestDto)
 	}
 }
 
+func (pm *ProfileMapper) MapToLikeGetLastRequest(telegramUserId string) *pb.LikeGetLastRequest {
+	return &pb.LikeGetLastRequest{
+		TelegramUserId: telegramUserId,
+	}
+}
+
+func (pm *ProfileMapper) MapToLikeGetLastResponse(r *pb.LikeGetLastResponse) *entity.LikeEntity {
+	if r.Like == nil {
+		return nil
+	}
+	return &entity.LikeEntity{
+		Id:                  r.Like.Id,
+		TelegramUserId:      r.Like.TelegramUserId,
+		LikedTelegramUserId: r.Like.LikedTelegramUserId,
+		IsLiked:             r.Like.IsLiked,
+		CreatedAt:           r.Like.CreatedAt.AsTime(),
+		UpdatedAt:           r.Like.UpdatedAt.AsTime(),
+	}
+}
+
 func (pm *ProfileMapper) MapToComplaintAddRequest(r *request.ComplaintAddRequestDto) *pb.ComplaintAddRequest {
 	return &pb.ComplaintAddRequest{
 		TelegramUserId:         r.TelegramUserId,

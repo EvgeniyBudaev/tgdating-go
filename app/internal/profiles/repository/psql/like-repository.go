@@ -83,6 +83,24 @@ func (r *LikeRepository) FindById(ctx context.Context, id uint64) (*entity.LikeE
 	return p, nil
 }
 
+func (r *LikeRepository) FindLastLike(ctx context.Context, telegramUserId string) (*entity.LikeEntity, error) {
+	p := &entity.LikeEntity{}
+	query := "SELECT id, telegram_user_id, liked_telegram_user_id, is_liked, created_at, updated_at " +
+		" FROM dating.profile_likes" +
+		" WHERE liked_telegram_user_id = $1 ORDER BY created_at DESC LIMIT 1"
+	row := r.db.QueryRowContext(ctx, query, telegramUserId)
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.LikedTelegramUserId, &p.IsLiked, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		errorMessage := r.getErrorMessage("FindLastLike", "Scan")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, nil
+	}
+	return p, nil
+}
+
 func (r *LikeRepository) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
 		errorFilePathILike)

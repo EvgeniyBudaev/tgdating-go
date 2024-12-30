@@ -70,6 +70,11 @@ func (app *App) StartBot(ctx context.Context, msgChan <-chan *entity.HubContent)
 	bot.Debug = true
 	app.Logger.Info("Starting Telegram Bot")
 	app.Logger.Info("Authorized on account:", zap.String("username", bot.Self.UserName))
+
+	// удаляет Webhook
+	// https://github.com/go-telegram-bot-api/telegram-bot-api/issues/656
+	//_, err = bot.MakeRequest("deleteWebhook", tgbotapi.Params{})
+
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = UpdateConfigTimeout
 	updates := bot.GetUpdatesChan(updateConfig) // Получаем все обновления от пользователя

@@ -940,6 +940,11 @@ func (s *ProfileService) UpdateLike(
 	return likeResponse, nil
 }
 
+func (s *ProfileService) GetLastLike(
+	ctx context.Context, telegramUserId string) (*entity.LikeEntity, error) {
+	return s.likeRepository.FindLastLike(ctx, telegramUserId)
+}
+
 func (s *ProfileService) AddComplaint(
 	ctx context.Context, pr *request.ComplaintAddRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()

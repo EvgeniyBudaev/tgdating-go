@@ -535,6 +535,25 @@ func (pc *ProfileController) UpdateLike() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) GetLastLike() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /api/v1/profiles/likes/:telegramUserId/last")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		telegramUserId := ctf.Params("telegramUserId")
+		profileMapper := &mapper.ProfileMapper{}
+		likeRequest := profileMapper.MapToLikeGetLastRequest(telegramUserId)
+		likeEntity, err := pc.proto.GetLastLike(ctx, likeRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("GetLastLike", "proto.GetLastLike")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		likeResponse := profileMapper.MapToLikeGetLastResponse(likeEntity)
+		return v1.ResponseCreated(ctf, likeResponse)
+	}
+}
+
 func (pc *ProfileController) AddComplaint() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("POST /api/v1/profiles/complaints")

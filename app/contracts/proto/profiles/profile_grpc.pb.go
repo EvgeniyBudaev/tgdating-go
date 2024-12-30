@@ -36,6 +36,7 @@ const (
 	Profile_AddBlock_FullMethodName                 = "/protobuf.Profile/AddBlock"
 	Profile_AddLike_FullMethodName                  = "/protobuf.Profile/AddLike"
 	Profile_UpdateLike_FullMethodName               = "/protobuf.Profile/UpdateLike"
+	Profile_GetLastLike_FullMethodName              = "/protobuf.Profile/GetLastLike"
 	Profile_AddComplaint_FullMethodName             = "/protobuf.Profile/AddComplaint"
 	Profile_UpdateCoordinates_FullMethodName        = "/protobuf.Profile/UpdateCoordinates"
 )
@@ -63,6 +64,7 @@ type ProfileClient interface {
 	AddBlock(ctx context.Context, in *BlockAddRequest, opts ...grpc.CallOption) (*BlockAddResponse, error)
 	AddLike(ctx context.Context, in *LikeAddRequest, opts ...grpc.CallOption) (*LikeAddResponse, error)
 	UpdateLike(ctx context.Context, in *LikeUpdateRequest, opts ...grpc.CallOption) (*LikeUpdateResponse, error)
+	GetLastLike(ctx context.Context, in *LikeGetLastRequest, opts ...grpc.CallOption) (*LikeGetLastResponse, error)
 	AddComplaint(ctx context.Context, in *ComplaintAddRequest, opts ...grpc.CallOption) (*ComplaintAddResponse, error)
 	UpdateCoordinates(ctx context.Context, in *NavigatorUpdateRequest, opts ...grpc.CallOption) (*NavigatorUpdateResponse, error)
 }
@@ -245,6 +247,16 @@ func (c *profileClient) UpdateLike(ctx context.Context, in *LikeUpdateRequest, o
 	return out, nil
 }
 
+func (c *profileClient) GetLastLike(ctx context.Context, in *LikeGetLastRequest, opts ...grpc.CallOption) (*LikeGetLastResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LikeGetLastResponse)
+	err := c.cc.Invoke(ctx, Profile_GetLastLike_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *profileClient) AddComplaint(ctx context.Context, in *ComplaintAddRequest, opts ...grpc.CallOption) (*ComplaintAddResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ComplaintAddResponse)
@@ -288,6 +300,7 @@ type ProfileServer interface {
 	AddBlock(context.Context, *BlockAddRequest) (*BlockAddResponse, error)
 	AddLike(context.Context, *LikeAddRequest) (*LikeAddResponse, error)
 	UpdateLike(context.Context, *LikeUpdateRequest) (*LikeUpdateResponse, error)
+	GetLastLike(context.Context, *LikeGetLastRequest) (*LikeGetLastResponse, error)
 	AddComplaint(context.Context, *ComplaintAddRequest) (*ComplaintAddResponse, error)
 	UpdateCoordinates(context.Context, *NavigatorUpdateRequest) (*NavigatorUpdateResponse, error)
 	mustEmbedUnimplementedProfileServer()
@@ -350,6 +363,9 @@ func (UnimplementedProfileServer) AddLike(context.Context, *LikeAddRequest) (*Li
 }
 func (UnimplementedProfileServer) UpdateLike(context.Context, *LikeUpdateRequest) (*LikeUpdateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateLike not implemented")
+}
+func (UnimplementedProfileServer) GetLastLike(context.Context, *LikeGetLastRequest) (*LikeGetLastResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLastLike not implemented")
 }
 func (UnimplementedProfileServer) AddComplaint(context.Context, *ComplaintAddRequest) (*ComplaintAddResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddComplaint not implemented")
@@ -684,6 +700,24 @@ func _Profile_UpdateLike_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Profile_GetLastLike_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LikeGetLastRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).GetLastLike(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Profile_GetLastLike_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).GetLastLike(ctx, req.(*LikeGetLastRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Profile_AddComplaint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ComplaintAddRequest)
 	if err := dec(in); err != nil {
@@ -794,6 +828,10 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateLike",
 			Handler:    _Profile_UpdateLike_Handler,
+		},
+		{
+			MethodName: "GetLastLike",
+			Handler:    _Profile_GetLastLike_Handler,
 		},
 		{
 			MethodName: "AddComplaint",

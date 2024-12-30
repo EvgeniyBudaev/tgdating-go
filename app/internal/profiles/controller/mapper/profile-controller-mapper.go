@@ -265,6 +265,26 @@ func (pm *ProfileControllerMapper) MapControllerToLikeUpdateResponse(
 	}
 }
 
+func (pm *ProfileControllerMapper) MapControllerToLikeGetLastResponse(
+	r *entity.LikeEntity) *pb.LikeGetLastResponse {
+	var like *pb.LikeEntity
+	if r != nil {
+		createdAtTimestamp := timestamppb.New(r.CreatedAt)
+		updatedAtTimestamp := timestamppb.New(r.UpdatedAt)
+		like = &pb.LikeEntity{
+			Id:                  r.Id,
+			TelegramUserId:      r.TelegramUserId,
+			LikedTelegramUserId: r.LikedTelegramUserId,
+			IsLiked:             r.IsLiked,
+			CreatedAt:           createdAtTimestamp,
+			UpdatedAt:           updatedAtTimestamp,
+		}
+	}
+	return &pb.LikeGetLastResponse{
+		Like: like,
+	}
+}
+
 func (pm *ProfileControllerMapper) MapControllerToComplaintAddResponse(
 	r *response.ResponseDto) *pb.ComplaintAddResponse {
 	return &pb.ComplaintAddResponse{

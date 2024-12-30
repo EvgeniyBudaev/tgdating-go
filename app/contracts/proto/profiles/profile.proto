@@ -77,6 +77,15 @@ message LikeResponse {
   google.protobuf.Timestamp updatedAt = 3; // дата обновления
 }
 
+message LikeEntity {
+  uint64 id = 1; // id лайка
+  string telegramUserId = 2; // id пользователя который лайкнул
+  string likedTelegramUserId = 3; // id пользователя которого лайкнули
+  bool isLiked = 4; // установлен лайк да/нет
+  google.protobuf.Timestamp createdAt = 5; // дата создания
+  google.protobuf.Timestamp updatedAt = 6; // дата обновления
+}
+
 message ProfileAddRequest {
   string displayName = 1; // Имя для отображения
   uint64 age = 2; // возраст
@@ -296,6 +305,14 @@ message LikeUpdateResponse {
   bool success = 1; // успешно обновлен да/нет
 }
 
+message LikeGetLastRequest {
+  string telegramUserId = 1; // id пользователя
+}
+
+message LikeGetLastResponse {
+  LikeEntity like = 1; // лайк пользователя
+}
+
 message ComplaintAddRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   string criminalTelegramUserId = 2; // id мошенника
@@ -338,6 +355,7 @@ service Profile {
   rpc AddBlock(BlockAddRequest) returns (BlockAddResponse); // добавить пользователя в блок лист
   rpc AddLike(LikeAddRequest) returns (LikeAddResponse); // поставить лайк
   rpc UpdateLike(LikeUpdateRequest) returns (LikeUpdateResponse); // обновить лайк
+  rpc GetLastLike(LikeGetLastRequest) returns (LikeGetLastResponse); // получить последний лайк по id пользователя
   rpc AddComplaint(ComplaintAddRequest) returns (ComplaintAddResponse); // добавить жалобу
   rpc UpdateCoordinates(NavigatorUpdateRequest) returns (NavigatorUpdateResponse); // обновление координат
 }

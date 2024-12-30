@@ -317,6 +317,18 @@ func (pc *ProfileController) UpdateLike(ctx context.Context, in *pb.LikeUpdateRe
 	return likeResponse, nil
 }
 
+func (pc *ProfileController) GetLastLike(
+	ctx context.Context, in *pb.LikeGetLastRequest) (*pb.LikeGetLastResponse, error) {
+	pc.logger.Info("GET /api/v1/profiles/likes/:telegramUserId/last")
+	likeEntity, err := pc.service.GetLastLike(ctx, in.TelegramUserId)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	likeResponse := profileMapper.MapControllerToLikeGetLastResponse(likeEntity)
+	return likeResponse, nil
+}
+
 func (pc *ProfileController) AddComplaint(
 	ctx context.Context, in *pb.ComplaintAddRequest) (*pb.ComplaintAddResponse, error) {
 	pc.logger.Info("POST /api/v1/profiles/complaints")

@@ -326,6 +326,7 @@ func (r *ProfileRepository) SelectList(ctx context.Context,
 		" JOIN dating.profile_statuses ps ON p.telegram_user_id = ps.telegram_user_id" +
 		" LEFT JOIN dating.profile_navigators pn ON p.telegram_user_id = pn.telegram_user_id" +
 		" LEFT JOIN dating.profile_likes pl ON pl.telegram_user_id = $1" +
+		" AND pl.liked_telegram_user_id  = p.telegram_user_id" +
 		" WHERE ps.is_frozen = false AND ps.is_blocked = false AND" +
 		" (p.age BETWEEN $3 AND $4) AND" +
 		" ($2 = 'all' OR p.gender = $2) AND p.telegram_user_id <> $1 AND" +
