@@ -246,6 +246,19 @@ func (pm *ProfileControllerMapper) MapControllerToFilterResponse(
 	}
 }
 
+func (pm *ProfileControllerMapper) MapControllerToTelegramResponse(
+	r *response.TelegramResponseDto) *pb.TelegramResponse {
+	return &pb.TelegramResponse{
+		UserId:          r.UserId,
+		Username:        r.UserName,
+		FirstName:       r.FirstName,
+		LastName:        r.LastName,
+		LanguageCode:    r.LanguageCode,
+		AllowsWriteToPm: r.AllowsWriteToPm,
+		QueryId:         r.QueryId,
+	}
+}
+
 func (pm *ProfileControllerMapper) MapControllerToBlockAddResponse(r *response.ResponseDto) *pb.BlockAddResponse {
 	return &pb.BlockAddResponse{
 		Success: r.Success,

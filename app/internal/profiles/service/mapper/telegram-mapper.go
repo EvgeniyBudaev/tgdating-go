@@ -14,7 +14,7 @@ func (pm *TelegramMapper) MapToResponse(
 	pe *entity.TelegramEntity) *response.TelegramResponseDto {
 	return &response.TelegramResponseDto{
 		UserId:          pe.UserId,
-		Username:        pe.UserName,
+		UserName:        pe.UserName,
 		FirstName:       pe.FirstName,
 		LastName:        pe.LastName,
 		LanguageCode:    pe.LanguageCode,

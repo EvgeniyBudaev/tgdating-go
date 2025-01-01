@@ -59,16 +59,19 @@ type ImageStatusRepository interface {
 type LikeRepository interface {
 	Add(ctx context.Context, p *request.LikeAddRequestRepositoryDto) (*response.ResponseDto, error)
 	Update(ctx context.Context, p *request.LikeUpdateRequestRepositoryDto) (*response.ResponseDto, error)
+	DeleteRelatedProfiles(ctx context.Context, id string) (*response.ResponseDto, error)
 	FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error)
 	FindLastLike(ctx context.Context, telegramUserId string) (*entity.LikeEntity, error)
 }
 
 type BlockRepository interface {
 	Add(ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*response.ResponseDto, error)
+	DeleteRelatedProfiles(ctx context.Context, id string) (*response.ResponseDto, error)
 }
 
 type ComplaintRepository interface {
 	Add(ctx context.Context, p *request.ComplaintAddRequestRepositoryDto) (*response.ResponseDto, error)
+	DeleteRelatedProfiles(ctx context.Context, id string) (*response.ResponseDto, error)
 	GetCountUserComplaintsByToday(ctx context.Context, telegramUserId string) (uint64, error)
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -22,9 +23,10 @@ const (
 
 // App - application structure
 type App struct {
-	Logger logger.Logger
-	config *config.Config
-	fiber  *fiber.App
+	Logger      logger.Logger
+	config      *config.Config
+	fiber       *fiber.App
+	kafkaWriter *kafka.Writer
 }
 
 // New - create new application
@@ -63,6 +65,18 @@ func New() *App {
 		Expiration: 30 * time.Second,
 	}))
 
+	// Kafka
+	w := &kafka.Writer{
+		//Addr: kafka.TCP("172.18.0.1:10095", "172.18.0.1:10096", "172.18.0.1:10097"), // docker inspect network web-network
+		Addr:         kafka.TCP("127.0.0.1:10095", "127.0.0.1:10096", "127.0.0.1:10097"), // for localhost
+		Topic:        "like_topic",
+		Balancer:     &kafka.LeastBytes{},
+		BatchSize:    1048576,
+		BatchTimeout: 1000,
+		Compression:  kafka.Gzip,
+		RequiredAcks: kafka.RequireOne,
+	}
+
 	// CORS
 	f.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
@@ -71,9 +85,10 @@ func New() *App {
 	}))
 
 	return &App{
-		config: cfg,
-		Logger: loggerLevel,
-		fiber:  f,
+		config:      cfg,
+		Logger:      loggerLevel,
+		fiber:       f,
+		kafkaWriter: w,
 	}
 }
 

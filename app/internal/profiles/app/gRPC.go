@@ -33,7 +33,6 @@ func (app *App) StartServer(ctx context.Context, hub *entity.Hub) error {
 	profileService := service.NewProfileService(
 		app.Logger, app.db.psql, app.config,
 		hub,
-		//app.kafkaWriter,
 		s3Client, ufw,
 		profileRepository, navigatorRepository, filterRepository, telegramRepository, imageRepository,
 		imageStatusRepository, likeRepository, blockRepository, complaintRepository, statusRepository)

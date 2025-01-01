@@ -14,7 +14,7 @@ const (
 
 func (app *App) StartHTTPServer(ctx context.Context, proto proto.ProfileClient) error {
 	app.fiber.Static("/static", "./static")
-	profileController := controller.NewProfileController(app.Logger, proto)
+	profileController := controller.NewProfileController(app.Logger, app.kafkaWriter, proto)
 	middlewares.InitFiberMiddlewares(
 		app.fiber, app.config, app.Logger, profileController, InitPublicRoutes, InitProtectedRoutes)
 	go func() {

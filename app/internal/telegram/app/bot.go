@@ -41,10 +41,24 @@ func printSystemMessageWithDelay(chatId int64, delayInSec uint8, message string)
 }
 
 // printIntro - displays a welcome message
-func printIntro(chatId int64) {
-	printSystemMessageWithDelay(chatId, 1, "Привет! "+EmojiSunglasses)
-	printSystemMessageWithDelay(chatId, 5, "Нажми на кнопку App,"+
-		" чтобы перейти на главную страницу приложения")
+func printIntro(chatId int64, languageCode string) {
+	var welcomeMessage string
+	var instructionMessage string
+	switch languageCode {
+	case "ru":
+		welcomeMessage = "Привет! " + EmojiSunglasses
+		instructionMessage = "При взаимной симпатии ты получишь уведомление в чат этого бота." +
+			" Нажми на кнопку Menu, чтобы начать пользоваться приложением"
+	case "en":
+		welcomeMessage = "Hello! " + EmojiSunglasses
+		instructionMessage = "If you like each other, you will receive a notification in the chat of this bot." +
+			" Click on the Menu button to start using the application"
+	default:
+		welcomeMessage = "Hello! " + EmojiSunglasses
+		instructionMessage = "Click the Menu button to start using the application"
+	}
+	printSystemMessageWithDelay(chatId, 1, welcomeMessage)
+	printSystemMessageWithDelay(chatId, 5, instructionMessage)
 }
 
 // StartBot - launches the telegram
@@ -57,55 +71,65 @@ func (app *App) StartBot(ctx context.Context) error {
 	bot.Debug = true
 	app.Logger.Info("Starting Telegram service")
 	app.Logger.Info("Authorized on account:", zap.String("username", bot.Self.UserName))
-	//updateConfig := tgbotapi.NewUpdate(0)
-	//updateConfig.Timeout = UpdateConfigTimeout
-	//updates := bot.GetUpdatesChan(updateConfig) // Получаем все обновления от пользователя
+
+	// удаляет Webhook
+	// https://github.com/go-telegram-bot-api/telegram-bot-api/issues/656
+	// _, err = bot.MakeRequest("deleteWebhook", tgbotapi.Params{})
+
+	updateConfig := tgbotapi.NewUpdate(0)
+	updateConfig.Timeout = UpdateConfigTimeout
+	updates := bot.GetUpdatesChan(updateConfig) // Получаем все обновления от пользователя
 
 	var hc *entity.HubContent
 
-	for {
-		c, err := app.kafkaReader.ReadMessage(context.Background())
-		if err != nil {
-			errorMessage := getErrorMessage("StartBot", "r.ReadMessage",
-				errorFilePathBot)
-			app.Logger.Debug(errorMessage, zap.Error(err))
-			break
+	go func() {
+		for {
+			// Kafka
+			c, err := app.kafkaReader.ReadMessage(context.Background())
+			if err != nil {
+				errorMessage := getErrorMessage("StartBot", "r.ReadMessage",
+					errorFilePathBot)
+				app.Logger.Debug(errorMessage, zap.Error(err))
+				break
+			}
+			err = json.Unmarshal(c.Value, &hc)
+			if err != nil {
+				errorMessage := getErrorMessage("StartBot", "json.Unmarshal",
+					errorFilePathBot)
+				app.Logger.Error(errorMessage, zap.Error(err))
+				continue
+			}
+			likedTelegramUserId, err := strconv.ParseInt(hc.LikedTelegramUserId, 10, 64)
+			if err != nil {
+				errorMessage := getErrorMessage("StartBot", "strconv.ParseInt",
+					errorFilePathBot)
+				app.Logger.Debug(errorMessage, zap.Error(err))
+				break
+			}
+			msg := tgbotapi.NewPhoto(likedTelegramUserId, tgbotapi.FileURL(hc.UserImageUrl))
+			msg.ParseMode = "HTML"
+			msg.Caption = fmt.Sprintf("%s %s <a href=\"tg://resolve?domain=%s\">@%s</a>",
+				hc.Message, EmojiPointRight, hc.Username, hc.Username)
+			_, err = bot.Send(msg)
+			if err != nil {
+				errorMessage := getErrorMessage("StartBot", "telegram.Send",
+					errorFilePathBot)
+				app.Logger.Debug(errorMessage, zap.Error(err))
+			}
 		}
-		err = json.Unmarshal(c.Value, &hc)
-		if err != nil {
-			errorMessage := getErrorMessage("StartBot", "json.Unmarshal",
-				errorFilePathBot)
-			app.Logger.Error(errorMessage, zap.Error(err))
-			continue
-		}
-		likedTelegramUserId, err := strconv.ParseInt(hc.LikedTelegramUserId, 10, 64)
-		if err != nil {
-			errorMessage := getErrorMessage("StartBot", "strconv.ParseInt",
-				errorFilePathBot)
-			app.Logger.Debug(errorMessage, zap.Error(err))
-			break
-		}
-		msg := tgbotapi.NewPhoto(likedTelegramUserId, tgbotapi.FileURL(hc.UserImageUrl))
-		msg.ParseMode = "HTML"
-		msg.Caption = fmt.Sprintf("%s %s <a href=\"tg://resolve?domain=%s\">@%s</a>",
-			hc.Message, EmojiPointRight, hc.Username, hc.Username)
-		_, err = bot.Send(msg)
-		if err != nil {
-			errorMessage := getErrorMessage("StartBot", "telegram.Send",
-				errorFilePathBot)
-			app.Logger.Debug(errorMessage, zap.Error(err))
-		}
-	}
+	}()
 
-	//for update := range updates {
-	//	chatId := update.Message.Chat.ID
-	//	if isStartMessage(&update) {
-	//		userText := update.Message.Text // userText - сообщение, которое отправил пользователь
-	//		app.Logger.Info("Начало общения: ", zap.String("username", update.Message.From.UserName),
-	//			zap.String("message", userText))
-	//		printIntro(chatId)
-	//	}
-	//
-	//}
+	go func() {
+		for update := range updates {
+			chatId := update.Message.Chat.ID
+			userLanguageCode := update.Message.From.LanguageCode
+			if isStartMessage(&update) {
+				//userText := update.Message.Text // userText - сообщение, которое отправил пользователь
+				//app.Logger.Info("Начало общения: ", zap.String("username", update.Message.From.UserName),
+				//	zap.String("message", userText))
+				printIntro(chatId, userLanguageCode)
+			}
+		}
+	}()
 	return nil
 }

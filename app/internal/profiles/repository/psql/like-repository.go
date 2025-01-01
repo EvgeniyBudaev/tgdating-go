@@ -65,6 +65,21 @@ func (r *LikeRepository) Update(
 	return likeResponse, nil
 }
 
+func (r *LikeRepository) DeleteRelatedProfiles(
+	ctx context.Context, id string) (*response.ResponseDto, error) {
+	query := "DELETE FROM dating.profile_likes WHERE liked_telegram_user_id = $1"
+	_, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		errorMessage := r.getErrorMessage("DeleteRelatedProfiles", "ExecContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	likeResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return likeResponse, nil
+}
+
 func (r *LikeRepository) FindById(ctx context.Context, id uint64) (*entity.LikeEntity, error) {
 	p := &entity.LikeEntity{}
 	query := "SELECT id, telegram_user_id, liked_telegram_user_id, is_liked, created_at, updated_at " +

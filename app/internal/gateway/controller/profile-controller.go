@@ -2,16 +2,19 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	pb "github.com/EvgeniyBudaev/tgdating-go/app/contracts/proto/profiles"
 	v1 "github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller/http/api/v1"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller/mapper"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/logger"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/shared/enum"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/validation"
 	"github.com/gofiber/fiber/v2"
+	"github.com/segmentio/kafka-go"
 	initdata "github.com/telegram-mini-apps/init-data-golang"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -30,14 +33,16 @@ const (
 )
 
 type ProfileController struct {
-	logger logger.Logger
-	proto  pb.ProfileClient
+	logger      logger.Logger
+	kafkaWriter *kafka.Writer
+	proto       pb.ProfileClient
 }
 
-func NewProfileController(l logger.Logger, pc pb.ProfileClient) *ProfileController {
+func NewProfileController(l logger.Logger, kw *kafka.Writer, pc pb.ProfileClient) *ProfileController {
 	return &ProfileController{
-		logger: l,
-		proto:  pc,
+		logger:      l,
+		kafkaWriter: kw,
+		proto:       pc,
 	}
 }
 
@@ -496,6 +501,46 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			locale = defaultLocale
 		}
 		profileMapper := &mapper.ProfileMapper{}
+		telegramRequest := profileMapper.MapToTelegramGetRequest(req.TelegramUserId)
+		telegramProfile, err := pc.proto.GetTelegram(ctx, telegramRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("AddLike",
+				"proto.GetTelegram")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		imageRequest := profileMapper.MapToGetImageLastRequest(req.TelegramUserId)
+		lastImage, err := pc.proto.GetImageLastByTelegramUserId(ctx, imageRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("AddLike",
+				"proto.GetImageLastByTelegramUserId")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		hc := &entity.HubContent{
+			LikedTelegramUserId: req.LikedTelegramUserId,
+			Message:             pc.GetMessageLike(locale),
+			Type:                "like",
+			UserImageUrl:        lastImage.Url,
+			Username:            telegramProfile.Username,
+		}
+		hubContentJson, err := json.Marshal(hc)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("AddLike", "json.Marshal")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		err = pc.kafkaWriter.WriteMessages(context.Background(),
+			kafka.Message{
+				Key:   []byte(req.LikedTelegramUserId),
+				Value: hubContentJson,
+			},
+		)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("AddLike", "kafkaWriter.WriteMessages")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
 		likeRequest := profileMapper.MapToLikeAddRequest(req, locale)
 		likeAdded, err := pc.proto.AddLike(ctx, likeRequest)
 		if err != nil {
@@ -660,6 +705,17 @@ func (pc *ProfileController) getFiles(ctf *fiber.Ctx) ([]*pb.FileMetadata, error
 		}
 	}
 	return fileList, nil
+}
+
+func (pc *ProfileController) GetMessageLike(locale string) string {
+	switch locale {
+	case "ru":
+		return "Есть симпатия! Начинай общаться"
+	case "en":
+		return "There is sympathy! Start communicating"
+	default:
+		return fmt.Sprintf("Unsupported language: %s", locale)
+	}
 }
 
 func (pc *ProfileController) convertToUint64(name, value string) (uint64, error) {

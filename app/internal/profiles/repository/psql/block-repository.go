@@ -53,6 +53,21 @@ func (r *BlockRepository) Add(
 	return blockResponse, nil
 }
 
+func (r *BlockRepository) DeleteRelatedProfiles(
+	ctx context.Context, id string) (*response.ResponseDto, error) {
+	query := "DELETE FROM dating.profile_blocks WHERE blocked_telegram_user_id = $1"
+	_, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		errorMessage := r.getErrorMessage("DeleteRelatedProfiles", "ExecContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	blockResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return blockResponse, nil
+}
+
 func (r *BlockRepository) getErrorMessage(repositoryMethodName string, callMethodName string) string {
 	return fmt.Sprintf("error func %s, method %s by path %s", repositoryMethodName, callMethodName,
 		errorFilePathBlock)

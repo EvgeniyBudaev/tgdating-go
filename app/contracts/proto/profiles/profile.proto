@@ -253,6 +253,10 @@ message ImageByTelegramUserIdResponse {
   bytes file = 1; // файл
 }
 
+message GetImageLastByTelegramUserIdRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
+}
+
 message GetImageByIdRequest {
   uint64 id = 1; // id изображения
 }
@@ -274,6 +278,10 @@ message FilterUpdateRequest {
   string searchGender = 2; // поиск по половому признаку
   uint64 ageFrom = 3; // возраст от
   uint64 ageTo = 4; // возраст до
+}
+
+message TelegramGetRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
 }
 
 message BlockAddRequest {
@@ -348,10 +356,12 @@ service Profile {
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю
   rpc GetProfileList(ProfileGetListRequest) returns (ProfileListResponse); // получение списка профилей
   rpc GetImageByTelegramUserId(GetImageByTelegramUserIdRequest) returns (ImageByTelegramUserIdResponse); // получение файла
+  rpc GetImageLastByTelegramUserId(GetImageLastByTelegramUserIdRequest) returns (ImageResponse); // получение изображения по id
   rpc GetImageById(GetImageByIdRequest) returns (ImageResponse); // получение изображения по id
   rpc DeleteImage(ImageDeleteRequest) returns (ImageDeleteResponse); // удаление файла
   rpc GetFilter(FilterGetRequest) returns (FilterResponse); // получение данных фильтра
   rpc UpdateFilter(FilterUpdateRequest) returns (FilterResponse); // обновление фильтра пользователя
+  rpc GetTelegram(TelegramGetRequest) returns (TelegramResponse); // получение данных фильтра
   rpc AddBlock(BlockAddRequest) returns (BlockAddResponse); // добавить пользователя в блок лист
   rpc AddLike(LikeAddRequest) returns (LikeAddResponse); // поставить лайк
   rpc UpdateLike(LikeUpdateRequest) returns (LikeUpdateResponse); // обновить лайк

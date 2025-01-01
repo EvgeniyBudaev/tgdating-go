@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/config"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller"
 	v1 "github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/controller/http/api/v1"
@@ -41,6 +42,8 @@ func NewJwtMiddleware(config *config.Config, logger logger.Logger) fiber.Handler
 func successHandler(c *fiber.Ctx, config *config.Config, logger logger.Logger) error {
 	encryptedToken := c.Get("Authorization")
 	secretKey := config.CryptoSecretKey
+	fmt.Println("encryptedToken: ", encryptedToken)
+	fmt.Println("secretKey: ", secretKey)
 	authData, err := decrypt(encryptedToken, secretKey)
 	if err != nil {
 		errorMessage := "invalid decrypt token"

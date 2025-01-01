@@ -287,6 +287,12 @@ func (pm *ProfileMapper) MapToFilterGetRequest(telegramUserId string) *pb.Filter
 	}
 }
 
+func (pm *ProfileMapper) MapToTelegramGetRequest(telegramUserId string) *pb.TelegramGetRequest {
+	return &pb.TelegramGetRequest{
+		TelegramUserId: telegramUserId,
+	}
+}
+
 func (pm *ProfileMapper) MapToFilterUpdateRequest(r *request.FilterUpdateRequestDto) *pb.FilterUpdateRequest {
 	return &pb.FilterUpdateRequest{
 		TelegramUserId: r.TelegramUserId,
@@ -308,6 +314,12 @@ func (pm *ProfileMapper) MapToLikeAddRequest(r *request.LikeAddRequestDto, local
 		TelegramUserId:      r.TelegramUserId,
 		LikedTelegramUserId: r.LikedTelegramUserId,
 		Locale:              locale,
+	}
+}
+
+func (pm *ProfileMapper) MapToGetImageLastRequest(telegramUserId string) *pb.GetImageLastByTelegramUserIdRequest {
+	return &pb.GetImageLastByTelegramUserIdRequest{
+		TelegramUserId: telegramUserId,
 	}
 }
 

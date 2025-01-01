@@ -10,6 +10,7 @@ import (
 	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -21,6 +22,7 @@ const (
 type App struct {
 	config      *config.Config
 	fiber       *fiber.App
+	gRPCServer  *grpc.Server
 	kafkaReader *kafka.Reader
 	Logger      logger.Logger
 }

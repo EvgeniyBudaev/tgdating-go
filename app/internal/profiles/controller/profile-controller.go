@@ -213,6 +213,18 @@ func (pc *ProfileController) GetImageByTelegramUserId(
 	return fileResponse, nil
 }
 
+func (pc *ProfileController) GetImageLastByTelegramUserId(
+	ctx context.Context, in *pb.GetImageLastByTelegramUserIdRequest) (*pb.ImageResponse, error) {
+	pc.logger.Info("GET GetImageLastByTelegramUserId")
+	imageById, err := pc.service.GetImageLastByTelegramUserId(ctx, in.TelegramUserId)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	imageResponse := profileMapper.MapControllerToImageResponse(imageById)
+	return imageResponse, nil
+}
+
 func (pc *ProfileController) GetImageById(ctx context.Context, in *pb.GetImageByIdRequest) (*pb.ImageResponse, error) {
 	pc.logger.Info("GET /api/v1/profiles/images/:id")
 	imageById, err := pc.service.GetImageById(ctx, in.Id)
@@ -268,6 +280,18 @@ func (pc *ProfileController) UpdateFilter(
 	profileMapper := &mapper.ProfileControllerMapper{}
 	filterResponse := profileMapper.MapControllerToFilterResponse(filterUpdated)
 	return filterResponse, nil
+}
+
+func (pc *ProfileController) GetTelegram(
+	ctx context.Context, in *pb.TelegramGetRequest) (*pb.TelegramResponse, error) {
+	pc.logger.Info("GET GetTelegram")
+	telegram, err := pc.service.GetTelegram(ctx, in.TelegramUserId)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	telegramResponse := profileMapper.MapControllerToTelegramResponse(telegram)
+	return telegramResponse, nil
 }
 
 func (pc *ProfileController) AddBlock(ctx context.Context, in *pb.BlockAddRequest) (*pb.BlockAddResponse, error) {

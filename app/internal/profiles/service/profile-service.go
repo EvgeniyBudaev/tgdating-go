@@ -24,15 +24,14 @@ import (
 const (
 	errorFilePath          = "internal/profiles/service/profile-service.go"
 	minDistance            = 100
-	maxCountUserComplaints = 0
+	maxCountUserComplaints = 10
 )
 
 type ProfileService struct {
-	logger logger.Logger
-	db     *sql.DB
-	config *config.Config
-	hub    *entity.Hub
-	//kafkaWriter           *kafka.Writer
+	logger                logger.Logger
+	db                    *sql.DB
+	config                *config.Config
+	hub                   *entity.Hub
 	s3                    *config.S3
 	uwf                   *UnitOfWorkFactory
 	profileRepository     ProfileRepository
@@ -52,7 +51,6 @@ func NewProfileService(
 	db *sql.DB,
 	cfg *config.Config,
 	h *entity.Hub,
-	//kw *kafka.Writer,
 	s3 *config.S3,
 	uwf *UnitOfWorkFactory,
 	pr ProfileRepository,
@@ -66,11 +64,10 @@ func NewProfileService(
 	cr ComplaintRepository,
 	sr StatusRepository) *ProfileService {
 	return &ProfileService{
-		logger: l,
-		db:     db,
-		config: cfg,
-		hub:    h,
-		//kafkaWriter:           kw,
+		logger:                l,
+		db:                    db,
+		config:                cfg,
+		hub:                   h,
 		s3:                    s3,
 		uwf:                   uwf,
 		profileRepository:     pr,
@@ -335,6 +332,27 @@ func (s *ProfileService) DeleteProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	_, err = unitOfWork.BlockRepository().DeleteRelatedProfiles(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile",
+			"BlockRepository().DeleteRelatedProfiles")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	_, err = unitOfWork.ComplaintRepository().DeleteRelatedProfiles(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile",
+			"ComplaintRepository().DeleteRelatedProfiles")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	_, err = unitOfWork.LikeRepository().DeleteRelatedProfiles(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile",
+			"LikeRepository().DeleteRelatedProfiles")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	profileResponse := &response.ResponseDto{
 		Success: true,
 	}
@@ -540,6 +558,11 @@ func (s *ProfileService) GetImageByTelegramUserId(ctx context.Context, telegramU
 	return data, nil
 }
 
+func (s *ProfileService) GetImageLastByTelegramUserId(
+	ctx context.Context, telegramUserId string) (*response.ImageResponseDto, error) {
+	return s.imageRepository.FindLastByTelegramUserId(ctx, telegramUserId)
+}
+
 func (s *ProfileService) GetImageById(ctx context.Context, imageId uint64) (*response.ImageResponseDto, error) {
 	image, err := s.imageRepository.FindById(ctx, imageId)
 	if err != nil {
@@ -689,6 +712,19 @@ func (s *ProfileService) UpdateFilter(
 	return filterResponse, nil
 }
 
+func (s *ProfileService) GetTelegram(
+	ctx context.Context, telegramUserId string) (*response.TelegramResponseDto, error) {
+	telegramEntity, err := s.telegramRepository.FindByTelegramUserId(ctx, telegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetTelegram",
+			"telegramRepository.FindByTelegramUserId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	telegramMapper := &mapper.TelegramMapper{}
+	return telegramMapper.MapToResponse(telegramEntity), nil
+}
+
 func (s *ProfileService) removeStrSpaces(str string) string {
 	return strings.ReplaceAll(str, " ", "")
 }
@@ -825,64 +861,47 @@ func (s *ProfileService) AddLike(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	telegramProfile, err := s.telegramRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddLike",
-			"telegramRepository.FindByTelegramUserId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	statusProfile, err := s.statusRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddLike",
-			"statusRepository.FindByTelegramUserId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	lastImageProfile, err := s.imageRepository.FindLastByTelegramUserId(ctx, pr.TelegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddLike",
-			"imageRepository.FindLastByTelegramUserId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	likedTelegramProfile, err := s.telegramRepository.FindByTelegramUserId(ctx, pr.LikedTelegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddLike",
-			"telegramRepository.FindByTelegramUserId")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	hc := &entity.HubContent{
-		LikedTelegramUserId: likedTelegramProfile.UserId,
-		Message:             s.GetMessageLike(locale),
-		Type:                "like",
-		UserImageUrl:        lastImageProfile.Url,
-		Username:            telegramProfile.UserName,
-	}
-	if !statusProfile.IsBlocked {
-		go func() {
-			s.hub.Broadcast <- hc
-		}()
-		// For kafka
-		//hubContentJson, err := json.Marshal(hc)
-		//if err != nil {
-		//	errorMessage := s.getErrorMessage("AddLike", "json.Marshal")
-		//	s.logger.Debug(errorMessage, zap.Error(err))
-		//	return nil, err
-		//}
-		//err = s.kafkaWriter.WriteMessages(context.Background(),
-		//	kafka.Message{
-		//		Key:   []byte(likedTelegramProfile.UserId),
-		//		Value: hubContentJson,
-		//	},
-		//)
-		//if err != nil {
-		//	errorMessage := s.getErrorMessage("AddLike", "kafkaWriter.WriteMessages")
-		//	s.logger.Debug(errorMessage, zap.Error(err))
-		//	return nil, err
-		//}
-	}
+	// For channel
+	//telegramProfile, err := s.telegramRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
+	//if err != nil {
+	//	errorMessage := s.getErrorMessage("AddLike",
+	//		"telegramRepository.FindByTelegramUserId")
+	//	s.logger.Debug(errorMessage, zap.Error(err))
+	//	return nil, err
+	//}
+	//statusProfile, err := s.statusRepository.FindByTelegramUserId(ctx, pr.TelegramUserId)
+	//if err != nil {
+	//	errorMessage := s.getErrorMessage("AddLike",
+	//		"statusRepository.FindByTelegramUserId")
+	//	s.logger.Debug(errorMessage, zap.Error(err))
+	//	return nil, err
+	//}
+	//lastImageProfile, err := s.imageRepository.FindLastByTelegramUserId(ctx, pr.TelegramUserId)
+	//if err != nil {
+	//	errorMessage := s.getErrorMessage("AddLike",
+	//		"imageRepository.FindLastByTelegramUserId")
+	//	s.logger.Debug(errorMessage, zap.Error(err))
+	//	return nil, err
+	//}
+	//likedTelegramProfile, err := s.telegramRepository.FindByTelegramUserId(ctx, pr.LikedTelegramUserId)
+	//if err != nil {
+	//	errorMessage := s.getErrorMessage("AddLike",
+	//		"telegramRepository.FindByTelegramUserId")
+	//	s.logger.Debug(errorMessage, zap.Error(err))
+	//	return nil, err
+	//}
+	//hc := &entity.HubContent{
+	//	LikedTelegramUserId: likedTelegramProfile.UserId,
+	//	Message:             s.GetMessageLike(locale),
+	//	Type:                "like",
+	//	UserImageUrl:        lastImageProfile.Url,
+	//	Username:            telegramProfile.UserName,
+	//}
+	//if !statusProfile.IsBlocked {
+	// For channel
+	//go func() {
+	//	s.hub.Broadcast <- hc
+	//}()
 	likeMapper := &mapper.LikeMapper{}
 	likeRequest := likeMapper.MapToAddRequest(pr)
 	likeResponse, err := unitOfWork.LikeRepository().Add(ctx, likeRequest)
@@ -948,6 +967,29 @@ func (s *ProfileService) GetLastLike(
 func (s *ProfileService) AddComplaint(
 	ctx context.Context, pr *request.ComplaintAddRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
+	blockMapper := &mapper.BlockMapper{}
+	br := &request.BlockAddRequestDto{
+		TelegramUserId:        pr.TelegramUserId,
+		BlockedTelegramUserId: pr.CriminalTelegramUserId,
+	}
+	blockRequest := blockMapper.MapToAddRequest(br)
+	_, err := unitOfWork.BlockRepository().Add(ctx, blockRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddComplaint", "BlockRepository().Add")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	prForViewedUser := &request.BlockAddRequestDto{
+		TelegramUserId:        pr.CriminalTelegramUserId,
+		BlockedTelegramUserId: pr.TelegramUserId,
+	}
+	blockForViewedUserRequest := blockMapper.MapToAddRequest(prForViewedUser)
+	_, err = unitOfWork.BlockRepository().Add(ctx, blockForViewedUserRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddComplaint", "BlockRepository().Add")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	complaintMapper := &mapper.ComplaintMapper{}
 	complaintRequest := complaintMapper.MapToAddRequest(pr)
 	complaintResponse, err := unitOfWork.ComplaintRepository().Add(ctx, complaintRequest)

@@ -2,7 +2,7 @@ package response
 
 type TelegramResponseDto struct {
 	UserId          string `json:"userId"`
-	Username        string `json:"username"`
+	UserName        string `json:"username"`
 	FirstName       string `json:"firstName"`
 	LastName        string `json:"lastName"`
 	LanguageCode    string `json:"languageCode"`
