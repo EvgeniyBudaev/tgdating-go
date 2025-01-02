@@ -267,6 +267,7 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		fmt.Println("GetProfileDetail TelegramUserId:", req.TelegramUserId)
 		viewedTelegramUserId := ctf.Params("viewedTelegramUserId")
 		profileMapper := &mapper.ProfileMapper{}
 		profileRequest := profileMapper.MapToGetDetailRequest(req, viewedTelegramUserId)
@@ -325,6 +326,7 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		fmt.Println("GetProfileList TelegramUserId:", req.TelegramUserId)
 		profileMapper := &mapper.ProfileMapper{}
 		profileRequest := profileMapper.MapToListRequest(req)
 		profileList, err := pc.proto.GetProfileList(ctx, profileRequest)
@@ -491,6 +493,7 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
+		fmt.Println("AddLike TelegramUserId:", req.TelegramUserId)
 		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("AddLike", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
@@ -582,12 +585,18 @@ func (pc *ProfileController) UpdateLike() fiber.Handler {
 
 func (pc *ProfileController) GetLastLike() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
-		pc.logger.Info("GET /api/v1/profiles/likes/:telegramUserId/last")
+		pc.logger.Info("POST /api/v1/profiles/likes/last")
 		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
 		defer cancel()
-		telegramUserId := ctf.Params("telegramUserId")
+		req := &request.LikeGetLastRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("GetLastLike", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		fmt.Println("GetLastLike TelegramUserId:", req.TelegramUserId)
 		profileMapper := &mapper.ProfileMapper{}
-		likeRequest := profileMapper.MapToLikeGetLastRequest(telegramUserId)
+		likeRequest := profileMapper.MapToLikeGetLastRequest(req.TelegramUserId)
 		likeEntity, err := pc.proto.GetLastLike(ctx, likeRequest)
 		if err != nil {
 			errorMessage := pc.getErrorMessage("GetLastLike", "proto.GetLastLike")

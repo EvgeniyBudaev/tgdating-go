@@ -14,7 +14,6 @@ func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileContr
 	router.Get("/profiles/short/:telegramUserId", profileController.GetProfileShortInfo())
 	router.Get("/profiles/list", profileController.GetProfileList())
 	router.Get("/profiles/filters/:telegramUserId", profileController.GetFilter())
-	router.Get("/profiles/likes/:telegramUserId/last", profileController.GetLastLike())
 
 	//router.Post("/profiles", profileController.AddProfile())
 	//router.Put("/profiles", profileController.UpdateProfile())
@@ -43,5 +42,6 @@ func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileCo
 	router.Post("/profiles/blocks", profileController.AddBlock())
 	router.Post("/profiles/likes", profileController.AddLike())
 	router.Put("/profiles/likes", profileController.UpdateLike())
+	router.Post("/profiles/likes/last", profileController.GetLastLike())
 	router.Post("/profiles/complaints", profileController.AddComplaint())
 }

@@ -49,6 +49,7 @@ func successHandler(c *fiber.Ctx, config *config.Config, logger logger.Logger) e
 		errorMessage := "invalid decrypt token"
 		err := errors.New(errorMessage)
 		logger.Debug(errorMessage, zap.Error(err))
+		logger.Debug("Received request", zap.String("path", c.Path()))
 		return v1.ResponseError(c, err, http.StatusUnauthorized)
 	}
 	// Validate init data. We consider init data sign valid for 1 hour from their creation moment
@@ -56,6 +57,7 @@ func successHandler(c *fiber.Ctx, config *config.Config, logger logger.Logger) e
 		errorMessage := "invalid token"
 		err := errors.New(errorMessage)
 		logger.Debug(errorMessage, zap.Error(err))
+		logger.Debug("Received request", zap.String("path", c.Path()))
 		return v1.ResponseError(c, err, http.StatusUnauthorized)
 	}
 	// Parse init data
