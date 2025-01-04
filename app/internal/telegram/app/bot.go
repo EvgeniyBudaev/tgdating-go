@@ -44,19 +44,7 @@ func printSystemMessageWithDelay(chatId int64, delayInSec uint8, message string)
 func printIntro(chatId int64, languageCode string) {
 	var welcomeMessage string
 	var instructionMessage string
-	switch languageCode {
-	case "ru":
-		welcomeMessage = "Привет! " + EmojiSunglasses
-		instructionMessage = "При взаимной симпатии ты получишь уведомление в чат этого бота." +
-			" Нажми на кнопку Menu, чтобы начать пользоваться приложением"
-	case "en":
-		welcomeMessage = "Hello! " + EmojiSunglasses
-		instructionMessage = "If you like each other, you will receive a notification in the chat of this bot." +
-			" Click on the Menu button to start using the application"
-	default:
-		welcomeMessage = "Hello! " + EmojiSunglasses
-		instructionMessage = "Click the Menu button to start using the application"
-	}
+	instructionMessage, welcomeMessage = translationsPrintIntro(instructionMessage, languageCode, welcomeMessage)
 	printSystemMessageWithDelay(chatId, 1, welcomeMessage)
 	printSystemMessageWithDelay(chatId, 5, instructionMessage)
 }
