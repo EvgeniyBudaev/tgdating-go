@@ -9,6 +9,9 @@ import (
 type Config struct {
 	LoggerLevel      string `envconfig:"LOGGER_LEVEL"`
 	TelegramBotToken string `envconfig:"TELEGRAM_BOT_TOKEN"`
+	Kafka1           string `envconfig:"KAFKA_1"`
+	Kafka2           string `envconfig:"KAFKA_2"`
+	Kafka3           string `envconfig:"KAFKA_3"`
 }
 
 func Load(l logger.Logger) (*Config, error) {

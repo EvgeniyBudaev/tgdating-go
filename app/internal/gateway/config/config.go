@@ -7,12 +7,15 @@ import (
 )
 
 type Config struct {
-	GatewayPort        string `envconfig:"GATEWAY_PORT"`
-	ProfilesPort       string `envconfig:"PROFILES_PORT"`
-	ProfilesClientName string `envconfig:"PROFILES_CLIENT_NAME"`
-	LoggerLevel        string `envconfig:"LOGGER_LEVEL"`
-	CryptoSecretKey    string `envconfig:"CRYPTO_SECRET_KEY"`
-	TelegramBotToken   string `envconfig:"TELEGRAM_BOT_TOKEN"`
+	AllowOrigins     string `envconfig:"ALLOW_ORIGINS"`
+	GatewayPort      string `envconfig:"GATEWAY_PORT"`
+	ProfilesHost     string `envconfig:"PROFILES_HOST"`
+	LoggerLevel      string `envconfig:"LOGGER_LEVEL"`
+	TelegramBotToken string `envconfig:"TELEGRAM_BOT_TOKEN"`
+	CryptoSecretKey  string `envconfig:"CRYPTO_SECRET_KEY"`
+	Kafka1           string `envconfig:"KAFKA_1"`
+	Kafka2           string `envconfig:"KAFKA_2"`
+	Kafka3           string `envconfig:"KAFKA_3"`
 }
 
 func Load(l logger.Logger) (*Config, error) {

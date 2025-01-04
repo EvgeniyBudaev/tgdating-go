@@ -51,8 +51,7 @@ func New() *App {
 	}
 
 	// Kafka
-	//var brokers = []string{"172.18.0.1:10095", "172.18.0.1:10096", "172.18.0.1:10097"} // docker inspect network web-network
-	var brokers = []string{"127.0.0.1:10095", "127.0.0.1:10096", "127.0.0.1:10097"} // for localhost
+	var brokers = []string{cfg.Kafka1, cfg.Kafka2, cfg.Kafka3}
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:  brokers,
 		GroupID:  "consumer-group-id",

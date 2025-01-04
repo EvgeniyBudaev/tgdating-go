@@ -39,9 +39,8 @@ func (app *App) StartServer(ctx context.Context, hub *entity.Hub) error {
 	profileController := controller.NewProfileController(app.Logger, profileService)
 	pb.RegisterProfileServer(app.gRPCServer, profileController)
 	go func() {
-		port := ":" + app.config.ProfilesPort
-		app.Logger.Info("Starting Profile service on port: ", zap.String("port", port))
-		listen, err := net.Listen("tcp", port)
+		app.Logger.Info("Starting Profile service on host: ", zap.String("host", app.config.ProfilesHost))
+		listen, err := net.Listen("tcp", app.config.ProfilesHost)
 		if err != nil {
 			errorMessage := getErrorMessage("StartServer", "net.Listen",
 				errorFilePathApp)

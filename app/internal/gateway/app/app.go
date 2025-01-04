@@ -67,8 +67,7 @@ func New() *App {
 
 	// Kafka
 	w := &kafka.Writer{
-		//Addr: kafka.TCP("172.18.0.1:10095", "172.18.0.1:10096", "172.18.0.1:10097"), // docker inspect network web-network
-		Addr:         kafka.TCP("127.0.0.1:10095", "127.0.0.1:10096", "127.0.0.1:10097"), // for localhost
+		Addr:         kafka.TCP(cfg.Kafka1, cfg.Kafka2, cfg.Kafka3),
 		Topic:        "like_topic",
 		Balancer:     &kafka.LeastBytes{},
 		BatchSize:    1048576,
@@ -79,7 +78,7 @@ func New() *App {
 
 	// CORS
 	f.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
+		AllowOrigins: cfg.AllowOrigins,
 		AllowHeaders: "Content-Type, X-Requested-With, Authorization",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
@@ -94,7 +93,7 @@ func New() *App {
 
 // Run launches the application
 func (app *App) Run(ctx context.Context) {
-	addr := fmt.Sprintf("%s:%s", app.config.ProfilesClientName, app.config.ProfilesPort)
+	addr := app.config.ProfilesHost
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		errorMessage := getErrorMessage("New", "grpc.NewClient", errorFilePathApp)
@@ -102,7 +101,7 @@ func (app *App) Run(ctx context.Context) {
 	}
 	defer conn.Close()
 	c := pb.NewProfileClient(conn)
-	app.Logger.Info("Listening gRPC server on port: ", zap.String("port", app.config.ProfilesPort))
+	app.Logger.Info("Listening gRPC server on host: ", zap.String("host", addr))
 
 	var wg sync.WaitGroup
 	wg.Add(1)
