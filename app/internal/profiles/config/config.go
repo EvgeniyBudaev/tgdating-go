@@ -8,7 +8,6 @@ import (
 
 type Config struct {
 	AllowOrigins         string `envconfig:"ALLOW_ORIGINS"`
-	GatewayPort          string `envconfig:"GATEWAY_PORT"`
 	ProfilesHost         string `envconfig:"PROFILES_HOST"`
 	Domain               string `envconfig:"DOMAIN"`
 	LoggerLevel          string `envconfig:"LOGGER_LEVEL"`

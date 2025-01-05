@@ -8,7 +8,7 @@ import (
 
 type Config struct {
 	AllowOrigins     string `envconfig:"ALLOW_ORIGINS"`
-	GatewayPort      string `envconfig:"GATEWAY_PORT"`
+	GatewayHost      string `envconfig:"GATEWAY_HOST"`
 	ProfilesHost     string `envconfig:"PROFILES_HOST"`
 	LoggerLevel      string `envconfig:"LOGGER_LEVEL"`
 	TelegramBotToken string `envconfig:"TELEGRAM_BOT_TOKEN"`
