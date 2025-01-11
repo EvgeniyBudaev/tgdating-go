@@ -84,3 +84,8 @@ type StatusRepository interface {
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
 	CheckProfileExists(ctx context.Context, telegramUserId string) (*response.CheckExistsDto, error)
 }
+
+type PaymentRepository interface {
+	Add(ctx context.Context, p *request.PaymentAddRequestRepositoryDto) (*response.ResponseDto, error)
+	FindLastByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.PaymentEntity, error)
+}

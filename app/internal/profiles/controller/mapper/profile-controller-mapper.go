@@ -305,6 +305,13 @@ func (pm *ProfileControllerMapper) MapControllerToComplaintAddResponse(
 	}
 }
 
+func (pm *ProfileControllerMapper) MapControllerToPaymentAddResponse(
+	r *response.ResponseDto) *pb.PaymentAddResponse {
+	return &pb.PaymentAddResponse{
+		Success: r.Success,
+	}
+}
+
 func (pm *ProfileControllerMapper) MapControllerToUpdateCoordinatesResponse(
 	r *response.NavigatorResponseDto) *pb.NavigatorUpdateResponse {
 	location := &pb.Point{

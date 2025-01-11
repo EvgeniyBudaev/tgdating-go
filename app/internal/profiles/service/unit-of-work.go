@@ -17,6 +17,7 @@ type UnitOfWork struct {
 	profileRepository     ProfileRepository
 	telegramRepository    TelegramRepository
 	statusRepository      StatusRepository
+	paymentRepository     PaymentRepository
 }
 
 func NewUnitOfWork(
@@ -30,7 +31,8 @@ func NewUnitOfWork(
 	nr NavigatorRepository,
 	pr ProfileRepository,
 	tr TelegramRepository,
-	sr StatusRepository) *UnitOfWork {
+	sr StatusRepository,
+	pa PaymentRepository) *UnitOfWork {
 	return &UnitOfWork{
 		tx:                    tx,
 		blockRepository:       br,
@@ -43,6 +45,7 @@ func NewUnitOfWork(
 		profileRepository:     pr,
 		telegramRepository:    tr,
 		statusRepository:      sr,
+		paymentRepository:     pa,
 	}
 }
 
@@ -84,6 +87,10 @@ func (unit *UnitOfWork) TelegramRepository() TelegramRepository {
 
 func (unit *UnitOfWork) StatusRepository() StatusRepository {
 	return unit.statusRepository
+}
+
+func (unit *UnitOfWork) PaymentRepository() PaymentRepository {
+	return unit.paymentRepository
 }
 
 func (unit *UnitOfWork) Commit(ctx context.Context) error {

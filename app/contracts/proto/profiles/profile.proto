@@ -331,6 +331,17 @@ message ComplaintAddResponse {
   bool success = 1; // успешно заблокирован да/нет
 }
 
+message PaymentAddRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
+  string price = 2; // стоимость платежа
+  string currency = 3; // валюта
+  string tariff = 4; // тариф
+}
+
+message PaymentAddResponse {
+  bool success = 1; // успешно оплачено да/нет
+}
+
 message NavigatorUpdateRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   double latitude = 2; // широта
@@ -368,4 +379,5 @@ service Profile {
   rpc GetLastLike(LikeGetLastRequest) returns (LikeGetLastResponse); // получить последний лайк по id пользователя
   rpc AddComplaint(ComplaintAddRequest) returns (ComplaintAddResponse); // добавить жалобу
   rpc UpdateCoordinates(NavigatorUpdateRequest) returns (NavigatorUpdateResponse); // обновление координат
+  rpc AddPayment(PaymentAddRequest) returns (PaymentAddResponse); // добавление информации о платеже
 }

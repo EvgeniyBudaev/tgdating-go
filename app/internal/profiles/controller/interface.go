@@ -34,4 +34,6 @@ type ProfileService interface {
 	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*response.ResponseDto, error)
 	UpdateCoordinates(
 		ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error)
+	AddPayment(ctx context.Context, pr *request.PaymentAddRequestDto) (*response.ResponseDto, error)
+	GetPaymentLastByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.PaymentEntity, error)
 }

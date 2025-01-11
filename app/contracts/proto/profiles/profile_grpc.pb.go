@@ -41,6 +41,7 @@ const (
 	Profile_GetLastLike_FullMethodName                  = "/protobuf.Profile/GetLastLike"
 	Profile_AddComplaint_FullMethodName                 = "/protobuf.Profile/AddComplaint"
 	Profile_UpdateCoordinates_FullMethodName            = "/protobuf.Profile/UpdateCoordinates"
+	Profile_AddPayment_FullMethodName                   = "/protobuf.Profile/AddPayment"
 )
 
 // ProfileClient is the client API for Profile service.
@@ -71,6 +72,7 @@ type ProfileClient interface {
 	GetLastLike(ctx context.Context, in *LikeGetLastRequest, opts ...grpc.CallOption) (*LikeGetLastResponse, error)
 	AddComplaint(ctx context.Context, in *ComplaintAddRequest, opts ...grpc.CallOption) (*ComplaintAddResponse, error)
 	UpdateCoordinates(ctx context.Context, in *NavigatorUpdateRequest, opts ...grpc.CallOption) (*NavigatorUpdateResponse, error)
+	AddPayment(ctx context.Context, in *PaymentAddRequest, opts ...grpc.CallOption) (*PaymentAddResponse, error)
 }
 
 type profileClient struct {
@@ -301,6 +303,16 @@ func (c *profileClient) UpdateCoordinates(ctx context.Context, in *NavigatorUpda
 	return out, nil
 }
 
+func (c *profileClient) AddPayment(ctx context.Context, in *PaymentAddRequest, opts ...grpc.CallOption) (*PaymentAddResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PaymentAddResponse)
+	err := c.cc.Invoke(ctx, Profile_AddPayment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProfileServer is the server API for Profile service.
 // All implementations must embed UnimplementedProfileServer
 // for forward compatibility.
@@ -329,6 +341,7 @@ type ProfileServer interface {
 	GetLastLike(context.Context, *LikeGetLastRequest) (*LikeGetLastResponse, error)
 	AddComplaint(context.Context, *ComplaintAddRequest) (*ComplaintAddResponse, error)
 	UpdateCoordinates(context.Context, *NavigatorUpdateRequest) (*NavigatorUpdateResponse, error)
+	AddPayment(context.Context, *PaymentAddRequest) (*PaymentAddResponse, error)
 	mustEmbedUnimplementedProfileServer()
 }
 
@@ -404,6 +417,9 @@ func (UnimplementedProfileServer) AddComplaint(context.Context, *ComplaintAddReq
 }
 func (UnimplementedProfileServer) UpdateCoordinates(context.Context, *NavigatorUpdateRequest) (*NavigatorUpdateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCoordinates not implemented")
+}
+func (UnimplementedProfileServer) AddPayment(context.Context, *PaymentAddRequest) (*PaymentAddResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddPayment not implemented")
 }
 func (UnimplementedProfileServer) mustEmbedUnimplementedProfileServer() {}
 func (UnimplementedProfileServer) testEmbeddedByValue()                 {}
@@ -822,6 +838,24 @@ func _Profile_UpdateCoordinates_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Profile_AddPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PaymentAddRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).AddPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Profile_AddPayment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).AddPayment(ctx, req.(*PaymentAddRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Profile_ServiceDesc is the grpc.ServiceDesc for Profile service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -916,6 +950,10 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateCoordinates",
 			Handler:    _Profile_UpdateCoordinates_Handler,
+		},
+		{
+			MethodName: "AddPayment",
+			Handler:    _Profile_AddPayment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

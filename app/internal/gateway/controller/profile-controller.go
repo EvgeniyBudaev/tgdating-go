@@ -636,6 +636,34 @@ func (pc *ProfileController) AddComplaint() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) AddPayment() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("POST /api/v1/profiles/payments")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.PaymentAddRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("AddPayment", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+			errorMessage := pc.getErrorMessage("AddPayment", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
+		profileMapper := &mapper.ProfileMapper{}
+		paymentRequest := profileMapper.MapToPaymentAddRequest(req)
+		paymentAdded, err := pc.proto.AddPayment(ctx, paymentRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("AddPayment", "proto.AddPayment")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, paymentAdded)
+	}
+}
+
 func (pc *ProfileController) UpdateCoordinates() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("PUT /api/v1/profiles/navigators")

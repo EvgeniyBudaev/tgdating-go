@@ -3,8 +3,8 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE TABLE IF NOT EXISTS dating.profiles
 (
-    id               BIGSERIAL    NOT NULL,
-    telegram_user_id VARCHAR(255) NOT NULL UNIQUE PRIMARY KEY,
+    id               BIGSERIAL    NOT NULL PRIMARY KEY,
+    telegram_user_id VARCHAR(255) NOT NULL UNIQUE,
     display_name     VARCHAR(255) NOT NULL,
     age              BIGINT       NOT NULL,
     gender           VARCHAR(50)  NOT NULL,
@@ -15,10 +15,21 @@ CREATE TABLE IF NOT EXISTS dating.profiles
     last_online      TIMESTAMP    NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS dating.profile_payments
+(
+    id               BIGSERIAL    NOT NULL PRIMARY KEY,
+    telegram_user_id VARCHAR(255) NOT NULL UNIQUE,
+    price            VARCHAR(255) NOT NULL,
+    currency         VARCHAR(255) NOT NULL,
+    tariff           VARCHAR(255) NOT NULL,
+    created_at       TIMESTAMP    NOT NULL,
+    CONSTRAINT fk_profile_payments_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS dating.profile_statuses
 (
     id                 BIGSERIAL    NOT NULL PRIMARY KEY,
-    telegram_user_id   VARCHAR(255) NOT NULL,
+    telegram_user_id   VARCHAR(255) NOT NULL UNIQUE,
     is_blocked         BOOL         NOT NULL,
     is_frozen          BOOL         NOT NULL,
     is_hidden_age      BOOL         NOT NULL,
@@ -29,7 +40,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_statuses
     is_premium         BOOL         NOT NULL,
     created_at         TIMESTAMP    NOT NULL,
     updated_at         TIMESTAMP    NOT NULL,
-    CONSTRAINT fk_profile_images_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
+    CONSTRAINT fk_profile_statuses_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS dating.profile_images
@@ -59,7 +70,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_image_statuses
 CREATE TABLE IF NOT EXISTS dating.profile_navigators
 (
     id               BIGSERIAL             NOT NULL PRIMARY KEY,
-    telegram_user_id VARCHAR(255)          NOT NULL,
+    telegram_user_id VARCHAR(255)          NOT NULL UNIQUE,
     location         geometry(Point, 4326) NOT NULL,
     created_at       TIMESTAMP             NOT NULL,
     updated_at       TIMESTAMP             NOT NULL,
@@ -69,7 +80,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_navigators
 CREATE TABLE IF NOT EXISTS dating.profile_filters
 (
     id               BIGSERIAL    NOT NULL PRIMARY KEY,
-    telegram_user_id VARCHAR(255) NOT NULL,
+    telegram_user_id VARCHAR(255) NOT NULL UNIQUE,
     search_gender    VARCHAR(50)  NOT NULL,
     age_from         INTEGER      NOT NULL,
     age_to           INTEGER      NOT NULL,

@@ -370,6 +370,24 @@ func (pc *ProfileController) AddComplaint(
 	return complaintResponse, nil
 }
 
+func (pc *ProfileController) AddPayment(
+	ctx context.Context, in *pb.PaymentAddRequest) (*pb.PaymentAddResponse, error) {
+	pc.logger.Info("POST /api/v1/profiles/payments")
+	req := &request.PaymentAddRequestDto{
+		TelegramUserId: in.TelegramUserId,
+		Price:          in.Price,
+		Currency:       in.Currency,
+		Tariff:         in.Tariff,
+	}
+	complaintAdded, err := pc.service.AddPayment(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	paymentResponse := profileMapper.MapControllerToPaymentAddResponse(complaintAdded)
+	return paymentResponse, nil
+}
+
 func (pc *ProfileController) UpdateCoordinates(
 	ctx context.Context, in *pb.NavigatorUpdateRequest) (*pb.NavigatorUpdateResponse, error) {
 	pc.logger.Info("PUT /api/v1/profiles/navigators")

@@ -359,6 +359,15 @@ func (pm *ProfileMapper) MapToComplaintAddRequest(r *request.ComplaintAddRequest
 	}
 }
 
+func (pm *ProfileMapper) MapToPaymentAddRequest(r *request.PaymentAddRequestDto) *pb.PaymentAddRequest {
+	return &pb.PaymentAddRequest{
+		TelegramUserId: r.TelegramUserId,
+		Price:          r.Price,
+		Currency:       r.Currency,
+		Tariff:         r.Tariff,
+	}
+}
+
 func (pm *ProfileMapper) MapToUpdateCoordinatesRequest(
 	r *request.NavigatorUpdateRequestDto) *pb.NavigatorUpdateRequest {
 	return &pb.NavigatorUpdateRequest{

@@ -44,6 +44,7 @@ type ProfileService struct {
 	blockRepository       BlockRepository
 	complaintRepository   ComplaintRepository
 	statusRepository      StatusRepository
+	paymentRepository     PaymentRepository
 }
 
 func NewProfileService(
@@ -62,7 +63,8 @@ func NewProfileService(
 	lr LikeRepository,
 	br BlockRepository,
 	cr ComplaintRepository,
-	sr StatusRepository) *ProfileService {
+	sr StatusRepository,
+	pa PaymentRepository) *ProfileService {
 	return &ProfileService{
 		logger:                l,
 		db:                    db,
@@ -80,6 +82,7 @@ func NewProfileService(
 		blockRepository:       br,
 		complaintRepository:   cr,
 		statusRepository:      sr,
+		paymentRepository:     pa,
 	}
 }
 
@@ -1029,6 +1032,39 @@ func (s *ProfileService) AddComplaint(
 		return nil, err
 	}
 	return complaintResponse, nil
+}
+
+func (s *ProfileService) AddPayment(
+	ctx context.Context, pr *request.PaymentAddRequestDto) (*response.ResponseDto, error) {
+	unitOfWork := s.uwf.CreateUnit()
+	paymentMapper := &mapper.PaymentMapper{}
+	paymentRequest := paymentMapper.MapToAddRequest(pr)
+	paymentResponse, err := unitOfWork.PaymentRepository().Add(ctx, paymentRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddPayment",
+			"unitOfWork.PaymentRepository().Add()")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("AddPayment", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("AddPayment", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return paymentResponse, nil
+}
+
+func (s *ProfileService) GetPaymentLastByTelegramUserId(
+	ctx context.Context, telegramUserId string) (*entity.PaymentEntity, error) {
+	return s.paymentRepository.FindLastByTelegramUserId(ctx, telegramUserId)
 }
 
 func (s *ProfileService) UpdateCoordinates(

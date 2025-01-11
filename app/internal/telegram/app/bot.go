@@ -34,6 +34,18 @@ func delay(seconds uint8) {
 	time.Sleep(time.Duration(seconds) * time.Second)
 }
 
+// getLocationRequest - location request
+func getLocationRequest(chatId int64, delayInSec uint8, message string) {
+	btn := tgbotapi.KeyboardButton{
+		RequestLocation: true,
+		Text:            "Поделиться геопозицией",
+	}
+	msg := tgbotapi.NewMessage(chatId, message)
+	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard([]tgbotapi.KeyboardButton{btn})
+	bot.Send(msg)
+	delay(delayInSec)
+}
+
 // printSystemMessageWithDelay - displays a system message with a delay
 func printSystemMessageWithDelay(chatId int64, delayInSec uint8, message string) {
 	bot.Send(tgbotapi.NewMessage(chatId, message))
@@ -47,6 +59,7 @@ func printIntro(chatId int64, languageCode string) {
 	instructionMessage, welcomeMessage = translationsPrintIntro(instructionMessage, languageCode, welcomeMessage)
 	printSystemMessageWithDelay(chatId, 1, welcomeMessage)
 	printSystemMessageWithDelay(chatId, 5, instructionMessage)
+	//getLocationRequest(chatId, 5, "Из какого ты города?")
 }
 
 // StartBot - launches the telegram
@@ -109,6 +122,9 @@ func (app *App) StartBot(ctx context.Context) error {
 
 	go func() {
 		for update := range updates {
+			if update.Message == nil {
+				continue
+			}
 			chatId := update.Message.Chat.ID
 			userLanguageCode := update.Message.From.LanguageCode
 			if isStartMessage(&update) {
