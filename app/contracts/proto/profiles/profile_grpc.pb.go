@@ -28,6 +28,7 @@ const (
 	Profile_GetProfileDetail_FullMethodName             = "/protobuf.Profile/GetProfileDetail"
 	Profile_GetProfileShortInfo_FullMethodName          = "/protobuf.Profile/GetProfileShortInfo"
 	Profile_GetProfileList_FullMethodName               = "/protobuf.Profile/GetProfileList"
+	Profile_CheckProfileExists_FullMethodName           = "/protobuf.Profile/CheckProfileExists"
 	Profile_GetImageByTelegramUserId_FullMethodName     = "/protobuf.Profile/GetImageByTelegramUserId"
 	Profile_GetImageLastByTelegramUserId_FullMethodName = "/protobuf.Profile/GetImageLastByTelegramUserId"
 	Profile_GetImageById_FullMethodName                 = "/protobuf.Profile/GetImageById"
@@ -36,12 +37,16 @@ const (
 	Profile_UpdateFilter_FullMethodName                 = "/protobuf.Profile/UpdateFilter"
 	Profile_GetTelegram_FullMethodName                  = "/protobuf.Profile/GetTelegram"
 	Profile_AddBlock_FullMethodName                     = "/protobuf.Profile/AddBlock"
+	Profile_GetBlockedList_FullMethodName               = "/protobuf.Profile/GetBlockedList"
+	Profile_Unblock_FullMethodName                      = "/protobuf.Profile/Unblock"
 	Profile_AddLike_FullMethodName                      = "/protobuf.Profile/AddLike"
 	Profile_UpdateLike_FullMethodName                   = "/protobuf.Profile/UpdateLike"
 	Profile_GetLastLike_FullMethodName                  = "/protobuf.Profile/GetLastLike"
 	Profile_AddComplaint_FullMethodName                 = "/protobuf.Profile/AddComplaint"
 	Profile_UpdateCoordinates_FullMethodName            = "/protobuf.Profile/UpdateCoordinates"
 	Profile_AddPayment_FullMethodName                   = "/protobuf.Profile/AddPayment"
+	Profile_CheckPremium_FullMethodName                 = "/protobuf.Profile/CheckPremium"
+	Profile_UpdateSettings_FullMethodName               = "/protobuf.Profile/UpdateSettings"
 )
 
 // ProfileClient is the client API for Profile service.
@@ -59,6 +64,7 @@ type ProfileClient interface {
 	GetProfileDetail(ctx context.Context, in *ProfileGetDetailRequest, opts ...grpc.CallOption) (*ProfileDetailResponse, error)
 	GetProfileShortInfo(ctx context.Context, in *ProfileGetShortInfoRequest, opts ...grpc.CallOption) (*ProfileShortInfoResponse, error)
 	GetProfileList(ctx context.Context, in *ProfileGetListRequest, opts ...grpc.CallOption) (*ProfileListResponse, error)
+	CheckProfileExists(ctx context.Context, in *CheckProfileExistsRequest, opts ...grpc.CallOption) (*CheckProfileExistsResponse, error)
 	GetImageByTelegramUserId(ctx context.Context, in *GetImageByTelegramUserIdRequest, opts ...grpc.CallOption) (*ImageByTelegramUserIdResponse, error)
 	GetImageLastByTelegramUserId(ctx context.Context, in *GetImageLastByTelegramUserIdRequest, opts ...grpc.CallOption) (*ImageResponse, error)
 	GetImageById(ctx context.Context, in *GetImageByIdRequest, opts ...grpc.CallOption) (*ImageResponse, error)
@@ -67,12 +73,16 @@ type ProfileClient interface {
 	UpdateFilter(ctx context.Context, in *FilterUpdateRequest, opts ...grpc.CallOption) (*FilterResponse, error)
 	GetTelegram(ctx context.Context, in *TelegramGetRequest, opts ...grpc.CallOption) (*TelegramResponse, error)
 	AddBlock(ctx context.Context, in *BlockAddRequest, opts ...grpc.CallOption) (*BlockAddResponse, error)
+	GetBlockedList(ctx context.Context, in *GetBlockedListRequest, opts ...grpc.CallOption) (*GetBlockedListResponse, error)
+	Unblock(ctx context.Context, in *UnblockRequest, opts ...grpc.CallOption) (*UnblockResponse, error)
 	AddLike(ctx context.Context, in *LikeAddRequest, opts ...grpc.CallOption) (*LikeAddResponse, error)
 	UpdateLike(ctx context.Context, in *LikeUpdateRequest, opts ...grpc.CallOption) (*LikeUpdateResponse, error)
 	GetLastLike(ctx context.Context, in *LikeGetLastRequest, opts ...grpc.CallOption) (*LikeGetLastResponse, error)
 	AddComplaint(ctx context.Context, in *ComplaintAddRequest, opts ...grpc.CallOption) (*ComplaintAddResponse, error)
 	UpdateCoordinates(ctx context.Context, in *NavigatorUpdateRequest, opts ...grpc.CallOption) (*NavigatorUpdateResponse, error)
 	AddPayment(ctx context.Context, in *PaymentAddRequest, opts ...grpc.CallOption) (*PaymentAddResponse, error)
+	CheckPremium(ctx context.Context, in *CheckPremiumRequest, opts ...grpc.CallOption) (*CheckPremiumResponse, error)
+	UpdateSettings(ctx context.Context, in *UpdateSettingsRequest, opts ...grpc.CallOption) (*UpdateSettingsResponse, error)
 }
 
 type profileClient struct {
@@ -173,6 +183,16 @@ func (c *profileClient) GetProfileList(ctx context.Context, in *ProfileGetListRe
 	return out, nil
 }
 
+func (c *profileClient) CheckProfileExists(ctx context.Context, in *CheckProfileExistsRequest, opts ...grpc.CallOption) (*CheckProfileExistsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckProfileExistsResponse)
+	err := c.cc.Invoke(ctx, Profile_CheckProfileExists_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *profileClient) GetImageByTelegramUserId(ctx context.Context, in *GetImageByTelegramUserIdRequest, opts ...grpc.CallOption) (*ImageByTelegramUserIdResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ImageByTelegramUserIdResponse)
@@ -253,6 +273,26 @@ func (c *profileClient) AddBlock(ctx context.Context, in *BlockAddRequest, opts 
 	return out, nil
 }
 
+func (c *profileClient) GetBlockedList(ctx context.Context, in *GetBlockedListRequest, opts ...grpc.CallOption) (*GetBlockedListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBlockedListResponse)
+	err := c.cc.Invoke(ctx, Profile_GetBlockedList_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *profileClient) Unblock(ctx context.Context, in *UnblockRequest, opts ...grpc.CallOption) (*UnblockResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UnblockResponse)
+	err := c.cc.Invoke(ctx, Profile_Unblock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *profileClient) AddLike(ctx context.Context, in *LikeAddRequest, opts ...grpc.CallOption) (*LikeAddResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LikeAddResponse)
@@ -313,6 +353,26 @@ func (c *profileClient) AddPayment(ctx context.Context, in *PaymentAddRequest, o
 	return out, nil
 }
 
+func (c *profileClient) CheckPremium(ctx context.Context, in *CheckPremiumRequest, opts ...grpc.CallOption) (*CheckPremiumResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckPremiumResponse)
+	err := c.cc.Invoke(ctx, Profile_CheckPremium_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *profileClient) UpdateSettings(ctx context.Context, in *UpdateSettingsRequest, opts ...grpc.CallOption) (*UpdateSettingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateSettingsResponse)
+	err := c.cc.Invoke(ctx, Profile_UpdateSettings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProfileServer is the server API for Profile service.
 // All implementations must embed UnimplementedProfileServer
 // for forward compatibility.
@@ -328,6 +388,7 @@ type ProfileServer interface {
 	GetProfileDetail(context.Context, *ProfileGetDetailRequest) (*ProfileDetailResponse, error)
 	GetProfileShortInfo(context.Context, *ProfileGetShortInfoRequest) (*ProfileShortInfoResponse, error)
 	GetProfileList(context.Context, *ProfileGetListRequest) (*ProfileListResponse, error)
+	CheckProfileExists(context.Context, *CheckProfileExistsRequest) (*CheckProfileExistsResponse, error)
 	GetImageByTelegramUserId(context.Context, *GetImageByTelegramUserIdRequest) (*ImageByTelegramUserIdResponse, error)
 	GetImageLastByTelegramUserId(context.Context, *GetImageLastByTelegramUserIdRequest) (*ImageResponse, error)
 	GetImageById(context.Context, *GetImageByIdRequest) (*ImageResponse, error)
@@ -336,12 +397,16 @@ type ProfileServer interface {
 	UpdateFilter(context.Context, *FilterUpdateRequest) (*FilterResponse, error)
 	GetTelegram(context.Context, *TelegramGetRequest) (*TelegramResponse, error)
 	AddBlock(context.Context, *BlockAddRequest) (*BlockAddResponse, error)
+	GetBlockedList(context.Context, *GetBlockedListRequest) (*GetBlockedListResponse, error)
+	Unblock(context.Context, *UnblockRequest) (*UnblockResponse, error)
 	AddLike(context.Context, *LikeAddRequest) (*LikeAddResponse, error)
 	UpdateLike(context.Context, *LikeUpdateRequest) (*LikeUpdateResponse, error)
 	GetLastLike(context.Context, *LikeGetLastRequest) (*LikeGetLastResponse, error)
 	AddComplaint(context.Context, *ComplaintAddRequest) (*ComplaintAddResponse, error)
 	UpdateCoordinates(context.Context, *NavigatorUpdateRequest) (*NavigatorUpdateResponse, error)
 	AddPayment(context.Context, *PaymentAddRequest) (*PaymentAddResponse, error)
+	CheckPremium(context.Context, *CheckPremiumRequest) (*CheckPremiumResponse, error)
+	UpdateSettings(context.Context, *UpdateSettingsRequest) (*UpdateSettingsResponse, error)
 	mustEmbedUnimplementedProfileServer()
 }
 
@@ -379,6 +444,9 @@ func (UnimplementedProfileServer) GetProfileShortInfo(context.Context, *ProfileG
 func (UnimplementedProfileServer) GetProfileList(context.Context, *ProfileGetListRequest) (*ProfileListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfileList not implemented")
 }
+func (UnimplementedProfileServer) CheckProfileExists(context.Context, *CheckProfileExistsRequest) (*CheckProfileExistsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckProfileExists not implemented")
+}
 func (UnimplementedProfileServer) GetImageByTelegramUserId(context.Context, *GetImageByTelegramUserIdRequest) (*ImageByTelegramUserIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetImageByTelegramUserId not implemented")
 }
@@ -403,6 +471,12 @@ func (UnimplementedProfileServer) GetTelegram(context.Context, *TelegramGetReque
 func (UnimplementedProfileServer) AddBlock(context.Context, *BlockAddRequest) (*BlockAddResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddBlock not implemented")
 }
+func (UnimplementedProfileServer) GetBlockedList(context.Context, *GetBlockedListRequest) (*GetBlockedListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBlockedList not implemented")
+}
+func (UnimplementedProfileServer) Unblock(context.Context, *UnblockRequest) (*UnblockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Unblock not implemented")
+}
 func (UnimplementedProfileServer) AddLike(context.Context, *LikeAddRequest) (*LikeAddResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddLike not implemented")
 }
@@ -420,6 +494,12 @@ func (UnimplementedProfileServer) UpdateCoordinates(context.Context, *NavigatorU
 }
 func (UnimplementedProfileServer) AddPayment(context.Context, *PaymentAddRequest) (*PaymentAddResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddPayment not implemented")
+}
+func (UnimplementedProfileServer) CheckPremium(context.Context, *CheckPremiumRequest) (*CheckPremiumResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckPremium not implemented")
+}
+func (UnimplementedProfileServer) UpdateSettings(context.Context, *UpdateSettingsRequest) (*UpdateSettingsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSettings not implemented")
 }
 func (UnimplementedProfileServer) mustEmbedUnimplementedProfileServer() {}
 func (UnimplementedProfileServer) testEmbeddedByValue()                 {}
@@ -604,6 +684,24 @@ func _Profile_GetProfileList_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Profile_CheckProfileExists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckProfileExistsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).CheckProfileExists(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Profile_CheckProfileExists_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).CheckProfileExists(ctx, req.(*CheckProfileExistsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Profile_GetImageByTelegramUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetImageByTelegramUserIdRequest)
 	if err := dec(in); err != nil {
@@ -748,6 +846,42 @@ func _Profile_AddBlock_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Profile_GetBlockedList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBlockedListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).GetBlockedList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Profile_GetBlockedList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).GetBlockedList(ctx, req.(*GetBlockedListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Profile_Unblock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnblockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).Unblock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Profile_Unblock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).Unblock(ctx, req.(*UnblockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Profile_AddLike_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LikeAddRequest)
 	if err := dec(in); err != nil {
@@ -856,6 +990,42 @@ func _Profile_AddPayment_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Profile_CheckPremium_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckPremiumRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).CheckPremium(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Profile_CheckPremium_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).CheckPremium(ctx, req.(*CheckPremiumRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Profile_UpdateSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).UpdateSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Profile_UpdateSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).UpdateSettings(ctx, req.(*UpdateSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Profile_ServiceDesc is the grpc.ServiceDesc for Profile service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -900,6 +1070,10 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Profile_GetProfileList_Handler,
 		},
 		{
+			MethodName: "CheckProfileExists",
+			Handler:    _Profile_CheckProfileExists_Handler,
+		},
+		{
 			MethodName: "GetImageByTelegramUserId",
 			Handler:    _Profile_GetImageByTelegramUserId_Handler,
 		},
@@ -932,6 +1106,14 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Profile_AddBlock_Handler,
 		},
 		{
+			MethodName: "GetBlockedList",
+			Handler:    _Profile_GetBlockedList_Handler,
+		},
+		{
+			MethodName: "Unblock",
+			Handler:    _Profile_Unblock_Handler,
+		},
+		{
 			MethodName: "AddLike",
 			Handler:    _Profile_AddLike_Handler,
 		},
@@ -954,6 +1136,14 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddPayment",
 			Handler:    _Profile_AddPayment_Handler,
+		},
+		{
+			MethodName: "CheckPremium",
+			Handler:    _Profile_CheckPremium_Handler,
+		},
+		{
+			MethodName: "UpdateSettings",
+			Handler:    _Profile_UpdateSettings_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

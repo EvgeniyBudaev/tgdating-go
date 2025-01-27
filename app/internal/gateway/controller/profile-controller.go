@@ -267,7 +267,6 @@ func (pc *ProfileController) GetProfileDetail() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("GetProfileDetail TelegramUserId:", req.TelegramUserId)
 		viewedTelegramUserId := ctf.Params("viewedTelegramUserId")
 		profileMapper := &mapper.ProfileMapper{}
 		profileRequest := profileMapper.MapToGetDetailRequest(req, viewedTelegramUserId)
@@ -344,6 +343,34 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 		}
 		profileListResponse := profileMapper.MapToListResponse(profileList)
 		return v1.ResponseOk(ctf, profileListResponse)
+	}
+}
+
+func (pc *ProfileController) CheckProfileExists() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /api/v1/profiles/:telegramUserId/check")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		telegramUserId := ctf.Params("telegramUserId")
+		profileMapper := &mapper.ProfileMapper{}
+		checkProfileExistsRequest := profileMapper.MapToCheckProfileExistsRequest(telegramUserId)
+		_, err := pc.proto.CheckProfileExists(ctx, checkProfileExistsRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("CheckProfileExists",
+				"proto.CheckProfileExists")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			if e, ok := status.FromError(err); ok {
+				if e.Code() == codes.NotFound {
+					//return v1.ResponseError(ctf, err, http.StatusNotFound)
+					checkProfileExistsResponse := profileMapper.MapToCheckProfileExistsResponse(false)
+					return v1.ResponseOk(ctf, checkProfileExistsResponse)
+				}
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+			}
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		checkProfileExistsResponse := profileMapper.MapToCheckProfileExistsResponse(true)
+		return v1.ResponseOk(ctf, checkProfileExistsResponse)
 	}
 }
 
@@ -482,6 +509,52 @@ func (pc *ProfileController) AddBlock() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) GetBlockedList() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /api/v1/profiles/:telegramUserId/blocks/list")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		telegramUserId := ctf.Params("telegramUserId")
+		profileMapper := &mapper.ProfileMapper{}
+		blockedListRequest := profileMapper.MapToGetBlockedListRequest(telegramUserId)
+		blockedListResponse, err := pc.proto.GetBlockedList(ctx, blockedListRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("GetBlockedList", "proto.GetBlockedList")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, blockedListResponse)
+	}
+}
+
+func (pc *ProfileController) Unblock() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("PUT /api/v1/profiles/unblock")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.UnblockRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("Unblock", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+			errorMessage := pc.getErrorMessage("Unblock", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
+		profileMapper := &mapper.ProfileMapper{}
+		unblockRequest := profileMapper.MapToUnblockRequest(req)
+		unblockResponse, err := pc.proto.Unblock(ctx, unblockRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("Unblock", "proto.Unblock")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, unblockResponse)
+	}
+}
+
 func (pc *ProfileController) AddLike() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("POST /api/v1/profiles/likes")
@@ -493,7 +566,6 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("AddLike TelegramUserId:", req.TelegramUserId)
 		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
 			errorMessage := pc.getErrorMessage("AddLike", "validateAuthUser")
 			pc.logger.Debug(errorMessage, zap.Error(err))
@@ -512,6 +584,14 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
+		likedTelegramRequest := profileMapper.MapToTelegramGetRequest(req.LikedTelegramUserId)
+		likedTelegramProfile, err := pc.proto.GetTelegram(ctx, likedTelegramRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("AddLike",
+				"proto.GetTelegram likedTelegramRequest")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
 		imageRequest := profileMapper.MapToGetImageLastRequest(req.TelegramUserId)
 		lastImage, err := pc.proto.GetImageLastByTelegramUserId(ctx, imageRequest)
 		if err != nil {
@@ -522,7 +602,7 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 		}
 		hc := &entity.HubContent{
 			LikedTelegramUserId: req.LikedTelegramUserId,
-			Message:             pc.GetMessageLike(locale),
+			Message:             pc.GetMessageLike(likedTelegramProfile.LanguageCode),
 			Type:                "like",
 			UserImageUrl:        lastImage.Url,
 			Username:            telegramProfile.Username,
@@ -664,6 +744,54 @@ func (pc *ProfileController) AddPayment() fiber.Handler {
 	}
 }
 
+func (pc *ProfileController) CheckPremium() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("GET /api/v1/profiles/:telegramUserId/premium/check")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		telegramUserId := ctf.Params("telegramUserId")
+		profileMapper := &mapper.ProfileMapper{}
+		checkIsPremiumRequest := profileMapper.MapToCheckPremiumRequest(telegramUserId)
+		checkIsPremium, err := pc.proto.CheckPremium(ctx, checkIsPremiumRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("CheckPremium", "proto.CheckPremium")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		checkIsPremiumResponse := profileMapper.MapToCheckPremiumResponse(checkIsPremium)
+		return v1.ResponseOk(ctf, checkIsPremiumResponse)
+	}
+}
+
+func (pc *ProfileController) UpdateSettings() fiber.Handler {
+	return func(ctf *fiber.Ctx) error {
+		pc.logger.Info("PUT /api/v1/profiles/settings")
+		ctx, cancel := context.WithTimeout(ctf.Context(), timeoutDuration)
+		defer cancel()
+		req := &request.ProfileUpdateSettingsRequestDto{}
+		if err := ctf.BodyParser(req); err != nil {
+			errorMessage := pc.getErrorMessage("UpdateSettings", "BodyParser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusBadRequest)
+		}
+		if err := pc.validateAuthUser(ctf, req.TelegramUserId); err != nil {
+			errorMessage := pc.getErrorMessage("UpdateSettings", "validateAuthUser")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
+		}
+		profileMapper := &mapper.ProfileMapper{}
+		updateSettingsRequest := profileMapper.MapToUpdateSettingsRequest(req)
+		updateSettingsResponse, err := pc.proto.UpdateSettings(ctx, updateSettingsRequest)
+		if err != nil {
+			errorMessage := pc.getErrorMessage("UpdateSettings",
+				"proto.UpdateSettings")
+			pc.logger.Debug(errorMessage, zap.Error(err))
+			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		}
+		return v1.ResponseCreated(ctf, updateSettingsResponse)
+	}
+}
+
 func (pc *ProfileController) UpdateCoordinates() fiber.Handler {
 	return func(ctf *fiber.Ctx) error {
 		pc.logger.Info("PUT /api/v1/profiles/navigators")
@@ -750,8 +878,52 @@ func (pc *ProfileController) GetMessageLike(locale string) string {
 		return "Есть симпатия! Начинай общаться"
 	case "en":
 		return "There is sympathy! Start communicating"
+	case "ar":
+		return "هناك تعاطف! ابدأ بالتواصل"
+	case "be":
+		return "Ёсць сімпатыя! Пачынай мець зносіны"
+	case "ca":
+		return "Hi ha simpatia! Comença a comunicar-te"
+	case "cs":
+		return "Jsou tam sympatie! Začněte komunikovat"
+	case "de":
+		return "Es gibt Mitgefühl! Beginnen Sie mit der kommunikation"
+	case "es":
+		return "¡Hay simpatía! Empezar a comunicar"
+	case "fi":
+		return "Sympatiaa on! Aloita kommunikointi"
+	case "fr":
+		return "Il y a de la sympathie ! Commencez à communiquer"
+	case "he":
+		return "יש סימפטיה! תתחיל לתקשר"
+	case "hr":
+		return "Postoji simpatija! Počnite komunicirati"
+	case "hu":
+		return "Együttérzés van! Kezdj el kommunikálni"
+	case "id":
+		return "Ada simpati! Mulailah berkomunikasi"
+	case "it":
+		return "C'è simpatia! Inizia a comunicare"
+	case "ja":
+		return "共感があるよ！通信を開始する"
+	case "kk":
+		return "Жанашырлық бар! Қарым-қатынасты бастаңыз"
+	case "ko":
+		return "동정심이 있습니다! 소통을 시작해 보세요"
+	case "nl":
+		return "Er is sympathie! Begin met communiceren"
+	case "no":
+		return "Det er sympati! Begynn å kommunisere"
+	case "pt":
+		return "Existe simpatia! Comece a se comunicar"
+	case "sv":
+		return "Det finns sympati! Börja kommunicera"
+	case "uk":
+		return "Є симпатія! Починай спілкуватися"
+	case "zh":
+		return "有同情心！开始沟通"
 	default:
-		return fmt.Sprintf("Unsupported language: %s", locale)
+		return "There is sympathy! Start communicating"
 	}
 }
 

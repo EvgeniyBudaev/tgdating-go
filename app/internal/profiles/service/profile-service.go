@@ -160,8 +160,8 @@ func (s *ProfileService) AddProfile(
 func (s *ProfileService) UpdateProfile(
 	ctx context.Context, pr *request.ProfileUpdateRequestDto) (*response.ProfileResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
-		errorMessage := s.getErrorMessage("UpdateProfile", "checkUserExists")
+	if err := s.CheckProfileExists(ctx, pr.TelegramUserId); err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "CheckUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -212,7 +212,13 @@ func (s *ProfileService) UpdateProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	profileResponse := profileMapper.MapToResponse(profileEntity, imageEntityList)
+	checkPremium, err := s.CheckPremium(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile", "s.CheckPremium")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	profileResponse := profileMapper.MapToResponse(profileEntity, imageEntityList, checkPremium.IsPremium)
 	defer func() {
 		if err != nil {
 			if err := unitOfWork.Rollback(ctx); err != nil {
@@ -232,8 +238,8 @@ func (s *ProfileService) UpdateProfile(
 func (s *ProfileService) FreezeProfile(
 	ctx context.Context, pr *request.ProfileFreezeRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
-		errorMessage := s.getErrorMessage("FreezeProfile", "checkUserExists")
+	if err := s.CheckProfileExists(ctx, pr.TelegramUserId); err != nil {
+		errorMessage := s.getErrorMessage("FreezeProfile", "CheckUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -275,8 +281,8 @@ func (s *ProfileService) FreezeProfile(
 func (s *ProfileService) RestoreProfile(
 	ctx context.Context, pr *request.ProfileRestoreRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
-		errorMessage := s.getErrorMessage("RestoreProfile", "checkUserExists")
+	if err := s.CheckProfileExists(ctx, pr.TelegramUserId); err != nil {
+		errorMessage := s.getErrorMessage("RestoreProfile", "CheckUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -318,8 +324,8 @@ func (s *ProfileService) RestoreProfile(
 func (s *ProfileService) DeleteProfile(
 	ctx context.Context, pr *request.ProfileDeleteRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
-		errorMessage := s.getErrorMessage("DeleteProfile", "checkUserExists")
+	if err := s.CheckProfileExists(ctx, pr.TelegramUserId); err != nil {
+		errorMessage := s.getErrorMessage("DeleteProfile", "CheckUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -377,7 +383,7 @@ func (s *ProfileService) DeleteProfile(
 
 func (s *ProfileService) GetProfile(ctx context.Context, telegramUserId string,
 	pr *request.ProfileGetRequestDto) (*response.ProfileResponseDto, error) {
-	if err := s.checkProfileExists(ctx, telegramUserId); err != nil {
+	if err := s.CheckProfileExists(ctx, telegramUserId); err != nil {
 		return nil, err
 	}
 	err := s.updateLastOnline(ctx, telegramUserId)
@@ -408,17 +414,24 @@ func (s *ProfileService) GetProfile(ctx context.Context, telegramUserId string,
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	checkPremium, err := s.CheckPremium(ctx, telegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfile", "s.CheckPremium")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileResponse := profileMapper.MapToResponse(profileEntity, imageList)
+	profileResponse := profileMapper.MapToResponse(profileEntity, imageList, checkPremium.IsPremium)
 	return profileResponse, err
 }
 
 func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUserId string,
 	pr *request.ProfileGetDetailRequestDto) (*response.ProfileDetailResponseDto, error) {
-	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
+	telegramUserId := pr.TelegramUserId
+	if err := s.CheckProfileExists(ctx, telegramUserId); err != nil {
 		return nil, err
 	}
-	err := s.updateLastOnline(ctx, pr.TelegramUserId)
+	err := s.updateLastOnline(ctx, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail", "updateLastOnline")
 		s.logger.Debug(errorMessage, zap.Error(err))
@@ -427,14 +440,14 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUse
 	if pr.Longitude != nil && pr.Latitude != nil {
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
-		_, err = s.updateNavigator(ctx, pr.TelegramUserId, longitude, latitude)
+		_, err = s.updateNavigator(ctx, telegramUserId, longitude, latitude)
 		if err != nil {
 			errorMessage := s.getErrorMessage("GetProfileDetail", "updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
 	}
-	profileDetail, err := s.profileRepository.GetDetail(ctx, pr.TelegramUserId, viewedTelegramUserId)
+	profileDetail, err := s.profileRepository.GetDetail(ctx, telegramUserId, viewedTelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileDetail",
 			"profileRepository.GetDetail")
@@ -448,26 +461,40 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUse
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	checkPremium, err := s.CheckPremium(ctx, viewedTelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail", "s.CheckPremium")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	profileMapper := &mapper.ProfileMapper{}
-	profileResponse := profileMapper.MapToDetailResponse(profileDetail, imageEntityList)
+	profileResponse := profileMapper.MapToDetailResponse(profileDetail, imageEntityList, checkPremium.IsPremium)
 	return profileResponse, err
 }
 
 func (s *ProfileService) GetProfileShortInfo(
 	ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseDto, error) {
-	profileResponse, err := s.profileRepository.GetShortInfo(ctx, telegramUserId)
+	profileShortInfo, err := s.profileRepository.GetShortInfo(ctx, telegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("GetProfileShortInfo",
 			"profileRepository.GetShortInfo")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	checkPremium, err := s.CheckPremium(ctx, telegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetProfileDetail", "s.CheckPremium")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileMapper{}
+	profileResponse := profileMapper.MapToShortInfoResponse(profileShortInfo, checkPremium)
 	return profileResponse, err
 }
 
 func (s *ProfileService) GetProfileList(ctx context.Context,
 	pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error) {
-	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
+	if err := s.CheckProfileExists(ctx, pr.TelegramUserId); err != nil {
 		return nil, err
 	}
 	err := s.updateLastOnline(ctx, pr.TelegramUserId)
@@ -832,35 +859,127 @@ func (s *ProfileService) deleteFile(filePath string) error {
 }
 
 func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*response.ResponseDto, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		errorMessage := s.getErrorMessage("AddBlock", "Begin")
+	unitOfWork := s.uwf.CreateUnit()
+	if err := s.CheckProfileExists(ctx, pr.TelegramUserId); err != nil {
+		errorMessage := s.getErrorMessage("AddBlock", "CheckUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	defer tx.Rollback()
-	blockMapper := &mapper.BlockMapper{}
-	blockRequest := blockMapper.MapToAddRequest(pr)
-	prForViewedUser := &request.BlockAddRequestDto{
-		TelegramUserId:        pr.BlockedTelegramUserId,
-		BlockedTelegramUserId: pr.TelegramUserId,
-	}
-	blockForViewedUserRequest := blockMapper.MapToAddRequest(prForViewedUser)
-	_, err = s.blockRepository.Add(ctx, blockForViewedUserRequest)
+	blockExists, err := unitOfWork.BlockRepository().FindBlock(ctx, pr.TelegramUserId, pr.BlockedTelegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("AddBlock", "blockRepository.Add")
+		errorMessage := s.getErrorMessage("AddBlock", "BlockRepository().FindBlock")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	tx.Commit()
-	return s.blockRepository.Add(ctx, blockRequest)
+
+	if blockExists != nil {
+		_, err = unitOfWork.BlockRepository().Update(ctx, pr.TelegramUserId, pr.BlockedTelegramUserId)
+		if err != nil {
+			errorMessage := s.getErrorMessage("AddBlock", "BlockRepository().Update")
+			s.logger.Debug(errorMessage, zap.Error(err))
+			return nil, err
+		}
+		_, err = unitOfWork.BlockRepository().Update(ctx, pr.BlockedTelegramUserId, pr.TelegramUserId)
+		if err != nil {
+			errorMessage := s.getErrorMessage("AddBlock", "BlockRepository().Update")
+			s.logger.Debug(errorMessage, zap.Error(err))
+			return nil, err
+		}
+	}
+	if blockExists == nil {
+		blockMapper := &mapper.BlockMapper{}
+		blockRequest := blockMapper.MapToAddRequest(pr)
+		prForViewedUser := &request.BlockAddRequestDto{
+			TelegramUserId:        pr.BlockedTelegramUserId,
+			BlockedTelegramUserId: pr.TelegramUserId,
+		}
+		blockForViewedUserRequest := blockMapper.MapToAddRequest(prForViewedUser)
+		_, err = unitOfWork.BlockRepository().Add(ctx, blockForViewedUserRequest)
+		if err != nil {
+			errorMessage := s.getErrorMessage("AddBlock", "BlockRepository().Add")
+			s.logger.Debug(errorMessage, zap.Error(err))
+			return nil, err
+		}
+		_, err := unitOfWork.BlockRepository().Add(ctx, blockRequest)
+		if err != nil {
+			errorMessage := s.getErrorMessage("AddBlock", "BlockRepository().Add")
+			s.logger.Debug(errorMessage, zap.Error(err))
+			return nil, err
+		}
+	}
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("AddBlock", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("AddBlock", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	blockResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return blockResponse, nil
+}
+
+func (s *ProfileService) GetBlockedList(ctx context.Context,
+	telegramUserId string) (*response.BlockedListResponseDto, error) {
+	return s.blockRepository.GetBlockedList(ctx, telegramUserId)
+}
+
+func (s *ProfileService) Unblock(ctx context.Context, p *request.UnblockRequestDto) (*response.ResponseDto, error) {
+	telegramUserId := p.TelegramUserId
+	blockedTelegramUserId := p.BlockedTelegramUserId
+	unitOfWork := s.uwf.CreateUnit()
+	if err := s.CheckProfileExists(ctx, telegramUserId); err != nil {
+		errorMessage := s.getErrorMessage("Unblock", "CheckUserExists")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	_, err := unitOfWork.BlockRepository().Unblock(ctx, p)
+	if err != nil {
+		errorMessage := s.getErrorMessage("Unblock", "BlockRepository().Unblock")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	revert := &request.UnblockRequestDto{
+		TelegramUserId:        blockedTelegramUserId,
+		BlockedTelegramUserId: telegramUserId,
+	}
+	_, err = unitOfWork.BlockRepository().Unblock(ctx, revert)
+	if err != nil {
+		errorMessage := s.getErrorMessage("Unblock", "BlockRepository().Unblock")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("Unblock", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("Unblock", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	blockResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return blockResponse, nil
 }
 
 func (s *ProfileService) AddLike(
 	ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
-		errorMessage := s.getErrorMessage("AddLike", "checkUserExists")
+	if err := s.CheckProfileExists(ctx, pr.TelegramUserId); err != nil {
+		errorMessage := s.getErrorMessage("AddLike", "CheckUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -933,7 +1052,7 @@ func (s *ProfileService) AddLike(
 func (s *ProfileService) UpdateLike(
 	ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
-	if err := s.checkProfileExists(ctx, pr.TelegramUserId); err != nil {
+	if err := s.CheckProfileExists(ctx, pr.TelegramUserId); err != nil {
 		errorMessage := s.getErrorMessage("UpdateLike", "checkUserExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
@@ -1037,8 +1156,15 @@ func (s *ProfileService) AddComplaint(
 func (s *ProfileService) AddPayment(
 	ctx context.Context, pr *request.PaymentAddRequestDto) (*response.ResponseDto, error) {
 	unitOfWork := s.uwf.CreateUnit()
+	paymentLast, err := unitOfWork.PaymentRepository().FindLastByTelegramUserId(ctx, pr.TelegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddPayment",
+			"unitOfWork.PaymentRepository().Add()")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	paymentMapper := &mapper.PaymentMapper{}
-	paymentRequest := paymentMapper.MapToAddRequest(pr)
+	paymentRequest := paymentMapper.MapToAddRequest(pr, paymentLast)
 	paymentResponse, err := unitOfWork.PaymentRepository().Add(ctx, paymentRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddPayment",
@@ -1065,6 +1191,48 @@ func (s *ProfileService) AddPayment(
 func (s *ProfileService) GetPaymentLastByTelegramUserId(
 	ctx context.Context, telegramUserId string) (*entity.PaymentEntity, error) {
 	return s.paymentRepository.FindLastByTelegramUserId(ctx, telegramUserId)
+}
+
+func (s *ProfileService) CheckPremium(
+	ctx context.Context, telegramUserId string) (*response.PremiumResponseDto, error) {
+	paymentEntity, err := s.paymentRepository.FindLastByTelegramUserId(ctx, telegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("CheckPremium",
+			"paymentRepository.FindLastByTelegramUserId()")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	paymentMapper := &mapper.PaymentMapper{}
+	paymentResponse := paymentMapper.MapToCheckPremium(paymentEntity)
+	return paymentResponse, nil
+}
+
+func (s *ProfileService) UpdateSettings(
+	ctx context.Context, pr *request.ProfileUpdateSettingsRequestDto) (*response.ResponseDto, error) {
+	unitOfWork := s.uwf.CreateUnit()
+	statusMapper := &mapper.StatusMapper{}
+	statusRequest := statusMapper.MapToUpdateSettingsRequest(pr)
+	statusResponse, err := unitOfWork.StatusRepository().UpdateSettings(ctx, statusRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateSettings",
+			"unitOfWork.StatusRepository().Add()")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("UpdateSettings", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("UpdateSettings", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return statusResponse, nil
 }
 
 func (s *ProfileService) UpdateCoordinates(
@@ -1177,21 +1345,10 @@ func (s *ProfileService) getErrorMessage(repositoryMethodName string, callMethod
 		errorFilePath)
 }
 
-func (s *ProfileService) GetMessageLike(locale string) string {
-	switch locale {
-	case "ru":
-		return "Есть симпатия! Начинай общаться"
-	case "en":
-		return "There is sympathy! Start communicating"
-	default:
-		return fmt.Sprintf("Unsupported language: %s", locale)
-	}
-}
-
-func (s *ProfileService) checkProfileExists(ctx context.Context, telegramUserId string) error {
+func (s *ProfileService) CheckProfileExists(ctx context.Context, telegramUserId string) error {
 	p, err := s.statusRepository.CheckProfileExists(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("checkProfileExists",
+		errorMessage := s.getErrorMessage("CheckProfileExists",
 			"statusRepository.CheckProfileExists")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return err
@@ -1207,4 +1364,45 @@ func (s *ProfileService) checkProfileExists(ctx context.Context, telegramUserId 
 func (s *ProfileService) checkNavigatorExists(
 	ctx context.Context, telegramUserId string) (*response.ResponseDto, error) {
 	return s.navigatorRepository.CheckNavigatorExists(ctx, telegramUserId)
+}
+
+func (s *ProfileService) GetMessageLike(locale string) string {
+	switch locale {
+	case "ru":
+		return "Есть симпатия! Начинай общаться"
+	case "en":
+		return "There is sympathy! Start communicating"
+	case "ar":
+		return "هناك تعاطف! ابدأ التواصل"
+	case "be":
+		return "Ёсць сімпатыя! Пачынай мець зносіны"
+	case "ca":
+		return "Hi ha simpatia! Comença a comunicar-te"
+	case "cs":
+		return "Jsou tam sympatie! Začněte komunikovat"
+	case "de":
+		return "Es gibt Mitgefühl! Beginnen Sie mit der Kommunikation"
+	case "fi":
+		return "Sympatiaa on! Aloita kommunikointi"
+	case "fr":
+		return "Il y a de la sympathie ! Commencez à communiquer"
+	case "he":
+		return "יש סימפטיה! תתחיל לתקשר"
+	case "hr":
+		return "Postoji simpatija! Počnite komunicirati"
+	case "hu":
+		return "Van együttérzés! Kezdj el kommunikálni"
+	case "id":
+		return "Ada simpati! Mulailah berkomunikasi"
+	case "it":
+		return "C'è simpatia! Inizia a comunicare"
+	case "kk":
+		return "Жанашырлық бар! Қарым-қатынасты бастаңызe"
+	case "ko":
+		return "동정심이 있습니다! 소통을 시작해 보세요"
+	case "nl":
+		return "Er is sympathie! Begin met communiceren"
+	default:
+		return fmt.Sprintf("Unsupported language: %s", locale)
+	}
 }

@@ -151,12 +151,15 @@ func (pm *ProfileMapper) MapToShortInfoResponse(r *pb.ProfileShortInfoResponse) 
 		TelegramUserId: r.TelegramUserId,
 		IsBlocked:      r.IsBlocked,
 		IsFrozen:       r.IsFrozen,
+		IsPremium:      r.IsPremium,
+		AvailableUntil: r.AvailableUntil.AsTime(),
 		SearchGender:   r.SearchGender,
 		AgeFrom:        r.AgeFrom,
 		AgeTo:          r.AgeTo,
 		Distance:       r.Distance,
 		Page:           r.Page,
 		Size:           r.Size,
+		LanguageCode:   r.LanguageCode,
 	}
 }
 
@@ -268,6 +271,18 @@ func (pm *ProfileMapper) MapToListResponse(r *pb.ProfileListResponse) *response.
 	}
 }
 
+func (pm *ProfileMapper) MapToCheckProfileExistsRequest(telegramUserId string) *pb.CheckProfileExistsRequest {
+	return &pb.CheckProfileExistsRequest{
+		TelegramUserId: telegramUserId,
+	}
+}
+
+func (pm *ProfileMapper) MapToCheckProfileExistsResponse(isExists bool) *response.CheckProfileExistsResponseDto {
+	return &response.CheckProfileExistsResponseDto{
+		IsExists: isExists,
+	}
+}
+
 func (pm *ProfileMapper) MapToImageByTelegramUserIdRequest(
 	telegramUserId, fileName string) *pb.GetImageByTelegramUserIdRequest {
 	return &pb.GetImageByTelegramUserIdRequest{
@@ -304,6 +319,19 @@ func (pm *ProfileMapper) MapToFilterUpdateRequest(r *request.FilterUpdateRequest
 
 func (pm *ProfileMapper) MapToBlockAddRequest(r *request.BlockAddRequestDto) *pb.BlockAddRequest {
 	return &pb.BlockAddRequest{
+		TelegramUserId:        r.TelegramUserId,
+		BlockedTelegramUserId: r.BlockedTelegramUserId,
+	}
+}
+
+func (pm *ProfileMapper) MapToGetBlockedListRequest(telegramUserId string) *pb.GetBlockedListRequest {
+	return &pb.GetBlockedListRequest{
+		TelegramUserId: telegramUserId,
+	}
+}
+
+func (pm *ProfileMapper) MapToUnblockRequest(r *request.UnblockRequestDto) *pb.UnblockRequest {
+	return &pb.UnblockRequest{
 		TelegramUserId:        r.TelegramUserId,
 		BlockedTelegramUserId: r.BlockedTelegramUserId,
 	}
@@ -364,7 +392,28 @@ func (pm *ProfileMapper) MapToPaymentAddRequest(r *request.PaymentAddRequestDto)
 		TelegramUserId: r.TelegramUserId,
 		Price:          r.Price,
 		Currency:       r.Currency,
-		Tariff:         r.Tariff,
+		Tariff:         string(r.Tariff),
+	}
+}
+
+func (pm *ProfileMapper) MapToCheckPremiumRequest(telegramUserId string) *pb.CheckPremiumRequest {
+	return &pb.CheckPremiumRequest{
+		TelegramUserId: telegramUserId,
+	}
+}
+
+func (pm *ProfileMapper) MapToCheckPremiumResponse(r *pb.CheckPremiumResponse) *response.PremiumResponseDto {
+	return &response.PremiumResponseDto{
+		IsPremium:      r.IsPremium,
+		AvailableUntil: r.AvailableUntil.AsTime(),
+	}
+}
+
+func (pm *ProfileMapper) MapToUpdateSettingsRequest(
+	r *request.ProfileUpdateSettingsRequestDto) *pb.UpdateSettingsRequest {
+	return &pb.UpdateSettingsRequest{
+		TelegramUserId: r.TelegramUserId,
+		IsHiddenAge:    r.IsHiddenAge,
 	}
 }
 

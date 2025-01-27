@@ -7,7 +7,7 @@ type ProfileDetailResponseRepositoryDto struct {
 	Location       string                                  `json:"location"`
 	Description    string                                  `json:"description"`
 	Navigator      *NavigatorDistanceResponseRepositoryDto `json:"navigator"`
-	Status         *StatusResponseDto                      `json:"status"`
+	Status         *StatusResponseRepositoryDto            `json:"status"`
 	Block          *BlockResponseDto                       `json:"block"`
 	Like           *LikeResponseDto                        `json:"like"`
 }

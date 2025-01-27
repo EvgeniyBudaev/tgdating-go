@@ -8,7 +8,6 @@ type StatusUpdateRequestRepositoryDto struct {
 	IsFrozen         bool      `json:"isFrozen"`
 	IsInvisible      bool      `json:"isInvisible"`
 	IsOnline         bool      `json:"isOnline"`
-	IsPremium        bool      `json:"isPremium"`
 	IsHiddenDistance bool      `json:"isHiddenDistance"`
 	IsHiddenAge      bool      `json:"isHiddenAge"`
 	IsLeftHand       bool      `json:"isLeftHand"`

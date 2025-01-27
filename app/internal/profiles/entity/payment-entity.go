@@ -9,4 +9,5 @@ type PaymentEntity struct {
 	Currency       string    `json:"currency"`
 	Tariff         string    `json:"tariff"`
 	CreatedAt      time.Time `json:"createdAt"`
+	AvailableUntil time.Time `json:"availableUntil"`
 }

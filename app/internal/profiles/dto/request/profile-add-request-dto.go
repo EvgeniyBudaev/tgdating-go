@@ -2,14 +2,15 @@ package request
 
 import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/shared/enum"
 )
 
 type ProfileAddRequestDto struct {
 	TelegramUserId          string                 `json:"telegramUserId"`
 	DisplayName             string                 `json:"displayName"`
 	Age                     uint64                 `json:"age"`
-	Gender                  string                 `json:"gender"`
-	SearchGender            string                 `json:"searchGender"`
+	Gender                  enum.Gender            `json:"gender"`
+	SearchGender            enum.SearchGender      `json:"searchGender"`
 	Location                string                 `json:"location"`
 	Description             string                 `json:"description"`
 	TelegramUsername        string                 `json:"telegramUsername"`

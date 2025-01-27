@@ -9,6 +9,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/logger"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/repository/psql"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/shared/enum"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -200,6 +201,21 @@ func (pc *ProfileController) GetProfileList(
 	return profileResponse, nil
 }
 
+func (pc *ProfileController) CheckProfileExists(
+	ctx context.Context, in *pb.CheckProfileExistsRequest) (*pb.CheckProfileExistsResponse, error) {
+	pc.logger.Info("GET /api/v1/profiles/:telegramUserId/check")
+	err := pc.service.CheckProfileExists(ctx, in.TelegramUserId)
+	if err != nil {
+		if errors.Is(err, psql.ErrNotRowFound) {
+			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
+		}
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	checkProfileExistsResponse := profileMapper.MapControllerToCheckProfileExistsResponse()
+	return checkProfileExistsResponse, nil
+}
+
 func (pc *ProfileController) GetImageByTelegramUserId(
 	ctx context.Context, in *pb.GetImageByTelegramUserIdRequest) (*pb.ImageByTelegramUserIdResponse, error) {
 	pc.logger.Info("GET /api/v1/profiles/:telegramUserId/images/:fileName")
@@ -309,6 +325,30 @@ func (pc *ProfileController) AddBlock(ctx context.Context, in *pb.BlockAddReques
 	return blockResponse, nil
 }
 
+func (pc *ProfileController) GetBlockedList(
+	ctx context.Context, in *pb.GetBlockedListRequest) (*pb.GetBlockedListResponse, error) {
+	pc.logger.Info("GET /api/v1/profiles/:telegramUserId/blocks/list")
+	blockedList, err := pc.service.GetBlockedList(ctx, in.TelegramUserId)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	blockedListResponse := profileMapper.MapControllerToGetBlockedListResponse(blockedList)
+	return blockedListResponse, nil
+}
+
+func (pc *ProfileController) Unblock(ctx context.Context, in *pb.UnblockRequest) (*pb.UnblockResponse, error) {
+	pc.logger.Info("PUT /api/v1/profiles/unblock")
+	profileMapper := &mapper.ProfileControllerMapper{}
+	unblockRequest := profileMapper.MapControllerToUnblockRequest(in)
+	unblocked, err := pc.service.Unblock(ctx, unblockRequest)
+	if err != nil {
+		return nil, err
+	}
+	unblockedResponse := profileMapper.MapControllerToUnblockResponse(unblocked)
+	return unblockedResponse, nil
+}
+
 func (pc *ProfileController) AddLike(ctx context.Context, in *pb.LikeAddRequest) (*pb.LikeAddResponse, error) {
 	pc.logger.Info("POST /api/v1/profiles/likes")
 	req := &request.LikeAddRequestDto{
@@ -377,7 +417,7 @@ func (pc *ProfileController) AddPayment(
 		TelegramUserId: in.TelegramUserId,
 		Price:          in.Price,
 		Currency:       in.Currency,
-		Tariff:         in.Tariff,
+		Tariff:         enum.Tariff(in.Tariff),
 	}
 	complaintAdded, err := pc.service.AddPayment(ctx, req)
 	if err != nil {
@@ -386,6 +426,37 @@ func (pc *ProfileController) AddPayment(
 	profileMapper := &mapper.ProfileControllerMapper{}
 	paymentResponse := profileMapper.MapControllerToPaymentAddResponse(complaintAdded)
 	return paymentResponse, nil
+}
+
+func (pc *ProfileController) CheckPremium(
+	ctx context.Context, in *pb.CheckPremiumRequest) (*pb.CheckPremiumResponse, error) {
+	pc.logger.Info("GET /api/v1/profiles/:telegramUserId/premium/check")
+	req := &request.PaymentAddRequestDto{
+		TelegramUserId: in.TelegramUserId,
+	}
+	checkPremium, err := pc.service.CheckPremium(ctx, req.TelegramUserId)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	checkPremiumResponse := profileMapper.MapControllerToCheckPremiumResponse(checkPremium)
+	return checkPremiumResponse, nil
+}
+
+func (pc *ProfileController) UpdateSettings(
+	ctx context.Context, in *pb.UpdateSettingsRequest) (*pb.UpdateSettingsResponse, error) {
+	pc.logger.Info("PUT /api/v1/profiles/settings")
+	req := &request.ProfileUpdateSettingsRequestDto{
+		TelegramUserId: in.TelegramUserId,
+		IsHiddenAge:    in.IsHiddenAge,
+	}
+	updatedSettings, err := pc.service.UpdateSettings(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	updatedSettingsResponse := profileMapper.MapControllerToUpdateSettingsResponse(updatedSettings)
+	return updatedSettingsResponse, nil
 }
 
 func (pc *ProfileController) UpdateCoordinates(

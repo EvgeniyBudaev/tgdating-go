@@ -3,6 +3,7 @@ package psql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
@@ -29,9 +30,11 @@ func NewPaymentRepository(l logger.Logger, db *sql.DB) *PaymentRepository {
 
 func (r *PaymentRepository) Add(
 	ctx context.Context, p *request.PaymentAddRequestRepositoryDto) (*response.ResponseDto, error) {
-	query := "INSERT INTO dating.profile_payments (telegram_user_id, price, currency, tariff, created_at" +
-		" VALUES ($1, $2, $3, $4, $5) RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.Price, &p.Currency, &p.Tariff, &p.CreatedAt)
+	query := "INSERT INTO dating.profile_payments (telegram_user_id, price, currency, tariff, created_at," +
+		" available_until)" +
+		" VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.Price, &p.Currency, &p.Tariff, &p.CreatedAt,
+		&p.AvailableUntil)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -48,17 +51,20 @@ func (r *PaymentRepository) Add(
 func (r *PaymentRepository) FindLastByTelegramUserId(
 	ctx context.Context, telegramUserId string) (*entity.PaymentEntity, error) {
 	p := &entity.PaymentEntity{}
-	query := "SELECT pp.id, pp.telegram_user_id, pp.price, pp.currency, pp.tariff, pp.created_at" +
-		" FROM dating.profile_payments pp" +
-		" WHERE pp.telegram_user_id = $1" +
-		" ORDER BY pp.id DESC" +
+	query := "SELECT id, telegram_user_id, price, currency, tariff, created_at, available_until" +
+		" FROM dating.profile_payments" +
+		" WHERE telegram_user_id = $1" +
+		" ORDER BY created_at DESC" +
 		" LIMIT 1"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &p.Price, &p.Currency, &p.Tariff, &p.CreatedAt)
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.Price, &p.Currency, &p.Tariff, &p.CreatedAt, &p.AvailableUntil)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		errorMessage := r.getErrorMessage("FindLastByTelegramUserId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
+		return nil, nil
 	}
 	return p, nil
 }

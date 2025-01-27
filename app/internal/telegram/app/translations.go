@@ -30,6 +30,10 @@ func translationsPrintIntro(instructionMessage, languageCode, welcomeMessage str
 		welcomeMessage = "Hallo! " + EmojiSunglasses
 		instructionMessage = "Wenn Sie sich mögen, erhalten Sie im Chat dieses Bots eine Benachrichtigung." +
 			" Drücken Sie die Menütaste, um die Anwendung zu verwenden"
+	case "es":
+		welcomeMessage = "¡Hola! " + EmojiSunglasses
+		instructionMessage = "Si se gustan, recibirán una notificación en el chat de este bot." +
+			" Presione el botón Menú para comenzar a usar la aplicación"
 	case "fi":
 		welcomeMessage = "Hei! " + EmojiSunglasses
 		instructionMessage = "Jos pidätte toisistanne, saat ilmoituksen tämän botin chatissa." +
@@ -58,6 +62,10 @@ func translationsPrintIntro(instructionMessage, languageCode, welcomeMessage str
 		welcomeMessage = "Ciao! " + EmojiSunglasses
 		instructionMessage = "Se vi piacciono, riceverete una notifica nella chat di questo bot." +
 			" Premere il pulsante Menu per iniziare a utilizzare l'applicazione"
+	case "ja":
+		welcomeMessage = "こんにちは！ " + EmojiSunglasses
+		instructionMessage = "お互いにいいねすると、このボットのチャットに通知が届きます。" +
+			" メニューボタンを押してアプリケーションの使用を開始します"
 	case "kk":
 		welcomeMessage = "Сәлем! " + EmojiSunglasses
 		instructionMessage = "Егер сіз бір-біріңізді ұнатсаңыз, сіз осы боттың чатында хабарландыру аласыз." +
@@ -70,6 +78,26 @@ func translationsPrintIntro(instructionMessage, languageCode, welcomeMessage str
 		welcomeMessage = "Hallo! " + EmojiSunglasses
 		instructionMessage = "Als je elkaar leuk vindt, ontvang je een melding in de chat van deze bot." +
 			" Druk op de Menu-knop om de applicatie te gebruiken"
+	case "no":
+		welcomeMessage = "Hallo! " + EmojiSunglasses
+		instructionMessage = "Hvis du liker hverandre, vil du motta et varsel i chatten til denne boten." +
+			" Trykk på Meny-knappen for å begynne å bruke applikasjonen"
+	case "pt":
+		welcomeMessage = "Olá! " + EmojiSunglasses
+		instructionMessage = "Se vocês gostarem, receberão uma notificação no chat deste bot." +
+			" Pressione o botão Menu para começar a usar o aplicativo"
+	case "sv":
+		welcomeMessage = "Hej! " + EmojiSunglasses
+		instructionMessage = "Om ni gillar varandra kommer ni att få ett meddelande i chatten för denna bot." +
+			" Tryck på menyknappen för att börja använda programmet"
+	case "uk":
+		welcomeMessage = "Привіт! " + EmojiSunglasses
+		instructionMessage = "При взаємній симпатії ти отримаєш повідомлення у чат цього робота." +
+			" Натисніть на кнопку Menu, щоб почати користуватися програмою"
+	case "zh":
+		welcomeMessage = "你好！ " + EmojiSunglasses
+		instructionMessage = "如果你们互相喜欢，您将在此机器人的聊天中收到通知。" +
+			" 按菜单按钮开始使用该应用程序"
 	default:
 		welcomeMessage = "Hello! " + EmojiSunglasses
 		instructionMessage = "Click the Menu button to start using the application"

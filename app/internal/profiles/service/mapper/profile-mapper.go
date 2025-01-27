@@ -11,8 +11,18 @@ type ProfileMapper struct {
 }
 
 func (pm *ProfileMapper) MapToResponse(
-	p *response.ProfileResponseRepositoryDto, i []*response.ImageResponseDto,
+	p *response.ProfileResponseRepositoryDto, i []*response.ImageResponseDto, isPremium bool,
 ) *response.ProfileResponseDto {
+	s := &response.StatusResponseDto{
+		IsBlocked:        p.Status.IsBlocked,
+		IsFrozen:         p.Status.IsFrozen,
+		IsHiddenAge:      p.Status.IsHiddenAge,
+		IsHiddenDistance: p.Status.IsHiddenDistance,
+		IsInvisible:      p.Status.IsInvisible,
+		IsLeftHand:       p.Status.IsLeftHand,
+		IsOnline:         p.Status.IsOnline,
+		IsPremium:        isPremium,
+	}
 	return &response.ProfileResponseDto{
 		TelegramUserId: p.TelegramUserId,
 		DisplayName:    p.DisplayName,
@@ -22,7 +32,7 @@ func (pm *ProfileMapper) MapToResponse(
 		Description:    p.Description,
 		Navigator:      p.Navigator,
 		Filter:         p.Filter,
-		Status:         p.Status,
+		Status:         s,
 		Images:         i,
 	}
 }
@@ -30,9 +40,20 @@ func (pm *ProfileMapper) MapToResponse(
 func (pm *ProfileMapper) MapToDetailResponse(
 	p *response.ProfileDetailResponseRepositoryDto,
 	il []*response.ImageResponseDto,
+	isPremium bool,
 ) *response.ProfileDetailResponseDto {
 	navigator := &response.NavigatorDetailResponseDto{
 		Distance: p.Navigator.Distance,
+	}
+	s := &response.StatusResponseDto{
+		IsBlocked:        p.Status.IsBlocked,
+		IsFrozen:         p.Status.IsFrozen,
+		IsHiddenAge:      p.Status.IsHiddenAge,
+		IsHiddenDistance: p.Status.IsHiddenDistance,
+		IsInvisible:      p.Status.IsInvisible,
+		IsLeftHand:       p.Status.IsLeftHand,
+		IsOnline:         p.Status.IsOnline,
+		IsPremium:        isPremium,
 	}
 	return &response.ProfileDetailResponseDto{
 		TelegramUserId: p.TelegramUserId,
@@ -41,10 +62,27 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		Location:       p.Location,
 		Description:    p.Description,
 		Navigator:      navigator,
-		Status:         p.Status,
+		Status:         s,
 		Block:          p.Block,
 		Like:           p.Like,
 		Images:         il,
+	}
+}
+func (pm *ProfileMapper) MapToShortInfoResponse(
+	p *response.ProfileShortInfoResponseRepositoryDto, pr *response.PremiumResponseDto) *response.ProfileShortInfoResponseDto {
+	return &response.ProfileShortInfoResponseDto{
+		TelegramUserId: p.TelegramUserId,
+		IsBlocked:      p.IsBlocked,
+		IsFrozen:       p.IsFrozen,
+		IsPremium:      pr.IsPremium,
+		AvailableUntil: pr.AvailableUntil,
+		SearchGender:   p.SearchGender,
+		AgeFrom:        p.AgeFrom,
+		AgeTo:          p.AgeTo,
+		Distance:       p.Distance,
+		Page:           p.Page,
+		Size:           p.Size,
+		LanguageCode:   p.LanguageCode,
 	}
 }
 
@@ -60,7 +98,7 @@ func (pm *ProfileMapper) MapToAddRequest(
 		TelegramUserId: pr.TelegramUserId,
 		DisplayName:    pr.DisplayName,
 		Age:            pr.Age,
-		Gender:         pr.Gender,
+		Gender:         string(pr.Gender),
 		Location:       pr.Location,
 		Description:    pr.Description,
 		CreatedAt:      time.Now().UTC(),
@@ -75,7 +113,7 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 		TelegramUserId: pr.TelegramUserId,
 		DisplayName:    pr.DisplayName,
 		Age:            pr.Age,
-		Gender:         pr.Gender,
+		Gender:         string(pr.Gender),
 		Location:       pr.Location,
 		Description:    pr.Description,
 		UpdatedAt:      time.Now().UTC(),

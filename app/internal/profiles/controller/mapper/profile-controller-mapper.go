@@ -5,6 +5,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/shared/enum"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -16,8 +17,8 @@ func (pm *ProfileControllerMapper) MapControllerToAddRequest(
 	return &request.ProfileAddRequestDto{
 		DisplayName:             in.DisplayName,
 		Age:                     in.Age,
-		Gender:                  in.Gender,
-		SearchGender:            in.SearchGender,
+		Gender:                  enum.Gender(in.Gender),
+		SearchGender:            enum.SearchGender(in.SearchGender),
 		Location:                in.Location,
 		Description:             in.Description,
 		TelegramUserId:          in.TelegramUserId,
@@ -50,8 +51,8 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateRequest(
 	return &request.ProfileUpdateRequestDto{
 		DisplayName:             in.DisplayName,
 		Age:                     in.Age,
-		Gender:                  in.Gender,
-		SearchGender:            in.SearchGender,
+		Gender:                  enum.Gender(in.Gender),
+		SearchGender:            enum.SearchGender(in.SearchGender),
 		Location:                in.Location,
 		Description:             in.Description,
 		TelegramUserId:          in.TelegramUserId,
@@ -185,16 +186,20 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 
 func (pm *ProfileControllerMapper) MapControllerToShortInfoResponse(
 	r *response.ProfileShortInfoResponseDto) *pb.ProfileShortInfoResponse {
+	availableUntilTimestamp := timestamppb.New(r.AvailableUntil)
 	return &pb.ProfileShortInfoResponse{
 		TelegramUserId: r.TelegramUserId,
 		IsBlocked:      r.IsBlocked,
 		IsFrozen:       r.IsFrozen,
+		IsPremium:      r.IsPremium,
+		AvailableUntil: availableUntilTimestamp,
 		SearchGender:   r.SearchGender,
 		AgeFrom:        r.AgeFrom,
 		AgeTo:          r.AgeTo,
 		Distance:       r.Distance,
 		Page:           r.Page,
 		Size:           r.Size,
+		LanguageCode:   r.LanguageCode,
 	}
 }
 
@@ -222,6 +227,12 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 		TotalEntities: r.TotalEntities,
 		TotalPages:    r.TotalPages,
 		Content:       contentList,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToCheckProfileExistsResponse() *pb.CheckProfileExistsResponse {
+	return &pb.CheckProfileExistsResponse{
+		IsExists: true,
 	}
 }
 
@@ -261,6 +272,33 @@ func (pm *ProfileControllerMapper) MapControllerToTelegramResponse(
 
 func (pm *ProfileControllerMapper) MapControllerToBlockAddResponse(r *response.ResponseDto) *pb.BlockAddResponse {
 	return &pb.BlockAddResponse{
+		Success: r.Success,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToGetBlockedListResponse(r *response.BlockedListResponseDto) *pb.GetBlockedListResponse {
+	content := make([]*pb.BlockedListItemResponse, 0)
+	if len(r.Content) > 0 {
+		for _, c := range r.Content {
+			content = append(content, &pb.BlockedListItemResponse{
+				BlockedTelegramUserId: c.BlockedTelegramUserId,
+				Url:                   c.Url,
+			})
+		}
+	}
+	return &pb.GetBlockedListResponse{
+		Content: content,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToUnblockRequest(r *pb.UnblockRequest) *request.UnblockRequestDto {
+	return &request.UnblockRequestDto{
+		TelegramUserId:        r.TelegramUserId,
+		BlockedTelegramUserId: r.BlockedTelegramUserId,
+	}
+}
+func (pm *ProfileControllerMapper) MapControllerToUnblockResponse(r *response.ResponseDto) *pb.UnblockResponse {
+	return &pb.UnblockResponse{
 		Success: r.Success,
 	}
 }
@@ -308,6 +346,22 @@ func (pm *ProfileControllerMapper) MapControllerToComplaintAddResponse(
 func (pm *ProfileControllerMapper) MapControllerToPaymentAddResponse(
 	r *response.ResponseDto) *pb.PaymentAddResponse {
 	return &pb.PaymentAddResponse{
+		Success: r.Success,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToCheckPremiumResponse(
+	r *response.PremiumResponseDto) *pb.CheckPremiumResponse {
+	availableUntilTimestamp := timestamppb.New(r.AvailableUntil)
+	return &pb.CheckPremiumResponse{
+		IsPremium:      r.IsPremium,
+		AvailableUntil: availableUntilTimestamp,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToUpdateSettingsResponse(
+	r *response.ResponseDto) *pb.UpdateSettingsResponse {
+	return &pb.UpdateSettingsResponse{
 		Success: r.Success,
 	}
 }

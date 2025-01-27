@@ -26,7 +26,7 @@ func (pm *FilterMapper) MapToAddRequest(
 	pr *request.ProfileAddRequestDto) *request.FilterAddRequestRepositoryDto {
 	return &request.FilterAddRequestRepositoryDto{
 		TelegramUserId: pr.TelegramUserId,
-		SearchGender:   pr.SearchGender,
+		SearchGender:   string(pr.SearchGender),
 		AgeFrom:        pr.AgeFrom,
 		AgeTo:          pr.AgeTo,
 		Distance:       pr.Distance,
@@ -52,7 +52,7 @@ func (pm *FilterMapper) MapProfileToUpdateRequest(
 	pr *request.ProfileUpdateRequestDto) *request.FilterUpdateRequestRepositoryDto {
 	return &request.FilterUpdateRequestRepositoryDto{
 		TelegramUserId: pr.TelegramUserId,
-		SearchGender:   pr.SearchGender,
+		SearchGender:   string(pr.SearchGender),
 		AgeFrom:        pr.AgeFrom,
 		AgeTo:          pr.AgeTo,
 		UpdatedAt:      time.Now().UTC(),

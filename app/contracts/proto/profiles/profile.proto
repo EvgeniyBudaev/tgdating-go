@@ -61,9 +61,9 @@ message StatusResponse {
   bool isFrozen = 2; // заморожен пользователь да/нет
   bool isInvisible = 3; // неведимка да/нет
   bool isOnline = 4; // онлайн да/нет
-  bool isPremium = 5; // наличие премиум аакаунта да/нет
+  bool isPremium = 5; // наличие премиум да/нет
   bool isHiddenDistance = 6; // показывать дистанцию до текущего пользователя да/нет
-  bool isHiddenAge = 7; // показывать дистанцию до текущего пользователя да/нет
+  bool isHiddenAge = 7; // показывать возраст до текущего пользователя да/нет
   bool isLeftHand = 8; // интерфейс адаптирован под леую руку да/нет
 }
 
@@ -211,12 +211,15 @@ message ProfileShortInfoResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   bool isBlocked = 2; // заблокирован пользователь да/нет
   bool isFrozen = 3; // заморожен пользователь да/нет
-  string searchGender = 4; // поиск по половому признаку
-  uint64 ageFrom = 5; // возраст от
-  uint64 ageTo = 6; // возраст до
-  double distance = 7; // дистанция
-  uint64 page = 8; // номер текущей страницы
-  uint64 size = 9; // количество элементов на странице
+  bool isPremium = 4; // активирован премиум аккаунт да/нет
+  google.protobuf.Timestamp availableUntil = 5; // премиум действует до
+  string searchGender = 6; // поиск по половому признаку
+  uint64 ageFrom = 7; // возраст от
+  uint64 ageTo = 8; // возраст до
+  double distance = 9; // дистанция
+  uint64 page = 10; // номер текущей страницы
+  uint64 size = 11; // количество элементов на странице
+  string languageCode = 12; // язык пользователя
 }
 
 message ProfileGetListRequest {
@@ -242,6 +245,14 @@ message ProfileListResponse {
   uint64 totalEntities = 5; // общее количество элементов
   uint64 totalPages = 6; // общее количество страниц
   repeated ProfileListItemResponse content = 7; // список профилей
+}
+
+message CheckProfileExistsRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
+}
+
+message CheckProfileExistsResponse {
+  bool isExists = 1; // существует аккаунт да/нет
 }
 
 message GetImageByTelegramUserIdRequest {
@@ -293,6 +304,28 @@ message BlockAddResponse {
   bool success = 1; // успешно заблокирован да/нет
 }
 
+message GetBlockedListRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
+}
+
+message BlockedListItemResponse {
+  string blockedTelegramUserId = 1; // id пользователя в телеграм
+  string url = 2; // url изображения
+}
+
+message GetBlockedListResponse {
+  repeated BlockedListItemResponse content = 1; // список заблокированных пользователей
+}
+
+message UnblockRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
+  string blockedTelegramUserId = 2; // id пользователя в телеграм которого следует разблокировать
+}
+
+message UnblockResponse {
+  bool success = 1; // успешно разблокирован да/нет
+}
+
 message LikeAddRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   string likedTelegramUserId = 2; // id пользователя который понравился
@@ -342,6 +375,15 @@ message PaymentAddResponse {
   bool success = 1; // успешно оплачено да/нет
 }
 
+message CheckPremiumRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
+}
+
+message CheckPremiumResponse {
+  bool isPremium = 1; // активирован премиум аккаунт да/нет
+  google.protobuf.Timestamp availableUntil = 2; // премиум действует до
+}
+
 message NavigatorUpdateRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   double latitude = 2; // широта
@@ -351,6 +393,15 @@ message NavigatorUpdateRequest {
 message NavigatorUpdateResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   Point location = 2; // объект с координатами
+}
+
+message UpdateSettingsRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
+  bool isHiddenAge = 2; // показывать возраст до текущего пользователя да/нет
+}
+
+message UpdateSettingsResponse {
+  bool success = 1; // успешно обновлено да/нет
 }
 
 /*
@@ -366,6 +417,7 @@ service Profile {
   rpc GetProfileDetail(ProfileGetDetailRequest) returns (ProfileDetailResponse); // получение карточки профиля
   rpc GetProfileShortInfo(ProfileGetShortInfoRequest) returns (ProfileShortInfoResponse); // получение короткой информации по профилю
   rpc GetProfileList(ProfileGetListRequest) returns (ProfileListResponse); // получение списка профилей
+  rpc CheckProfileExists(CheckProfileExistsRequest) returns (CheckProfileExistsResponse); // проверка существования аккаунта
   rpc GetImageByTelegramUserId(GetImageByTelegramUserIdRequest) returns (ImageByTelegramUserIdResponse); // получение файла
   rpc GetImageLastByTelegramUserId(GetImageLastByTelegramUserIdRequest) returns (ImageResponse); // получение изображения по id
   rpc GetImageById(GetImageByIdRequest) returns (ImageResponse); // получение изображения по id
@@ -374,10 +426,14 @@ service Profile {
   rpc UpdateFilter(FilterUpdateRequest) returns (FilterResponse); // обновление фильтра пользователя
   rpc GetTelegram(TelegramGetRequest) returns (TelegramResponse); // получение данных фильтра
   rpc AddBlock(BlockAddRequest) returns (BlockAddResponse); // добавить пользователя в блок лист
+  rpc GetBlockedList(GetBlockedListRequest) returns (GetBlockedListResponse); // список заблокаированных пользователей
+  rpc Unblock(UnblockRequest) returns (UnblockResponse); // разблокировать пользователя
   rpc AddLike(LikeAddRequest) returns (LikeAddResponse); // поставить лайк
   rpc UpdateLike(LikeUpdateRequest) returns (LikeUpdateResponse); // обновить лайк
   rpc GetLastLike(LikeGetLastRequest) returns (LikeGetLastResponse); // получить последний лайк по id пользователя
   rpc AddComplaint(ComplaintAddRequest) returns (ComplaintAddResponse); // добавить жалобу
   rpc UpdateCoordinates(NavigatorUpdateRequest) returns (NavigatorUpdateResponse); // обновление координат
   rpc AddPayment(PaymentAddRequest) returns (PaymentAddResponse); // добавление информации о платеже
+  rpc CheckPremium(CheckPremiumRequest) returns (CheckPremiumResponse); // проверка активации премиум аккаунта
+  rpc UpdateSettings(UpdateSettingsRequest) returns (UpdateSettingsResponse); // обновление настроек аккаунта
 }

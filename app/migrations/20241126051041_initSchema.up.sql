@@ -18,11 +18,12 @@ CREATE TABLE IF NOT EXISTS dating.profiles
 CREATE TABLE IF NOT EXISTS dating.profile_payments
 (
     id               BIGSERIAL    NOT NULL PRIMARY KEY,
-    telegram_user_id VARCHAR(255) NOT NULL UNIQUE,
+    telegram_user_id VARCHAR(255) NOT NULL,
     price            VARCHAR(255) NOT NULL,
     currency         VARCHAR(255) NOT NULL,
     tariff           VARCHAR(255) NOT NULL,
     created_at       TIMESTAMP    NOT NULL,
+    available_until       TIMESTAMP    NOT NULL,
     CONSTRAINT fk_profile_payments_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
 );
 
@@ -37,7 +38,6 @@ CREATE TABLE IF NOT EXISTS dating.profile_statuses
     is_invisible       BOOL         NOT NULL,
     is_left_hand       BOOL         NOT NULL,
     is_online          BOOL         NOT NULL,
-    is_premium         BOOL         NOT NULL,
     created_at         TIMESTAMP    NOT NULL,
     updated_at         TIMESTAMP    NOT NULL,
     CONSTRAINT fk_profile_statuses_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE

@@ -19,6 +19,7 @@ type ProfileService interface {
 		pr *request.ProfileGetDetailRequestDto) (*response.ProfileDetailResponseDto, error)
 	GetProfileShortInfo(ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseDto, error)
 	GetProfileList(ctx context.Context, pr *request.ProfileGetListRequestDto) (*response.ProfileListResponseDto, error)
+	CheckProfileExists(ctx context.Context, telegramUserId string) error
 	GetImageByTelegramUserId(ctx context.Context, telegramUserId, fileName string) ([]byte, error)
 	GetImageLastByTelegramUserId(ctx context.Context, telegramUserId string) (*response.ImageResponseDto, error)
 	GetImageById(ctx context.Context, imageId uint64) (*response.ImageResponseDto, error)
@@ -27,6 +28,8 @@ type ProfileService interface {
 	UpdateFilter(ctx context.Context, fr *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error)
 	GetTelegram(ctx context.Context, telegramUserId string) (*response.TelegramResponseDto, error)
 	AddBlock(ctx context.Context, pr *request.BlockAddRequestDto) (*response.ResponseDto, error)
+	GetBlockedList(ctx context.Context, telegramUserId string) (*response.BlockedListResponseDto, error)
+	Unblock(ctx context.Context, p *request.UnblockRequestDto) (*response.ResponseDto, error)
 	AddLike(ctx context.Context, pr *request.LikeAddRequestDto, locale string) (*response.ResponseDto, error)
 	UpdateLike(ctx context.Context, pr *request.LikeUpdateRequestDto) (*response.ResponseDto, error)
 	GetLastLike(
@@ -36,4 +39,6 @@ type ProfileService interface {
 		ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error)
 	AddPayment(ctx context.Context, pr *request.PaymentAddRequestDto) (*response.ResponseDto, error)
 	GetPaymentLastByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.PaymentEntity, error)
+	CheckPremium(ctx context.Context, telegramUserId string) (*response.PremiumResponseDto, error)
+	UpdateSettings(ctx context.Context, pr *request.ProfileUpdateSettingsRequestDto) (*response.ResponseDto, error)
 }

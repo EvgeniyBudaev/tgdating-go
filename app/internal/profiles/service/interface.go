@@ -15,7 +15,7 @@ type ProfileRepository interface {
 	GetProfile(ctx context.Context, telegramUserId string) (*response.ProfileResponseRepositoryDto, error)
 	GetDetail(ctx context.Context,
 		telegramUserId, viewedTelegramUserId string) (*response.ProfileDetailResponseRepositoryDto, error)
-	GetShortInfo(ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseDto, error)
+	GetShortInfo(ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseRepositoryDto, error)
 	SelectList(ctx context.Context,
 		pr *request.ProfileGetListRequestRepositoryDto) (*response.ProfileListResponseRepositoryDto, error)
 	UpdateLastOnline(ctx context.Context, p *request.ProfileUpdateLastOnlineRequestRepositoryDto) error
@@ -66,6 +66,10 @@ type LikeRepository interface {
 
 type BlockRepository interface {
 	Add(ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*response.ResponseDto, error)
+	Update(ctx context.Context, telegramUserId, blockedTelegramUserId string) (*response.ResponseDto, error)
+	GetBlockedList(ctx context.Context, telegramUserId string) (*response.BlockedListResponseDto, error)
+	FindBlock(ctx context.Context, telegramUserId, blockedTelegramUserId string) (*entity.BlockEntity, error)
+	Unblock(ctx context.Context, p *request.UnblockRequestDto) (*response.ResponseDto, error)
 	DeleteRelatedProfiles(ctx context.Context, id string) (*response.ResponseDto, error)
 }
 
@@ -81,6 +85,8 @@ type StatusRepository interface {
 	Block(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
 	Freeze(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
 	Restore(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
+	UpdateSettings(
+		ctx context.Context, p *request.StatusUpdateSettingsRequestRepositoryDto) (*response.ResponseDto, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.StatusEntity, error)
 	CheckProfileExists(ctx context.Context, telegramUserId string) (*response.CheckExistsDto, error)
 }

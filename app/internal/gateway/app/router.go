@@ -13,7 +13,10 @@ func InitPublicRoutes(app *fiber.App, profileController *controller.ProfileContr
 	router.Get("/profiles/detail/:viewedTelegramUserId", profileController.GetProfileDetail())
 	router.Get("/profiles/short/:telegramUserId", profileController.GetProfileShortInfo())
 	router.Get("/profiles/list", profileController.GetProfileList())
+	router.Get("/profiles/:telegramUserId/check", profileController.CheckProfileExists())
 	router.Get("/profiles/filters/:telegramUserId", profileController.GetFilter())
+	router.Get("/profiles/:telegramUserId/premium/check", profileController.CheckPremium())
+	router.Get("/profiles/:telegramUserId/blocks/list", profileController.GetBlockedList())
 
 	//router.Post("/profiles", profileController.AddProfile())
 	//router.Put("/profiles", profileController.UpdateProfile())
@@ -40,8 +43,11 @@ func InitProtectedRoutes(app *fiber.App, profileController *controller.ProfileCo
 	router.Put("/profiles/filters", profileController.UpdateFilter())
 	router.Put("/profiles/navigators", profileController.UpdateCoordinates())
 	router.Post("/profiles/blocks", profileController.AddBlock())
+	router.Put("/profiles/unblock", profileController.Unblock())
 	router.Post("/profiles/likes", profileController.AddLike())
 	router.Put("/profiles/likes", profileController.UpdateLike())
 	router.Post("/profiles/likes/last", profileController.GetLastLike())
 	router.Post("/profiles/complaints", profileController.AddComplaint())
+	router.Post("/profiles/payments", profileController.AddPayment())
+	router.Put("/profiles/settings", profileController.UpdateSettings())
 }
