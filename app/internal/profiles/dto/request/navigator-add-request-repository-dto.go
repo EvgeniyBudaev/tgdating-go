@@ -7,6 +7,7 @@ import (
 
 type NavigatorAddRequestRepositoryDto struct {
 	TelegramUserId string              `json:"telegramUserId"`
+	CountryCode    string              `json:"countryCode"`
 	Location       *entity.PointEntity `json:"location"`
 	CreatedAt      time.Time           `json:"createdAt"`
 	UpdatedAt      time.Time           `json:"updatedAt"`

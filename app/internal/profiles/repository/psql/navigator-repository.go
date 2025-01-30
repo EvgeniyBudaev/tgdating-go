@@ -31,10 +31,10 @@ func NewNavigatorRepository(l logger.Logger, db *sql.DB) *NavigatorRepository {
 
 func (r *NavigatorRepository) Add(
 	ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*response.ResponseDto, error) {
-	query := "INSERT INTO dating.profile_navigators (telegram_user_id, location, created_at, updated_at)" +
-		" VALUES ($1, ST_SetSRID(ST_MakePoint($2, $3),  4326), $4, $5) RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.Location.Longitude, &p.Location.Latitude,
-		&p.CreatedAt, &p.UpdatedAt)
+	query := "INSERT INTO dating.profile_navigators (telegram_user_id, country_code, location, created_at, updated_at)" +
+		" VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4),  4326), $5, $6) RETURNING id"
+	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.CountryCode, &p.Location.Longitude,
+		&p.Location.Latitude, &p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -50,9 +50,12 @@ func (r *NavigatorRepository) Add(
 
 func (r *NavigatorRepository) Update(
 	ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error) {
-	query := "UPDATE dating.profile_navigators SET location=ST_SetSRID(ST_MakePoint($1, $2),  4326), updated_at = $3" +
-		" WHERE telegram_user_id = $4"
-	_, err := r.db.ExecContext(ctx, query, &p.Longitude, &p.Latitude, &p.UpdatedAt, &p.TelegramUserId)
+	fmt.Println("Update TelegramUserId: ", p.TelegramUserId)
+	fmt.Println("Update CountryCode: ", p.CountryCode)
+	query := "UPDATE dating.profile_navigators SET country_code = $1," +
+		" location=ST_SetSRID(ST_MakePoint($2, $3),  4326), updated_at = $4" +
+		" WHERE telegram_user_id = $5"
+	_, err := r.db.ExecContext(ctx, query, &p.CountryCode, &p.Longitude, &p.Latitude, &p.UpdatedAt, &p.TelegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -66,12 +69,12 @@ func (r *NavigatorRepository) FindById(
 	p := &entity.NavigatorEntity{}
 	var longitude sql.NullFloat64
 	var latitude sql.NullFloat64
-	query := "SELECT id, telegram_user_id, ST_X(location) as longitude, ST_Y(location) as latitude, created_at," +
-		" updated_at" +
+	query := "SELECT id, telegram_user_id, country_code, ST_X(location) as longitude, ST_Y(location) as latitude," +
+		" created_at, updated_at" +
 		" FROM dating.profile_navigators" +
 		" WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &longitude, &latitude, &p.CreatedAt, &p.UpdatedAt)
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.CountryCode, &longitude, &latitude, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindById", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -92,12 +95,12 @@ func (r *NavigatorRepository) FindByTelegramUserId(
 	p := &entity.NavigatorEntity{}
 	var longitude sql.NullFloat64
 	var latitude sql.NullFloat64
-	query := "SELECT id, telegram_user_id, ST_X(location) as longitude, ST_Y(location) as latitude, created_at," +
-		" updated_at" +
+	query := "SELECT id, telegram_user_id, country_code, ST_X(location) as longitude, ST_Y(location) as latitude," +
+		" created_at, updated_at" +
 		" FROM dating.profile_navigators" +
 		" WHERE telegram_user_id = $1"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId)
-	err := row.Scan(&p.Id, &p.TelegramUserId, &longitude, &latitude, &p.CreatedAt, &p.UpdatedAt)
+	err := row.Scan(&p.Id, &p.TelegramUserId, &p.CountryCode, &longitude, &latitude, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

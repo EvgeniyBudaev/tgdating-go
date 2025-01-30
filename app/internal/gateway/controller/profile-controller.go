@@ -325,7 +325,6 @@ func (pc *ProfileController) GetProfileList() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("GetProfileList TelegramUserId:", req.TelegramUserId)
 		profileMapper := &mapper.ProfileMapper{}
 		profileRequest := profileMapper.MapToListRequest(req)
 		profileList, err := pc.proto.GetProfileList(ctx, profileRequest)

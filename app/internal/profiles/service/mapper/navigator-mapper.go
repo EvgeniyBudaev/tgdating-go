@@ -26,24 +26,26 @@ func (pm *NavigatorMapper) MapToResponse(
 	return navigatorResponse
 }
 
-func (pm *NavigatorMapper) MapToAddRequest(
-	telegramUserId string, longitude, latitude float64) *request.NavigatorAddRequestRepositoryDto {
+func (pm *NavigatorMapper) MapToAddRequest(telegramUserId, countryCode string, longitude,
+	latitude float64) *request.NavigatorAddRequestRepositoryDto {
 	point := &entity.PointEntity{
 		Longitude: longitude,
 		Latitude:  latitude,
 	}
 	return &request.NavigatorAddRequestRepositoryDto{
 		TelegramUserId: telegramUserId,
+		CountryCode:    countryCode,
 		Location:       point,
 		CreatedAt:      time.Now().UTC(),
 		UpdatedAt:      time.Now().UTC(),
 	}
 }
 
-func (pm *NavigatorMapper) MapToUpdateRequest(
-	telegramUserId string, longitude float64, latitude float64) *request.NavigatorUpdateRequestRepositoryDto {
+func (pm *NavigatorMapper) MapToUpdateRequest(telegramUserId, countryCode string, longitude float64,
+	latitude float64) *request.NavigatorUpdateRequestRepositoryDto {
 	return &request.NavigatorUpdateRequestRepositoryDto{
 		TelegramUserId: telegramUserId,
+		CountryCode:    countryCode,
 		Longitude:      longitude,
 		Latitude:       latitude,
 		UpdatedAt:      time.Now().UTC(),

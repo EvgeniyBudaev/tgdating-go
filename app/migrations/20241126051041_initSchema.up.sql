@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_navigators
 (
     id               BIGSERIAL             NOT NULL PRIMARY KEY,
     telegram_user_id VARCHAR(255)          NOT NULL UNIQUE,
+    country_code     VARCHAR(255)          NOT NULL,
     location         geometry(Point, 4326) NOT NULL,
     created_at       TIMESTAMP             NOT NULL,
     updated_at       TIMESTAMP             NOT NULL,
