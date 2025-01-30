@@ -1268,7 +1268,7 @@ func (s *ProfileService) updateLastOnline(ctx context.Context, telegramUserId st
 
 func (s *ProfileService) updateNavigator(
 	ctx context.Context,
-	telegramUserId, countryCode string, longitude float64, latitude float64) (*response.NavigatorResponseDto, error) {
+	telegramUserId string, countryCode *string, longitude float64, latitude float64) (*response.NavigatorResponseDto, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		errorMessage := s.getErrorMessage("updateNavigator", "Begin")

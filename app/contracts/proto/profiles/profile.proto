@@ -100,7 +100,7 @@ message ProfileAddRequest {
   string telegramLanguageCode = 11; // язык пользователя в телеграм
   bool telegramAllowsWriteToPm = 12; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 13; // id чата в телеграм
-  string countryCode = 14; // код страны
+  optional string countryCode = 14; // код страны
   optional double latitude = 15; // широта
   optional double longitude = 16; // долгота
   uint64 ageFrom = 17; // возраст от
@@ -130,7 +130,7 @@ message ProfileUpdateRequest {
   string telegramLanguageCode = 11; // язык пользователя в телеграм
   bool telegramAllowsWriteToPm = 12; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 13; // id чата в телеграм
-  string countryCode = 14; // код страны
+  optional string countryCode = 14; // код страны
   optional double latitude = 15; // широта
   optional double longitude = 16; // долгота
   uint64 ageFrom = 17; // возраст от
@@ -168,7 +168,7 @@ message ProfileDeleteResponse {
 
 message ProfileGetRequest {
   string telegramUserId = 1; // id пользователя в телеграм
-  string countryCode = 2; // код страны
+  optional string countryCode = 2; // код страны
   optional double latitude = 3; // широта
   optional double longitude = 4; // долгота
 }
@@ -189,7 +189,7 @@ message ProfileResponse {
 message ProfileGetDetailRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   string viewedTelegramUserId = 2; // id сессии того, кого смотрим
-  string countryCode = 3; // код страны
+  optional string countryCode = 3; // код страны
   optional double latitude = 4; // широта
   optional double longitude = 5; // долгота
 }
@@ -228,7 +228,7 @@ message ProfileShortInfoResponse {
 
 message ProfileGetListRequest {
   string telegramUserId = 1; // id пользователя в телеграм
-  string countryCode = 2; // код страны
+  optional string countryCode = 2; // код страны
   optional double latitude = 3; // широта
   optional double longitude = 4; // долгота
 }
@@ -391,7 +391,7 @@ message CheckPremiumResponse {
 
 message NavigatorUpdateRequest {
   string telegramUserId = 1; // id пользователя в телеграм
-  string countryCode = 2; // код страны
+  optional string countryCode = 2; // код страны
   double latitude = 3; // широта
   double longitude = 4; // долгота
 }

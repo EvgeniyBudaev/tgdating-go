@@ -673,7 +673,6 @@ func (pc *ProfileController) GetLastLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusBadRequest)
 		}
-		fmt.Println("GetLastLike TelegramUserId:", req.TelegramUserId)
 		profileMapper := &mapper.ProfileMapper{}
 		likeRequest := profileMapper.MapToLikeGetLastRequest(req.TelegramUserId)
 		likeEntity, err := pc.proto.GetLastLike(ctx, likeRequest)

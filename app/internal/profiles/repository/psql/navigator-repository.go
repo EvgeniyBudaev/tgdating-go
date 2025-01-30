@@ -50,8 +50,6 @@ func (r *NavigatorRepository) Add(
 
 func (r *NavigatorRepository) Update(
 	ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error) {
-	fmt.Println("Update TelegramUserId: ", p.TelegramUserId)
-	fmt.Println("Update CountryCode: ", p.CountryCode)
 	query := "UPDATE dating.profile_navigators SET country_code = $1," +
 		" location=ST_SetSRID(ST_MakePoint($2, $3),  4326), updated_at = $4" +
 		" WHERE telegram_user_id = $5"
