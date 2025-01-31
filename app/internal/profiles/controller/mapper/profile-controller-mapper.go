@@ -19,7 +19,6 @@ func (pm *ProfileControllerMapper) MapControllerToAddRequest(
 		Age:                     in.Age,
 		Gender:                  enum.Gender(in.Gender),
 		SearchGender:            enum.SearchGender(in.SearchGender),
-		Location:                in.Location,
 		Description:             in.Description,
 		TelegramUserId:          in.TelegramUserId,
 		TelegramUsername:        in.TelegramUsername,
@@ -56,7 +55,6 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateRequest(
 		Age:                     in.Age,
 		Gender:                  enum.Gender(in.Gender),
 		SearchGender:            enum.SearchGender(in.SearchGender),
-		Location:                in.Location,
 		Description:             in.Description,
 		TelegramUserId:          in.TelegramUserId,
 		TelegramUsername:        in.TelegramUsername,
@@ -108,7 +106,6 @@ func (pm *ProfileControllerMapper) MapControllerResponse(
 		DisplayName:    r.DisplayName,
 		Age:            r.Age,
 		Gender:         r.Gender,
-		Location:       r.Location,
 		Description:    r.Description,
 		Navigator:      navigatorResponse,
 		Filter: &pb.FilterResponse{
@@ -138,7 +135,9 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 	var navigatorResponse *pb.NavigatorDetailResponse
 	if r.Navigator != nil {
 		navigatorResponse = &pb.NavigatorDetailResponse{
-			Distance: r.Navigator.Distance,
+			CountryName: r.Navigator.CountryName,
+			City:        r.Navigator.City,
+			Distance:    r.Navigator.Distance,
 		}
 	}
 	var blockResponse *pb.BlockResponse
@@ -171,7 +170,6 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
 		Age:            r.Age,
-		Location:       r.Location,
 		Description:    r.Description,
 		Navigator:      navigatorResponse,
 		Status: &pb.StatusResponse{
@@ -373,12 +371,8 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateSettingsResponse(
 }
 
 func (pm *ProfileControllerMapper) MapControllerToUpdateCoordinatesResponse(
-	r *response.NavigatorResponseDto) *pb.NavigatorUpdateResponse {
-	location := &pb.Point{
-		Latitude:  r.Location.Latitude,
-		Longitude: r.Location.Longitude,
-	}
+	r *response.ResponseDto) *pb.NavigatorUpdateResponse {
 	return &pb.NavigatorUpdateResponse{
-		Location: location,
+		Success: r.Success,
 	}
 }

@@ -488,7 +488,7 @@ func (s *ProfileService) GetProfileShortInfo(
 	}
 	checkPremium, err := s.CheckPremium(ctx, telegramUserId)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileDetail", "s.CheckPremium")
+		errorMessage := s.getErrorMessage("GetProfileShortInfo", "s.CheckPremium")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
@@ -1241,7 +1241,7 @@ func (s *ProfileService) UpdateSettings(
 }
 
 func (s *ProfileService) UpdateCoordinates(
-	ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error) {
+	ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.ResponseDto, error) {
 	longitude := pr.Longitude
 	latitude := pr.Latitude
 	return s.updateNavigator(ctx, pr.TelegramUserId, pr.CountryCode, pr.CountryName, pr.City, longitude, latitude)
@@ -1269,7 +1269,7 @@ func (s *ProfileService) updateLastOnline(ctx context.Context, telegramUserId st
 }
 
 func (s *ProfileService) updateNavigator(ctx context.Context, telegramUserId string, countryCode, countryName,
-	city *string, longitude float64, latitude float64) (*response.NavigatorResponseDto, error) {
+	city *string, longitude float64, latitude float64) (*response.ResponseDto, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		errorMessage := s.getErrorMessage("updateNavigator", "Begin")
@@ -1281,18 +1281,24 @@ func (s *ProfileService) updateNavigator(ctx context.Context, telegramUserId str
 	navigatorRequest := navigatorMapper.MapToUpdateRequest(telegramUserId, countryCode, countryName, city, longitude,
 		latitude)
 	navigatorExists, err := s.checkNavigatorExists(ctx, telegramUserId)
-	var r *response.NavigatorResponseDto
 	if navigatorExists != nil {
-		navigatorUpdated, err := s.navigatorRepository.Update(ctx, navigatorRequest)
-		if err != nil {
-			errorMessage := s.getErrorMessage("updateNavigator",
-				"navigatorRepository.Update")
-			s.logger.Debug(errorMessage, zap.Error(err))
-			return nil, err
+		if countryCode != nil && countryName != nil && city != nil {
+			_, err := s.navigatorRepository.Update(ctx, navigatorRequest)
+			if err != nil {
+				errorMessage := s.getErrorMessage("updateNavigator",
+					"navigatorRepository.Update")
+				s.logger.Debug(errorMessage, zap.Error(err))
+				return nil, err
+			}
+		} else {
+			_, err := s.navigatorRepository.UpdateCoordinates(ctx, navigatorRequest)
+			if err != nil {
+				errorMessage := s.getErrorMessage("updateNavigator",
+					"navigatorRepository.UpdateCoordinates")
+				s.logger.Debug(errorMessage, zap.Error(err))
+				return nil, err
+			}
 		}
-		navigatorResponse := navigatorMapper.MapToResponse(telegramUserId, navigatorUpdated.Location.Longitude,
-			navigatorUpdated.Location.Latitude)
-		r = navigatorResponse
 	} else {
 		navigatorRequest := navigatorMapper.MapToAddRequest(telegramUserId, countryCode, countryName, city, longitude,
 			latitude)
@@ -1303,13 +1309,12 @@ func (s *ProfileService) updateNavigator(ctx context.Context, telegramUserId str
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
-		location := &entity.PointEntity{Longitude: longitude, Latitude: latitude}
-		r = &response.NavigatorResponseDto{
-			Location: location,
-		}
 	}
 	tx.Commit()
-	return r, nil
+	navigatorResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return navigatorResponse, nil
 }
 
 func (s *ProfileService) getNowUtc() time.Time {

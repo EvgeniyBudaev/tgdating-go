@@ -28,7 +28,6 @@ func (pm *ProfileMapper) MapToResponse(
 		DisplayName:    p.DisplayName,
 		Age:            p.Age,
 		Gender:         p.Gender,
-		Location:       p.Location,
 		Description:    p.Description,
 		Navigator:      p.Navigator,
 		Filter:         p.Filter,
@@ -43,7 +42,9 @@ func (pm *ProfileMapper) MapToDetailResponse(
 	isPremium bool,
 ) *response.ProfileDetailResponseDto {
 	navigator := &response.NavigatorDetailResponseDto{
-		Distance: p.Navigator.Distance,
+		CountryName: p.Navigator.CountryName,
+		City:        p.Navigator.City,
+		Distance:    p.Navigator.Distance,
 	}
 	s := &response.StatusResponseDto{
 		IsBlocked:        p.Status.IsBlocked,
@@ -59,7 +60,6 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		TelegramUserId: p.TelegramUserId,
 		DisplayName:    p.DisplayName,
 		Age:            p.Age,
-		Location:       p.Location,
 		Description:    p.Description,
 		Navigator:      navigator,
 		Status:         s,
@@ -99,7 +99,6 @@ func (pm *ProfileMapper) MapToAddRequest(
 		DisplayName:    pr.DisplayName,
 		Age:            pr.Age,
 		Gender:         string(pr.Gender),
-		Location:       pr.Location,
 		Description:    pr.Description,
 		CreatedAt:      time.Now().UTC(),
 		UpdatedAt:      time.Now().UTC(),
@@ -114,7 +113,6 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 		DisplayName:    pr.DisplayName,
 		Age:            pr.Age,
 		Gender:         string(pr.Gender),
-		Location:       pr.Location,
 		Description:    pr.Description,
 		UpdatedAt:      time.Now().UTC(),
 		LastOnline:     time.Now().UTC(),

@@ -10,7 +10,6 @@ type ProfileUpdateRequestDto struct {
 	Age                     uint64                 `json:"age"`
 	Gender                  enum.Gender            `json:"gender"`
 	SearchGender            enum.SearchGender      `json:"searchGender"`
-	Location                string                 `json:"location"`
 	Description             string                 `json:"description"`
 	TelegramUserId          string                 `json:"telegramUserId"`
 	TelegramUsername        string                 `json:"telegramUsername"`

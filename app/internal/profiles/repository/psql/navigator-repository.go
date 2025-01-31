@@ -50,7 +50,7 @@ func (r *NavigatorRepository) Add(
 }
 
 func (r *NavigatorRepository) Update(
-	ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error) {
+	ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "UPDATE dating.profile_navigators SET country_code = $1, country_name = $2, city = $3," +
 		" location=ST_SetSRID(ST_MakePoint($4, $5),  4326), updated_at = $6" +
 		" WHERE telegram_user_id = $7"
@@ -61,7 +61,27 @@ func (r *NavigatorRepository) Update(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.FindByTelegramUserId(ctx, p.TelegramUserId)
+	navigatorResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return navigatorResponse, nil
+}
+
+func (r *NavigatorRepository) UpdateCoordinates(
+	ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*response.ResponseDto, error) {
+	query := "UPDATE dating.profile_navigators SET " +
+		" location=ST_SetSRID(ST_MakePoint($1, $2),  4326), updated_at = $3" +
+		" WHERE telegram_user_id = $4"
+	_, err := r.db.ExecContext(ctx, query, &p.Longitude, &p.Latitude, &p.UpdatedAt, &p.TelegramUserId)
+	if err != nil {
+		errorMessage := r.getErrorMessage("UpdateCoordinates", "ExecContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	navigatorResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return navigatorResponse, nil
 }
 
 func (r *NavigatorRepository) FindById(

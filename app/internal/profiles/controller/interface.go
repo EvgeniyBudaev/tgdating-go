@@ -36,7 +36,7 @@ type ProfileService interface {
 		ctx context.Context, telegramUserId string) (*entity.LikeEntity, error)
 	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*response.ResponseDto, error)
 	UpdateCoordinates(
-		ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.NavigatorResponseDto, error)
+		ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.ResponseDto, error)
 	AddPayment(ctx context.Context, pr *request.PaymentAddRequestDto) (*response.ResponseDto, error)
 	GetPaymentLastByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.PaymentEntity, error)
 	CheckPremium(ctx context.Context, telegramUserId string) (*response.PremiumResponseDto, error)

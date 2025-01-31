@@ -38,10 +38,10 @@ func NewProfileRepository(l logger.Logger, db *sql.DB) *ProfileRepository {
 
 func (r *ProfileRepository) Add(
 	ctx context.Context, p *request.ProfileAddRequestRepositoryDto) (*response.ResponseDto, error) {
-	query := "INSERT INTO dating.profiles (telegram_user_id, display_name, age, gender, location, description," +
+	query := "INSERT INTO dating.profiles (telegram_user_id, display_name, age, gender, description," +
 		" created_at, updated_at, last_online)" +
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
-	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.DisplayName, &p.Age, &p.Gender, &p.Location,
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.DisplayName, &p.Age, &p.Gender,
 		&p.Description, &p.CreatedAt, &p.UpdatedAt, &p.LastOnline)
 	if row == nil {
 		errorMessage := r.getErrorMessage("Add", "QueryRowContext")
@@ -56,10 +56,10 @@ func (r *ProfileRepository) Add(
 
 func (r *ProfileRepository) Update(
 	ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*response.ProfileResponseRepositoryDto, error) {
-	query := "UPDATE dating.profiles SET display_name = $1, age = $2, gender = $3, location = $4," +
-		" description = $5, updated_at = $6, last_online = $7" +
-		" WHERE telegram_user_id = $8"
-	_, err := r.db.ExecContext(ctx, query, &p.DisplayName, &p.Age, &p.Gender, &p.Location,
+	query := "UPDATE dating.profiles SET display_name = $1, age = $2, gender = $3," +
+		" description = $4, updated_at = $5, last_online = $6" +
+		" WHERE telegram_user_id = $7"
+	_, err := r.db.ExecContext(ctx, query, &p.DisplayName, &p.Age, &p.Gender,
 		&p.Description, &p.UpdatedAt, &p.LastOnline, &p.TelegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
@@ -97,7 +97,6 @@ func (r *ProfileRepository) GetProfile(
 		" p.display_name AS display_name," +
 		" p.age AS age," +
 		" p.gender AS gender," +
-		" p.location AS location," +
 		" p.description AS description," +
 		" ps.is_blocked AS is_blocked," +
 		" ps.is_frozen AS is_frozen," +
@@ -122,7 +121,7 @@ func (r *ProfileRepository) GetProfile(
 		" LEFT JOIN dating.profile_filters pf ON pf.telegram_user_id = p.telegram_user_id" +
 		" WHERE p.telegram_user_id = $1" +
 		" )" +
-		" SELECT telegram_user_id, display_name, age, gender, location, description," +
+		" SELECT telegram_user_id, display_name, age, gender, description," +
 		" is_blocked, is_frozen, is_hidden_age, is_hidden_distance, is_invisible, is_left_hand, is_online," +
 		" longitude, latitude, search_gender, age_from, age_to, distance, page, size" +
 		" FROM profile"
@@ -132,7 +131,7 @@ func (r *ProfileRepository) GetProfile(
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
-	err := row.Scan(&p.TelegramUserId, &p.DisplayName, &p.Age, &p.Gender, &p.Location, &p.Description,
+	err := row.Scan(&p.TelegramUserId, &p.DisplayName, &p.Age, &p.Gender, &p.Description,
 		&s.IsBlocked, &s.IsFrozen, &s.IsHiddenAge, &s.IsHiddenDistance, &s.IsInvisible, &s.IsLeftHand, &s.IsOnline,
 		&longitude, &latitude, &f.SearchGender, &f.AgeFrom, &f.AgeTo, &f.Distance, &f.Page, &f.Size)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
@@ -160,7 +159,6 @@ func (r *ProfileRepository) GetProfile(
 		DisplayName:    p.DisplayName,
 		Age:            p.Age,
 		Gender:         p.Gender,
-		Location:       p.Location,
 		Description:    p.Description,
 		Navigator:      n,
 		Filter:         f,
@@ -176,6 +174,8 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 	var likeId *uint64
 	var isLiked *bool
 	var likeUpdatedAt *time.Time
+	var countryName *string
+	var city *string
 	s := &response.StatusResponseRepositoryDto{}
 	p := &response.ProfileDetailResponseRepositoryDto{}
 	query := "WITH profile_details AS (" +
@@ -184,7 +184,8 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		" p2.telegram_user_id AS telegram_user_id," +
 		" p2.display_name AS display_name," +
 		" p2.age AS age," +
-		" p2.location AS location," +
+		" pn2.country_name AS country_name," +
+		" pn2.city AS city," +
 		" p2.description AS description," +
 		" ps2.is_blocked AS is_blocked," +
 		" ps2.is_frozen AS is_frozen," +
@@ -212,7 +213,7 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		" WHERE p1.telegram_user_id = $1" +
 		" )" +
 		" SELECT " +
-		" pd.telegram_user_id, pd.display_name, pd.age, pd.location, pd.description," +
+		" pd.telegram_user_id, pd.display_name, pd.age, pd.description, country_name, city," +
 		" pd.is_blocked, pd.is_frozen, pd.is_hidden_age, pd.is_hidden_distance, pd.is_invisible, pd.is_left_hand," +
 		" pd.is_online, pd.is_viewed_blocked, pd.like_id, pd.is_liked, pd.like_updated_at," +
 		" ST_DistanceSphere(user1_location, user2_location) AS distance" +
@@ -223,7 +224,7 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
-	err := row.Scan(&p.TelegramUserId, &p.DisplayName, &p.Age, &p.Location, &p.Description,
+	err := row.Scan(&p.TelegramUserId, &p.DisplayName, &p.Age, &p.Description, &countryName, &city,
 		&s.IsBlocked, &s.IsFrozen, &s.IsHiddenAge, &s.IsHiddenDistance, &s.IsInvisible, &s.IsLeftHand,
 		&s.IsOnline, &isViewedBlocked, &likeId, &isLiked, &likeUpdatedAt, &distance)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
@@ -236,9 +237,10 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	var n *response.NavigatorDistanceResponseRepositoryDto
-	n = &response.NavigatorDistanceResponseRepositoryDto{
-		Distance: distance,
+	n := &response.NavigatorResponseRepositoryDto{
+		CountryName: countryName,
+		City:        city,
+		Distance:    distance,
 	}
 	var b *response.BlockResponseDto
 	if isViewedBlocked != nil {
@@ -258,7 +260,6 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 		TelegramUserId: p.TelegramUserId,
 		DisplayName:    p.DisplayName,
 		Age:            p.Age,
-		Location:       p.Location,
 		Description:    p.Description,
 		Navigator:      n,
 		Status:         s,

@@ -23,7 +23,9 @@ type ProfileRepository interface {
 
 type NavigatorRepository interface {
 	Add(ctx context.Context, p *request.NavigatorAddRequestRepositoryDto) (*response.ResponseDto, error)
-	Update(ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*entity.NavigatorEntity, error)
+	Update(ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*response.ResponseDto, error)
+	UpdateCoordinates(
+		ctx context.Context, p *request.NavigatorUpdateRequestRepositoryDto) (*response.ResponseDto, error)
 	FindById(ctx context.Context, id uint64) (*entity.NavigatorEntity, error)
 	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.NavigatorEntity, error)
 	CheckNavigatorExists(ctx context.Context, telegramUserId string) (*response.ResponseDto, error)

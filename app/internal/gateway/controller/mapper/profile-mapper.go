@@ -17,7 +17,6 @@ func (pm *ProfileMapper) MapToAddRequest(
 		Age:                     r.Age,
 		Gender:                  string(r.Gender),
 		SearchGender:            string(r.SearchGender),
-		Location:                r.Location,
 		Description:             r.Description,
 		TelegramUserId:          r.TelegramUserId,
 		TelegramUsername:        r.TelegramUsername,
@@ -48,7 +47,6 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 		Age:                     r.Age,
 		Gender:                  string(r.Gender),
 		SearchGender:            string(r.SearchGender),
-		Location:                r.Location,
 		Description:             r.Description,
 		TelegramUserId:          r.TelegramUserId,
 		TelegramUsername:        r.TelegramUsername,
@@ -130,7 +128,6 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
 		DisplayName:    r.DisplayName,
 		Age:            r.Age,
 		Gender:         r.Gender,
-		Location:       r.Location,
 		Description:    r.Description,
 		Navigator:      navigatorResponse,
 		Filter: &response.FilterResponseDto{
@@ -189,7 +186,9 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 	var navigatorResponse *response.NavigatorDetailResponseDto
 	if r.Navigator != nil {
 		navigatorResponse = &response.NavigatorDetailResponseDto{
-			Distance: r.Navigator.Distance,
+			CountryName: r.Navigator.CountryName,
+			City:        r.Navigator.City,
+			Distance:    r.Navigator.Distance,
 		}
 	}
 	var blockResponse *response.BlockResponseDto
@@ -221,7 +220,6 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
 		Age:            r.Age,
-		Location:       r.Location,
 		Description:    r.Description,
 		Navigator:      navigatorResponse,
 		Status: &response.StatusResponseDto{

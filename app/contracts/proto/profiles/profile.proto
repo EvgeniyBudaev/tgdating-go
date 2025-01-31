@@ -34,7 +34,9 @@ message NavigatorResponse {
   Point location = 1; // объект с координатами
 }
 message NavigatorDetailResponse {
-  optional double distance = 1; // расстояние до просматриваемого пользователя
+  optional string countryName = 1; // название страны
+  optional string city = 2; // название города
+  optional double distance = 3; // расстояние до просматриваемого пользователя
 }
 
 message FilterResponse {
@@ -91,27 +93,26 @@ message ProfileAddRequest {
   uint64 age = 2; // возраст
   string gender = 3; // пол
   string searchGender = 4; // поиск по половому признаку
-  string location = 5; // местоположение
-  string description = 6; // описание
-  string telegramUserId = 7; // id пользователя в телеграм
-  string telegramUsername = 8; // username пользователя в телеграм
-  string telegramFirstName = 9; // имя пользователя в телеграм
-  string telegramLastName = 10; // фамилия пользователя в телеграм
-  string telegramLanguageCode = 11; // язык пользователя в телеграм
-  bool telegramAllowsWriteToPm = 12; // true, если этот пользователь разрешил боту отправлять ему сообщения
-  string telegramQueryId = 13; // id чата в телеграм
-  optional string countryCode = 14; // код страны
-  optional string countryName = 15; // название страны
-  optional string city = 16; // название города
-  optional double latitude = 17; // широта
-  optional double longitude = 18; // долгота
-  uint64 ageFrom = 19; // возраст от
-  uint64 ageTo = 20; // возраст до
-  double distance = 21; // дистанция
-  uint64 page = 22; // номер текущей страницы
-  uint64 size = 23; // количество элементов на странице
-  bool isLeftHand = 24; // интерфейс адаптирован под леую руку да/нет
-  repeated FileMetadata files = 25; // список файлов-изображений
+  string description = 5; // описание
+  string telegramUserId = 6; // id пользователя в телеграм
+  string telegramUsername = 7; // username пользователя в телеграм
+  string telegramFirstName = 8; // имя пользователя в телеграм
+  string telegramLastName = 9; // фамилия пользователя в телеграм
+  string telegramLanguageCode = 10; // язык пользователя в телеграм
+  bool telegramAllowsWriteToPm = 11; // true, если этот пользователь разрешил боту отправлять ему сообщения
+  string telegramQueryId = 12; // id чата в телеграм
+  optional string countryCode = 13; // код страны
+  optional string countryName = 14; // название страны
+  optional string city = 15; // название города
+  optional double latitude = 16; // широта
+  optional double longitude = 17; // долгота
+  uint64 ageFrom = 18; // возраст от
+  uint64 ageTo = 19; // возраст до
+  double distance = 20; // дистанция
+  uint64 page = 21; // номер текущей страницы
+  uint64 size = 22; // количество элементов на странице
+  bool isLeftHand = 23; // интерфейс адаптирован под леую руку да/нет
+  repeated FileMetadata files = 24; // список файлов-изображений
 }
 
 message ProfileAddResponse {
@@ -123,27 +124,26 @@ message ProfileUpdateRequest {
   uint64 age = 2; // возраст
   string gender = 3; // пол
   string searchGender = 4; // поиск по половому признаку
-  string location = 5; // местоположение
-  string description = 6; // описание
-  string telegramUserId = 7; // id пользователя в телеграм
-  string telegramUsername = 8; // username пользователя в телеграм
-  string telegramFirstName = 9; // имя пользователя в телеграм
-  string telegramLastName = 10; // фамилия пользователя в телеграм
-  string telegramLanguageCode = 11; // язык пользователя в телеграм
-  bool telegramAllowsWriteToPm = 12; // true, если этот пользователь разрешил боту отправлять ему сообщения
-  string telegramQueryId = 13; // id чата в телеграм
-  optional string countryCode = 14; // код страны
-  optional string countryName = 15; // название страны
-  optional string city = 16; // название города
-  optional double latitude = 17; // широта
-  optional double longitude = 18; // долгота
-  uint64 ageFrom = 19; // возраст от
-  uint64 ageTo = 20; // возраст до
-  double distance = 21; // дистанция
-  uint64 page = 22; // номер текущей страницы
-  uint64 size = 23; // количество элементов на странице
-  bool isImages = 24; // наличие ранее сохранненых фотографий
-  repeated FileMetadata files = 25;
+  string description = 5; // описание
+  string telegramUserId = 6; // id пользователя в телеграм
+  string telegramUsername = 7; // username пользователя в телеграм
+  string telegramFirstName = 8; // имя пользователя в телеграм
+  string telegramLastName = 9; // фамилия пользователя в телеграм
+  string telegramLanguageCode = 10; // язык пользователя в телеграм
+  bool telegramAllowsWriteToPm = 11; // true, если этот пользователь разрешил боту отправлять ему сообщения
+  string telegramQueryId = 12; // id чата в телеграм
+  optional string countryCode = 13; // код страны
+  optional string countryName = 14; // название страны
+  optional string city = 15; // название города
+  optional double latitude = 16; // широта
+  optional double longitude = 17; // долгота
+  uint64 ageFrom = 18; // возраст от
+  uint64 ageTo = 19; // возраст до
+  double distance = 20; // дистанция
+  uint64 page = 21; // номер текущей страницы
+  uint64 size = 22; // количество элементов на странице
+  bool isImages = 23; // наличие ранее сохранненых фотографий
+  repeated FileMetadata files = 24;
 }
 
 message ProfileFreezeRequest {
@@ -184,12 +184,11 @@ message ProfileResponse {
   string displayName = 2; // Имя для отображения
   uint64 age = 3; // возраст
   string gender = 4; // пол
-  string location = 5; // местоположение
-  string description = 6; // описание
-  NavigatorResponse navigator = 7; // объект навигатор
-  FilterResponse filter = 8; // объект фильтр
-  StatusResponse status = 9; // статус пользователя
-  repeated ImageResponse images = 10; // список изображений
+  string description = 5; // описание
+  NavigatorResponse navigator = 6; // объект навигатор
+  FilterResponse filter = 7; // объект фильтр
+  StatusResponse status = 8; // статус пользователя
+  repeated ImageResponse images = 9; // список изображений
 }
 
 message ProfileGetDetailRequest {
@@ -206,13 +205,12 @@ message ProfileDetailResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   string displayName = 2; // Имя для отображения
   uint64 age = 3; // возраст
-  string location = 4; // местоположение
-  string description = 5; // описание
-  NavigatorDetailResponse navigator = 6; // объект навигатор
-  StatusResponse status = 7; // статус пользователя
-  BlockResponse block = 8; // объект блок
-  LikeResponse like = 9; //  объект дайк
-  repeated ImageResponse images = 10; // список изображений
+  string description = 4; // описание
+  NavigatorDetailResponse navigator = 5; // объект навигатор
+  StatusResponse status = 6; // статус пользователя
+  BlockResponse block = 7; // объект блок
+  LikeResponse like = 8; //  объект дайк
+  repeated ImageResponse images = 9; // список изображений
 }
 
 message ProfileGetShortInfoRequest {
@@ -409,8 +407,7 @@ message NavigatorUpdateRequest {
 }
 
 message NavigatorUpdateResponse {
-  string telegramUserId = 1; // id пользователя в телеграм
-  Point location = 2; // объект с координатами
+  bool success = 1; // успешно обновлено да/нет
 }
 
 message UpdateSettingsRequest {

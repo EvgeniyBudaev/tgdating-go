@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS dating.profiles
     display_name     VARCHAR(255) NOT NULL,
     age              BIGINT       NOT NULL,
     gender           VARCHAR(50)  NOT NULL,
-    location         TEXT,
     description      TEXT,
     created_at       TIMESTAMP    NOT NULL,
     updated_at       TIMESTAMP    NOT NULL,

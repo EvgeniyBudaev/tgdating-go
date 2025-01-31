@@ -1,5 +1,7 @@
 package response
 
 type NavigatorDetailResponseDto struct {
-	Distance *float64 `json:"distance"`
+	CountryName *string  `json:"countryName"`
+	City        *string  `json:"city"`
+	Distance    *float64 `json:"distance"`
 }
