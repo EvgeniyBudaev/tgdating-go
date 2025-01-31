@@ -101,15 +101,17 @@ message ProfileAddRequest {
   bool telegramAllowsWriteToPm = 12; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 13; // id чата в телеграм
   optional string countryCode = 14; // код страны
-  optional double latitude = 15; // широта
-  optional double longitude = 16; // долгота
-  uint64 ageFrom = 17; // возраст от
-  uint64 ageTo = 18; // возраст до
-  double distance = 19; // дистанция
-  uint64 page = 20; // номер текущей страницы
-  uint64 size = 21; // количество элементов на странице
-  bool isLeftHand = 222; // интерфейс адаптирован под леую руку да/нет
-  repeated FileMetadata files = 23; // список файлов-изображений
+  optional string countryName = 15; // название страны
+  optional string city = 16; // название города
+  optional double latitude = 17; // широта
+  optional double longitude = 18; // долгота
+  uint64 ageFrom = 19; // возраст от
+  uint64 ageTo = 20; // возраст до
+  double distance = 21; // дистанция
+  uint64 page = 22; // номер текущей страницы
+  uint64 size = 23; // количество элементов на странице
+  bool isLeftHand = 24; // интерфейс адаптирован под леую руку да/нет
+  repeated FileMetadata files = 25; // список файлов-изображений
 }
 
 message ProfileAddResponse {
@@ -131,15 +133,17 @@ message ProfileUpdateRequest {
   bool telegramAllowsWriteToPm = 12; // true, если этот пользователь разрешил боту отправлять ему сообщения
   string telegramQueryId = 13; // id чата в телеграм
   optional string countryCode = 14; // код страны
-  optional double latitude = 15; // широта
-  optional double longitude = 16; // долгота
-  uint64 ageFrom = 17; // возраст от
-  uint64 ageTo = 18; // возраст до
-  double distance = 19; // дистанция
-  uint64 page = 20; // номер текущей страницы
-  uint64 size = 21; // количество элементов на странице
-  bool isImages = 22; // наличие ранее сохранненых фотографий
-  repeated FileMetadata files = 23;
+  optional string countryName = 15; // название страны
+  optional string city = 16; // название города
+  optional double latitude = 17; // широта
+  optional double longitude = 18; // долгота
+  uint64 ageFrom = 19; // возраст от
+  uint64 ageTo = 20; // возраст до
+  double distance = 21; // дистанция
+  uint64 page = 22; // номер текущей страницы
+  uint64 size = 23; // количество элементов на странице
+  bool isImages = 24; // наличие ранее сохранненых фотографий
+  repeated FileMetadata files = 25;
 }
 
 message ProfileFreezeRequest {
@@ -169,8 +173,10 @@ message ProfileDeleteResponse {
 message ProfileGetRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   optional string countryCode = 2; // код страны
-  optional double latitude = 3; // широта
-  optional double longitude = 4; // долгота
+  optional string countryName = 3; // название страны
+  optional string city = 4; // название города
+  optional double latitude = 5; // широта
+  optional double longitude = 6; // долгота
 }
 
 message ProfileResponse {
@@ -190,8 +196,10 @@ message ProfileGetDetailRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   string viewedTelegramUserId = 2; // id сессии того, кого смотрим
   optional string countryCode = 3; // код страны
-  optional double latitude = 4; // широта
-  optional double longitude = 5; // долгота
+  optional string countryName = 4; // название страны
+  optional string city = 5; // название города
+  optional double latitude = 6; // широта
+  optional double longitude = 7; // долгота
 }
 
 message ProfileDetailResponse {
@@ -229,8 +237,10 @@ message ProfileShortInfoResponse {
 message ProfileGetListRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   optional string countryCode = 2; // код страны
-  optional double latitude = 3; // широта
-  optional double longitude = 4; // долгота
+  optional string countryName = 3; // название страны
+  optional string city = 4; // название города
+  optional double latitude = 5; // широта
+  optional double longitude = 6; // долгота
 }
 
 message ProfileListItemResponse {
@@ -392,8 +402,10 @@ message CheckPremiumResponse {
 message NavigatorUpdateRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   optional string countryCode = 2; // код страны
-  double latitude = 3; // широта
-  double longitude = 4; // долгота
+  optional string countryName = 3; // название страны
+  optional string city = 4; // название города
+  double latitude = 5; // широта
+  double longitude = 6; // долгота
 }
 
 message NavigatorUpdateResponse {

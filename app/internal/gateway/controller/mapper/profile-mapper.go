@@ -27,6 +27,8 @@ func (pm *ProfileMapper) MapToAddRequest(
 		TelegramAllowsWriteToPm: r.TelegramAllowsWriteToPm,
 		TelegramQueryId:         r.TelegramQueryId,
 		CountryCode:             r.CountryCode,
+		CountryName:             r.CountryName,
+		City:                    r.City,
 		Latitude:                r.Latitude,
 		Longitude:               r.Longitude,
 		AgeFrom:                 r.AgeFrom,
@@ -56,6 +58,8 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 		TelegramAllowsWriteToPm: r.TelegramAllowsWriteToPm,
 		TelegramQueryId:         r.TelegramQueryId,
 		CountryCode:             r.CountryCode,
+		CountryName:             r.CountryName,
+		City:                    r.City,
 		Latitude:                r.Latitude,
 		Longitude:               r.Longitude,
 		AgeFrom:                 r.AgeFrom,
@@ -91,6 +95,8 @@ func (pm *ProfileMapper) MapToGetRequest(
 	return &pb.ProfileGetRequest{
 		TelegramUserId: telegramUserId,
 		CountryCode:    r.CountryCode,
+		CountryName:    r.CountryName,
+		City:           r.City,
 		Latitude:       r.Latitude,
 		Longitude:      r.Longitude,
 	}
@@ -171,6 +177,8 @@ func (pm *ProfileMapper) MapToGetDetailRequest(
 	return &pb.ProfileGetDetailRequest{
 		TelegramUserId:       r.TelegramUserId,
 		CountryCode:          r.CountryCode,
+		CountryName:          r.CountryName,
+		City:                 r.City,
 		Latitude:             r.Latitude,
 		Longitude:            r.Longitude,
 		ViewedTelegramUserId: viewedTelegramUserId,
@@ -243,6 +251,8 @@ func (pm *ProfileMapper) MapToListRequest(
 	return &pb.ProfileGetListRequest{
 		TelegramUserId: r.TelegramUserId,
 		CountryCode:    r.CountryCode,
+		CountryName:    r.CountryName,
+		City:           r.City,
 		Latitude:       r.Latitude,
 		Longitude:      r.Longitude,
 	}
@@ -427,6 +437,8 @@ func (pm *ProfileMapper) MapToUpdateCoordinatesRequest(
 	return &pb.NavigatorUpdateRequest{
 		TelegramUserId: r.TelegramUserId,
 		CountryCode:    r.CountryCode,
+		CountryName:    r.CountryName,
+		City:           r.City,
 		Latitude:       r.Latitude,
 		Longitude:      r.Longitude,
 	}

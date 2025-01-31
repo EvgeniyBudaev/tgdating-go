@@ -129,6 +129,8 @@ func (pc *ProfileController) GetProfile(
 	pc.logger.Info("GET /api/v1/profiles/telegram/:telegramUserId")
 	req := &request.ProfileGetRequestDto{
 		CountryCode: in.CountryCode,
+		CountryName: in.CountryName,
+		City:        in.City,
 		Latitude:    in.Latitude,
 		Longitude:   in.Longitude,
 	}
@@ -150,6 +152,8 @@ func (pc *ProfileController) GetProfileDetail(
 	req := &request.ProfileGetDetailRequestDto{
 		TelegramUserId: in.TelegramUserId,
 		CountryCode:    in.CountryCode,
+		CountryName:    in.CountryName,
+		City:           in.City,
 		Latitude:       in.Latitude,
 		Longitude:      in.Longitude,
 	}
@@ -186,6 +190,8 @@ func (pc *ProfileController) GetProfileList(
 	req := &request.ProfileGetListRequestDto{
 		TelegramUserId: in.TelegramUserId,
 		CountryCode:    in.CountryCode,
+		CountryName:    in.CountryName,
+		City:           in.City,
 		Latitude:       in.Latitude,
 		Longitude:      in.Longitude,
 	}
@@ -468,6 +474,8 @@ func (pc *ProfileController) UpdateCoordinates(
 	req := &request.NavigatorUpdateRequestDto{
 		TelegramUserId: in.TelegramUserId,
 		CountryCode:    in.CountryCode,
+		CountryName:    in.CountryName,
+		City:           in.City,
 		Latitude:       in.Latitude,
 		Longitude:      in.Longitude,
 	}

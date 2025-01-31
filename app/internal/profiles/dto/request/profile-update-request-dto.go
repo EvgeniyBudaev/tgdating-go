@@ -20,6 +20,8 @@ type ProfileUpdateRequestDto struct {
 	TelegramAllowsWriteToPm bool                   `json:"telegramAllowsWriteToPm"`
 	TelegramQueryId         string                 `json:"telegramQueryId"`
 	CountryCode             *string                `json:"countryCode"`
+	CountryName             *string                `json:"countryName"`
+	City                    *string                `json:"city"`
 	Latitude                *float64               `json:"latitude"`
 	Longitude               *float64               `json:"longitude"`
 	AgeFrom                 uint64                 `json:"ageFrom"`
