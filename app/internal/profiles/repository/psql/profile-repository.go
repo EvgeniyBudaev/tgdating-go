@@ -55,7 +55,7 @@ func (r *ProfileRepository) Add(
 }
 
 func (r *ProfileRepository) Update(
-	ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*response.ProfileResponseRepositoryDto, error) {
+	ctx context.Context, p *request.ProfileUpdateRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "UPDATE dating.profiles SET display_name = $1, age = $2, gender = $3," +
 		" description = $4, updated_at = $5, last_online = $6" +
 		" WHERE telegram_user_id = $7"
@@ -66,7 +66,10 @@ func (r *ProfileRepository) Update(
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	return r.GetProfile(ctx, p.TelegramUserId)
+	profileResponse := &response.ResponseDto{
+		Success: true,
+	}
+	return profileResponse, nil
 }
 
 func (r *ProfileRepository) Delete(

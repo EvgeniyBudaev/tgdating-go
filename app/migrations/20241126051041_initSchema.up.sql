@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS dating.profile_statuses
     is_hidden_distance BOOL         NOT NULL,
     is_invisible       BOOL         NOT NULL,
     is_left_hand       BOOL         NOT NULL,
-    is_online          BOOL         NOT NULL,
     created_at         TIMESTAMP    NOT NULL,
     updated_at         TIMESTAMP    NOT NULL,
     CONSTRAINT fk_profile_statuses_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE

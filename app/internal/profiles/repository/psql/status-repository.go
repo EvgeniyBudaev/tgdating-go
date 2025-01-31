@@ -32,10 +32,10 @@ func NewStatusRepository(l logger.Logger, db *sql.DB) *StatusRepository {
 func (r *StatusRepository) Add(
 	ctx context.Context, p *request.StatusAddRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "INSERT INTO dating.profile_statuses (telegram_user_id, is_blocked, is_frozen, is_hidden_age," +
-		" is_hidden_distance, is_invisible, is_left_hand, is_online, created_at, updated_at)" +
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id"
+		" is_hidden_distance, is_invisible, is_left_hand, created_at, updated_at)" +
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id"
 	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.IsBlocked, &p.IsFrozen, &p.IsHiddenAge,
-		&p.IsHiddenDistance, &p.IsInvisible, &p.IsLeftHand, &p.IsOnline, &p.CreatedAt, &p.UpdatedAt)
+		&p.IsHiddenDistance, &p.IsInvisible, &p.IsLeftHand, &p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -52,10 +52,10 @@ func (r *StatusRepository) Add(
 func (r *StatusRepository) Update(
 	ctx context.Context, p *request.StatusUpdateRequestRepositoryDto) (*entity.StatusEntity, error) {
 	query := "UPDATE dating.profile_statuses SET is_blocked = $1, is_frozen = $2, is_hidden_age = $3," +
-		" is_hidden_distance = $4, is_invisible = $5, is_left_hand = $6, is_online = $7, updated_at = $8" +
-		" WHERE telegram_user_id = $10"
+		" is_hidden_distance = $4, is_invisible = $5, is_left_hand = $6, updated_at = $7" +
+		" WHERE telegram_user_id = $8"
 	_, err := r.db.ExecContext(ctx, query, &p.IsBlocked, &p.IsFrozen, &p.IsHiddenAge, &p.IsHiddenDistance,
-		&p.IsInvisible, &p.IsLeftHand, &p.IsOnline, &p.UpdatedAt, &p.TelegramUserId)
+		&p.IsInvisible, &p.IsLeftHand, &p.UpdatedAt, &p.TelegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -123,12 +123,12 @@ func (r *StatusRepository) FindByTelegramUserId(
 	ctx context.Context, telegramUserId string) (*entity.StatusEntity, error) {
 	p := &entity.StatusEntity{}
 	query := "SELECT id, telegram_user_id, is_blocked, is_frozen, is_hidden_age, is_hidden_distance," +
-		" is_invisible, is_left_hand, is_online, created_at, updated_at" +
+		" is_invisible, is_left_hand, created_at, updated_at" +
 		" FROM dating.profile_statuses" +
 		" WHERE telegram_user_id = $1"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId)
 	err := row.Scan(&p.Id, &p.TelegramUserId, &p.IsBlocked, &p.IsFrozen, &p.IsHiddenAge, &p.IsHiddenDistance,
-		&p.IsInvisible, &p.IsLeftHand, &p.IsOnline, &p.CreatedAt, &p.UpdatedAt)
+		&p.IsInvisible, &p.IsLeftHand, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindByTelegramUserId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))

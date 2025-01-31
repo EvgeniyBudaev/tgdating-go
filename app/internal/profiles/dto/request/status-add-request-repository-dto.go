@@ -10,7 +10,6 @@ type StatusAddRequestRepositoryDto struct {
 	IsHiddenDistance bool      `json:"isHiddenDistance"`
 	IsInvisible      bool      `json:"isInvisible"`
 	IsLeftHand       bool      `json:"isLeftHand"`
-	IsOnline         bool      `json:"isOnline"`
 	CreatedAt        time.Time `json:"createdAt"`
 	UpdatedAt        time.Time `json:"updatedAt"`
 }

@@ -17,7 +17,6 @@ func (pm *StatusMapper) MapToAddRequest(pr *request.ProfileAddRequestDto) *reque
 		IsHiddenDistance: false,
 		IsInvisible:      false,
 		IsLeftHand:       pr.IsLeftHand,
-		IsOnline:         false,
 		CreatedAt:        time.Now().UTC(),
 		UpdatedAt:        time.Now().UTC(),
 	}

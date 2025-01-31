@@ -203,7 +203,14 @@ func (s *ProfileService) UpdateProfile(
 	}
 	profileMapper := &mapper.ProfileMapper{}
 	profileRequest := profileMapper.MapToUpdateRequest(pr)
-	profileEntity, err := unitOfWork.ProfileRepository().Update(ctx, profileRequest)
+	_, err = unitOfWork.ProfileRepository().Update(ctx, profileRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile",
+			"ProfileRepository().Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	profileEntity, err := unitOfWork.ProfileRepository().GetProfile(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile",
 			"ProfileRepository().Update")

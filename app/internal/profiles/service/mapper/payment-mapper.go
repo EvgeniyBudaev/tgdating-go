@@ -63,7 +63,7 @@ func (pm *PaymentMapper) calculateAvailableUntil(au time.Time, tariff string) ti
 	now := time.Now().UTC()
 	switch tariff {
 	case "free":
-		return au.Add(600 * time.Second)
+		return au.Add(60 * time.Second)
 	case "month":
 		return au.AddDate(0, 1, 0)
 	case "threeMonths":
