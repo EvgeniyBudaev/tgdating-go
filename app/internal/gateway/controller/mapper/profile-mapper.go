@@ -5,6 +5,7 @@ import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/dto/request"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/dto/response"
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/entity"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/shared/enum"
 )
 
 type ProfileMapper struct {
@@ -36,6 +37,7 @@ func (pm *ProfileMapper) MapToAddRequest(
 		Page:                    r.Page,
 		Size:                    r.Size,
 		IsLeftHand:              r.IsLeftHand,
+		Measurement:             string(r.Measurement),
 		Files:                   fileList,
 	}
 }
@@ -66,6 +68,7 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 		Page:                    r.Page,
 		Size:                    r.Size,
 		IsImages:                r.IsImages,
+		Measurement:             string(r.Measurement),
 		Files:                   fileList,
 	}
 }
@@ -147,6 +150,9 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
 			IsLeftHand:       r.Status.IsLeftHand,
 			IsOnline:         r.Status.IsOnline,
 			IsPremium:        r.Status.IsPremium,
+		},
+		Settings: &response.SettingsResponseDto{
+			Measurement: enum.Measurement(r.Settings.Measurement),
 		},
 		Images: images,
 	}
@@ -232,6 +238,9 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 			IsOnline:         r.Status.IsOnline,
 			IsPremium:        r.Status.IsPremium,
 		},
+		Settings: &response.SettingsResponseDto{
+			Measurement: enum.Measurement(r.Settings.Measurement),
+		},
 		Block:  blockResponse,
 		Like:   likeResponse,
 		Images: images,
@@ -275,6 +284,7 @@ func (pm *ProfileMapper) MapToListResponse(r *pb.ProfileListResponse) *response.
 				IsOnline:       c.IsOnline,
 				IsLiked:        c.IsLiked,
 				LastOnline:     c.LastOnline.AsTime(),
+				Measurement:    enum.Measurement(c.Measurement),
 			})
 		}
 	}
@@ -427,6 +437,7 @@ func (pm *ProfileMapper) MapToUpdateSettingsRequest(
 	return &pb.UpdateSettingsRequest{
 		TelegramUserId: r.TelegramUserId,
 		IsHiddenAge:    r.IsHiddenAge,
+		Measurement:    string(r.Measurement),
 	}
 }
 

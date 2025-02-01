@@ -140,3 +140,13 @@ CREATE TABLE IF NOT EXISTS dating.profile_complaints
     updated_at                TIMESTAMP    NOT NULL,
     CONSTRAINT fk_profile_complaints_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS dating.profile_settings
+(
+    id                        BIGSERIAL    NOT NULL PRIMARY KEY,
+    telegram_user_id          VARCHAR(255) NOT NULL,
+    measurement               VARCHAR(255) NOT NULL,
+    created_at                TIMESTAMP    NOT NULL,
+    updated_at                TIMESTAMP    NOT NULL,
+    CONSTRAINT fk_profile_settings_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
+);

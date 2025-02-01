@@ -30,6 +30,7 @@ func (app *App) StartServer(ctx context.Context, hub *entity.Hub) error {
 	complaintRepository := psql.NewComplaintRepository(app.Logger, app.db.psql)
 	statusRepository := psql.NewStatusRepository(app.Logger, app.db.psql)
 	paymentRepository := psql.NewPaymentRepository(app.Logger, app.db.psql)
+	settingsRepository := psql.NewSettingsRepository(app.Logger, app.db.psql)
 	profileRepository := psql.NewProfileRepository(app.Logger, app.db.psql)
 	profileService := service.NewProfileService(
 		app.Logger, app.db.psql, app.config,
@@ -37,7 +38,7 @@ func (app *App) StartServer(ctx context.Context, hub *entity.Hub) error {
 		s3Client, ufw,
 		profileRepository, navigatorRepository, filterRepository, telegramRepository, imageRepository,
 		imageStatusRepository, likeRepository, blockRepository, complaintRepository, statusRepository,
-		paymentRepository)
+		paymentRepository, settingsRepository)
 	profileController := controller.NewProfileController(app.Logger, profileService)
 	pb.RegisterProfileServer(app.gRPCServer, profileController)
 	go func() {

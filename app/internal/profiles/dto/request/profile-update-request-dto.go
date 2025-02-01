@@ -29,5 +29,6 @@ type ProfileUpdateRequestDto struct {
 	Page                    uint64                 `json:"page"`
 	Size                    uint64                 `json:"size"`
 	IsImages                bool                   `json:"IsImages"`
+	Measurement             enum.Measurement       `json:"measurement"`
 	Files                   []*entity.FileMetadata `json:"files"`
 }

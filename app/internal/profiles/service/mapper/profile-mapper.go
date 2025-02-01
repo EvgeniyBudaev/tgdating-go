@@ -23,6 +23,9 @@ func (pm *ProfileMapper) MapToResponse(
 		IsOnline:         p.Status.IsOnline,
 		IsPremium:        isPremium,
 	}
+	st := &response.SettingsResponseDto{
+		Measurement: p.Settings.Measurement,
+	}
 	return &response.ProfileResponseDto{
 		TelegramUserId: p.TelegramUserId,
 		DisplayName:    p.DisplayName,
@@ -32,6 +35,7 @@ func (pm *ProfileMapper) MapToResponse(
 		Navigator:      p.Navigator,
 		Filter:         p.Filter,
 		Status:         s,
+		Settings:       st,
 		Images:         i,
 	}
 }
@@ -56,6 +60,9 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		IsOnline:         p.Status.IsOnline,
 		IsPremium:        isPremium,
 	}
+	st := &response.SettingsResponseDto{
+		Measurement: p.Settings.Measurement,
+	}
 	return &response.ProfileDetailResponseDto{
 		TelegramUserId: p.TelegramUserId,
 		DisplayName:    p.DisplayName,
@@ -63,6 +70,7 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		Description:    p.Description,
 		Navigator:      navigator,
 		Status:         s,
+		Settings:       st,
 		Block:          p.Block,
 		Like:           p.Like,
 		Images:         il,

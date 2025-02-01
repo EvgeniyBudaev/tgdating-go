@@ -45,6 +45,7 @@ type ProfileService struct {
 	complaintRepository   ComplaintRepository
 	statusRepository      StatusRepository
 	paymentRepository     PaymentRepository
+	settingsRepository    SettingsRepository
 }
 
 func NewProfileService(
@@ -64,7 +65,8 @@ func NewProfileService(
 	br BlockRepository,
 	cr ComplaintRepository,
 	sr StatusRepository,
-	pa PaymentRepository) *ProfileService {
+	pa PaymentRepository,
+	str SettingsRepository) *ProfileService {
 	return &ProfileService{
 		logger:                l,
 		db:                    db,
@@ -83,6 +85,7 @@ func NewProfileService(
 		complaintRepository:   cr,
 		statusRepository:      sr,
 		paymentRepository:     pa,
+		settingsRepository:    str,
 	}
 }
 
@@ -142,6 +145,15 @@ func (s *ProfileService) AddProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
+	settingsMapper := &mapper.SettingsMapper{}
+	settingsRequest := settingsMapper.MapToAddRequest(pr)
+	_, err = unitOfWork.SettingsRepository().Add(ctx, settingsRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("AddProfile",
+			"SettingsRepository().Add")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
 	defer func() {
 		if err != nil {
 			if err := unitOfWork.Rollback(ctx); err != nil {
@@ -198,6 +210,15 @@ func (s *ProfileService) UpdateProfile(
 	if err != nil {
 		errorMessage := s.getErrorMessage("UpdateProfile",
 			"telegramRepository.Update")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	settingsMapper := &mapper.SettingsMapper{}
+	settingsRequest := settingsMapper.MapToUpdateRequest(pr)
+	_, err = unitOfWork.SettingsRepository().Update(ctx, settingsRequest)
+	if err != nil {
+		errorMessage := s.getErrorMessage("UpdateProfile",
+			"SettingsRepository().Add")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}

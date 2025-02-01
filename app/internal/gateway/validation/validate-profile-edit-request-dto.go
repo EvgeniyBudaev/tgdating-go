@@ -59,6 +59,16 @@ func ValidateProfileEditRequestDto(ctf *fiber.Ctx, req *request.ProfileUpdateReq
 			errorMessages.GetBadRequest(locale))
 	}
 
+	if req.Measurement == "" {
+		fieldErrorsLanguages["measurement"] = append(fieldErrorsLanguages["measurement"],
+			errorMessages.GetNotEmpty(locale))
+	}
+
+	if req.Measurement != "" && !req.Measurement.IsValid() {
+		fieldErrorsLanguages["measurement"] = append(fieldErrorsLanguages["measurement"],
+			errorMessages.GetBadRequest(locale))
+	}
+
 	cleanedDescription := strings.ReplaceAll(req.Description, "\r", "")
 	if utf8.RuneCountInString(cleanedDescription) > maxCharacters {
 		fieldErrorsLanguages["description"] = append(fieldErrorsLanguages["description"],

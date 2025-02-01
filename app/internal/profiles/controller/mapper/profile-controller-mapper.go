@@ -38,6 +38,7 @@ func (pm *ProfileControllerMapper) MapControllerToAddRequest(
 		Page:                    in.Page,
 		Size:                    in.Size,
 		IsLeftHand:              in.IsLeftHand,
+		Measurement:             enum.Measurement(in.Measurement),
 		Files:                   fileList,
 	}
 }
@@ -74,6 +75,7 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateRequest(
 		Page:                    in.Page,
 		Size:                    in.Size,
 		IsImages:                in.IsImages,
+		Measurement:             enum.Measurement(in.Measurement),
 		Files:                   fileList,
 	}
 }
@@ -125,6 +127,9 @@ func (pm *ProfileControllerMapper) MapControllerResponse(
 			IsLeftHand:       r.Status.IsLeftHand,
 			IsOnline:         r.Status.IsOnline,
 			IsPremium:        r.Status.IsPremium,
+		},
+		Settings: &pb.SettingsResponse{
+			Measurement: string(r.Settings.Measurement),
 		},
 		Images: images,
 	}
@@ -182,6 +187,9 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 			IsOnline:         r.Status.IsOnline,
 			IsPremium:        r.Status.IsPremium,
 		},
+		Settings: &pb.SettingsResponse{
+			Measurement: string(r.Settings.Measurement),
+		},
 		Block:  blockResponse,
 		Like:   likeResponse,
 		Images: images,
@@ -220,6 +228,7 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 				IsOnline:       c.IsOnline,
 				IsLiked:        c.IsLiked,
 				LastOnline:     lastOnlineTimestamp,
+				Measurement:    string(c.Measurement),
 			})
 		}
 	}
@@ -363,10 +372,31 @@ func (pm *ProfileControllerMapper) MapControllerToCheckPremiumResponse(
 	}
 }
 
+func (pm *ProfileControllerMapper) MapControllerToUpdateSettingsRequest(
+	in *pb.UpdateSettingsRequest) *request.ProfileUpdateSettingsRequestDto {
+	return &request.ProfileUpdateSettingsRequestDto{
+		TelegramUserId: in.TelegramUserId,
+		IsHiddenAge:    in.IsHiddenAge,
+		Measurement:    enum.Measurement(in.Measurement),
+	}
+}
+
 func (pm *ProfileControllerMapper) MapControllerToUpdateSettingsResponse(
 	r *response.ResponseDto) *pb.UpdateSettingsResponse {
 	return &pb.UpdateSettingsResponse{
 		Success: r.Success,
+	}
+}
+
+func (pm *ProfileControllerMapper) MapControllerToUpdateCoordinatesRequest(
+	in *pb.NavigatorUpdateRequest) *request.NavigatorUpdateRequestDto {
+	return &request.NavigatorUpdateRequestDto{
+		TelegramUserId: in.TelegramUserId,
+		CountryCode:    in.CountryCode,
+		CountryName:    in.CountryName,
+		City:           in.City,
+		Latitude:       in.Latitude,
+		Longitude:      in.Longitude,
 	}
 }
 

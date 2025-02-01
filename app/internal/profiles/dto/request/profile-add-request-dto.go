@@ -29,5 +29,6 @@ type ProfileAddRequestDto struct {
 	Page                    uint64                 `json:"page"`
 	Size                    uint64                 `json:"size"`
 	IsLeftHand              bool                   `json:"isLeftHand"`
+	Measurement             enum.Measurement       `json:"measurement"`
 	Files                   []*entity.FileMetadata `json:"files"`
 }

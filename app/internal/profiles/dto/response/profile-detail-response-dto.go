@@ -7,6 +7,7 @@ type ProfileDetailResponseDto struct {
 	Description    string                      `json:"description"`
 	Navigator      *NavigatorDetailResponseDto `json:"navigator"`
 	Status         *StatusResponseDto          `json:"status"`
+	Settings       *SettingsResponseDto        `json:"settings"`
 	Block          *BlockResponseDto           `json:"block"`
 	Like           *LikeResponseDto            `json:"like"`
 	Images         []*ImageResponseDto         `json:"images"`

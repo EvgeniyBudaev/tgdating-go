@@ -37,5 +37,6 @@ func (factory *UnitOfWorkFactory) CreateUnit() *UnitOfWork {
 		psql.NewTelegramRepository(factory.logger, factory.db),
 		psql.NewStatusRepository(factory.logger, factory.db),
 		psql.NewPaymentRepository(factory.logger, factory.db),
+		psql.NewSettingsRepository(factory.logger, factory.db),
 	)
 }

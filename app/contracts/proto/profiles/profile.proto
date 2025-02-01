@@ -69,6 +69,10 @@ message StatusResponse {
   bool isLeftHand = 8; // интерфейс адаптирован под леую руку да/нет
 }
 
+message SettingsResponse {
+  string measurement = 1; // единицы измерения метрическая/американская
+}
+
 message BlockResponse {
   bool isBlocked = 1; // заблокирован пользователь да/нет
 }
@@ -112,7 +116,8 @@ message ProfileAddRequest {
   uint64 page = 21; // номер текущей страницы
   uint64 size = 22; // количество элементов на странице
   bool isLeftHand = 23; // интерфейс адаптирован под леую руку да/нет
-  repeated FileMetadata files = 24; // список файлов-изображений
+  string measurement = 24; // единицы измерения метрическая/американская
+  repeated FileMetadata files = 25; // список файлов-изображений
 }
 
 message ProfileAddResponse {
@@ -143,7 +148,8 @@ message ProfileUpdateRequest {
   uint64 page = 21; // номер текущей страницы
   uint64 size = 22; // количество элементов на странице
   bool isImages = 23; // наличие ранее сохранненых фотографий
-  repeated FileMetadata files = 24;
+  string measurement = 24; // единицы измерения метрическая/американская
+  repeated FileMetadata files = 25;
 }
 
 message ProfileFreezeRequest {
@@ -188,7 +194,8 @@ message ProfileResponse {
   NavigatorResponse navigator = 6; // объект навигатор
   FilterResponse filter = 7; // объект фильтр
   StatusResponse status = 8; // статус пользователя
-  repeated ImageResponse images = 9; // список изображений
+  SettingsResponse settings = 9; // статус пользователя
+  repeated ImageResponse images = 10; // список изображений
 }
 
 message ProfileGetDetailRequest {
@@ -208,9 +215,10 @@ message ProfileDetailResponse {
   string description = 4; // описание
   NavigatorDetailResponse navigator = 5; // объект навигатор
   StatusResponse status = 6; // статус пользователя
-  BlockResponse block = 7; // объект блок
-  LikeResponse like = 8; //  объект дайк
-  repeated ImageResponse images = 9; // список изображений
+  SettingsResponse settings = 7; // статус пользователя
+  BlockResponse block = 8; // объект блок
+  LikeResponse like = 9; //  объект дайк
+  repeated ImageResponse images = 10; // список изображений
 }
 
 message ProfileGetShortInfoRequest {
@@ -248,6 +256,7 @@ message ProfileListItemResponse {
   bool isOnline = 4; // пользователь онлайн да/нет
   bool isLiked = 5; // имеет лайк да/нет
   google.protobuf.Timestamp lastOnline = 6; // дата последнего входа в систему
+  string measurement = 7; // единицы измерения метрическая/американская
 }
 
 message ProfileListResponse {
@@ -413,6 +422,7 @@ message NavigatorUpdateResponse {
 message UpdateSettingsRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   bool isHiddenAge = 2; // показывать возраст до текущего пользователя да/нет
+  string measurement = 3; // единицы измерения метрическая/американская
 }
 
 message UpdateSettingsResponse {

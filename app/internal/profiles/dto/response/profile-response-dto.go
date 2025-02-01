@@ -9,5 +9,6 @@ type ProfileResponseDto struct {
 	Navigator      *NavigatorResponseDto `json:"navigator"`
 	Filter         *FilterResponseDto    `json:"filter"`
 	Status         *StatusResponseDto    `json:"status"`
+	Settings       *SettingsResponseDto  `json:"settings"`
 	Images         []*ImageResponseDto   `json:"images"`
 }

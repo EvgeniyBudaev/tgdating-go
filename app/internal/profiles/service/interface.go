@@ -96,3 +96,9 @@ type PaymentRepository interface {
 	Add(ctx context.Context, p *request.PaymentAddRequestRepositoryDto) (*response.ResponseDto, error)
 	FindLastByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.PaymentEntity, error)
 }
+
+type SettingsRepository interface {
+	Add(ctx context.Context, p *request.SettingsAddRequestRepositoryDto) (*response.ResponseDto, error)
+	Update(ctx context.Context, p *request.SettingsUpdateRequestRepositoryDto) (*response.ResponseDto, error)
+	FindByTelegramUserId(ctx context.Context, telegramUserId string) (*entity.SettingsEntity, error)
+}

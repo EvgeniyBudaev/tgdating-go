@@ -455,15 +455,12 @@ func (pc *ProfileController) CheckPremium(
 func (pc *ProfileController) UpdateSettings(
 	ctx context.Context, in *pb.UpdateSettingsRequest) (*pb.UpdateSettingsResponse, error) {
 	pc.logger.Info("PUT /api/v1/profiles/settings")
-	req := &request.ProfileUpdateSettingsRequestDto{
-		TelegramUserId: in.TelegramUserId,
-		IsHiddenAge:    in.IsHiddenAge,
-	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	req := profileMapper.MapControllerToUpdateSettingsRequest(in)
 	updatedSettings, err := pc.service.UpdateSettings(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	profileMapper := &mapper.ProfileControllerMapper{}
 	updatedSettingsResponse := profileMapper.MapControllerToUpdateSettingsResponse(updatedSettings)
 	return updatedSettingsResponse, nil
 }
@@ -471,19 +468,12 @@ func (pc *ProfileController) UpdateSettings(
 func (pc *ProfileController) UpdateCoordinates(
 	ctx context.Context, in *pb.NavigatorUpdateRequest) (*pb.NavigatorUpdateResponse, error) {
 	pc.logger.Info("PUT /api/v1/profiles/navigators")
-	req := &request.NavigatorUpdateRequestDto{
-		TelegramUserId: in.TelegramUserId,
-		CountryCode:    in.CountryCode,
-		CountryName:    in.CountryName,
-		City:           in.City,
-		Latitude:       in.Latitude,
-		Longitude:      in.Longitude,
-	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	req := profileMapper.MapControllerToUpdateCoordinatesRequest(in)
 	updatedCoordinates, err := pc.service.UpdateCoordinates(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	profileMapper := &mapper.ProfileControllerMapper{}
 	updatedCoordinatesResponse := profileMapper.MapControllerToUpdateCoordinatesResponse(updatedCoordinates)
 	return updatedCoordinatesResponse, nil
 }
