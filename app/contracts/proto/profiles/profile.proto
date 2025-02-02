@@ -238,6 +238,7 @@ message ProfileShortInfoResponse {
   uint64 page = 10; // номер текущей страницы
   uint64 size = 11; // количество элементов на странице
   string languageCode = 12; // язык пользователя
+  string measurement = 13; // единицы измерения метрическая/американская
 }
 
 message ProfileGetListRequest {
@@ -256,7 +257,6 @@ message ProfileListItemResponse {
   bool isOnline = 4; // пользователь онлайн да/нет
   bool isLiked = 5; // имеет лайк да/нет
   google.protobuf.Timestamp lastOnline = 6; // дата последнего входа в систему
-  string measurement = 7; // единицы измерения метрическая/американская
 }
 
 message ProfileListResponse {

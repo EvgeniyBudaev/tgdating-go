@@ -48,7 +48,7 @@ func (r *SettingsRepository) Add(
 func (r *SettingsRepository) Update(
 	ctx context.Context, p *request.SettingsUpdateRequestRepositoryDto) (*response.ResponseDto, error) {
 	query := "UPDATE dating.profile_settings SET measurement = $1, updated_at = $2" +
-		" WHERE telegram_user_id = $8"
+		" WHERE telegram_user_id = $3"
 	_, err := r.db.ExecContext(ctx, query, &p.Measurement, &p.UpdatedAt, &p.TelegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")

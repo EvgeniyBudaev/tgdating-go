@@ -23,7 +23,6 @@ import (
 
 const (
 	errorFilePath          = "internal/profiles/service/profile-service.go"
-	minDistance            = 100
 	maxCountUserComplaints = 10
 )
 
@@ -319,16 +318,7 @@ func (s *ProfileService) RestoreProfile(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	updateLastOnlineMapper := &mapper.ProfileUpdateLastOnlineMapper{}
-	updateLastOnlineRequest := updateLastOnlineMapper.MapToAddRequest(pr.TelegramUserId)
-	err := unitOfWork.ProfileRepository().UpdateLastOnline(ctx, updateLastOnlineRequest)
-	if err != nil {
-		errorMessage := s.getErrorMessage("RestoreProfile",
-			"ProfileRepository().UpdateLastOnline")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	_, err = unitOfWork.StatusRepository().Restore(ctx, pr.TelegramUserId)
+	_, err := unitOfWork.StatusRepository().Restore(ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("RestoreProfile",
 			"StatusRepository().Restore")
@@ -419,14 +409,10 @@ func (s *ProfileService) GetProfile(ctx context.Context, telegramUserId string,
 	if err := s.CheckProfileExists(ctx, telegramUserId); err != nil {
 		return nil, err
 	}
-	err := s.updateLastOnline(ctx, telegramUserId)
-	if err != nil {
-		return nil, err
-	}
 	if pr.Longitude != nil && pr.Latitude != nil {
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
-		_, err = s.updateNavigator(ctx, telegramUserId, pr.CountryCode, pr.CountryName, pr.City, longitude, latitude)
+		_, err := s.updateNavigator(ctx, telegramUserId, pr.CountryCode, pr.CountryName, pr.City, longitude, latitude)
 		if err != nil {
 			errorMessage := s.getErrorMessage("GetProfile", "updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
@@ -464,16 +450,10 @@ func (s *ProfileService) GetProfileDetail(ctx context.Context, viewedTelegramUse
 	if err := s.CheckProfileExists(ctx, telegramUserId); err != nil {
 		return nil, err
 	}
-	err := s.updateLastOnline(ctx, telegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("GetProfileDetail", "updateLastOnline")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
 	if pr.Longitude != nil && pr.Latitude != nil {
 		longitude := *pr.Longitude
 		latitude := *pr.Latitude
-		_, err = s.updateNavigator(ctx, telegramUserId, pr.CountryCode, pr.CountryName, pr.City, longitude, latitude)
+		_, err := s.updateNavigator(ctx, telegramUserId, pr.CountryCode, pr.CountryName, pr.City, longitude, latitude)
 		if err != nil {
 			errorMessage := s.getErrorMessage("GetProfileDetail", "updateNavigator")
 			s.logger.Debug(errorMessage, zap.Error(err))
@@ -754,13 +734,6 @@ func (s *ProfileService) UpdateFilter(
 		return nil, err
 	}
 	defer tx.Rollback()
-	err = s.updateLastOnline(ctx, req.TelegramUserId)
-	if err != nil {
-		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId",
-			"updateLastOnline")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapToUpdateRequest(req)
 	filterEntity, err := s.filterRepository.Update(ctx, filterRequest)

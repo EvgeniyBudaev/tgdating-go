@@ -172,6 +172,7 @@ func (pm *ProfileMapper) MapToShortInfoResponse(r *pb.ProfileShortInfoResponse) 
 		Page:           r.Page,
 		Size:           r.Size,
 		LanguageCode:   r.LanguageCode,
+		Measurement:    enum.Measurement(r.Measurement),
 	}
 }
 
@@ -284,7 +285,6 @@ func (pm *ProfileMapper) MapToListResponse(r *pb.ProfileListResponse) *response.
 				IsOnline:       c.IsOnline,
 				IsLiked:        c.IsLiked,
 				LastOnline:     c.LastOnline.AsTime(),
-				Measurement:    enum.Measurement(c.Measurement),
 			})
 		}
 	}

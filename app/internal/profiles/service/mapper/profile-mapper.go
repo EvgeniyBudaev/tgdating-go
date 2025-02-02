@@ -91,6 +91,7 @@ func (pm *ProfileMapper) MapToShortInfoResponse(
 		Page:           p.Page,
 		Size:           p.Size,
 		LanguageCode:   p.LanguageCode,
+		Measurement:    p.Measurement,
 	}
 }
 

@@ -212,6 +212,7 @@ func (pm *ProfileControllerMapper) MapControllerToShortInfoResponse(
 		Page:           r.Page,
 		Size:           r.Size,
 		LanguageCode:   r.LanguageCode,
+		Measurement:    string(r.Measurement),
 	}
 }
 
@@ -228,7 +229,6 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 				IsOnline:       c.IsOnline,
 				IsLiked:        c.IsLiked,
 				LastOnline:     lastOnlineTimestamp,
-				Measurement:    string(c.Measurement),
 			})
 		}
 	}
