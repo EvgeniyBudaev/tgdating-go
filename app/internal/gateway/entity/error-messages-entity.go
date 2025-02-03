@@ -33,6 +33,8 @@ func (e *ErrorMessagesEntity) GetBadRequest(locale string) string {
 		return "Données incorrectes dans la demande"
 	case "he":
 		return "נתונים שגויים בבקשה"
+	case "hi":
+		return "अनुरोध में ग़लत डेटा"
 	case "hr":
 		return "Netočni podaci u zahtjevu"
 	case "hu":
@@ -88,6 +90,8 @@ func (e *ErrorMessagesEntity) GetLessOrEqualMaxNumber(locale string, max int) st
 		return fmt.Sprintf("Doit être inférieur ou égal à %d", max)
 	case "he":
 		return fmt.Sprintf("חייב להיות קטן או שווה ל- %d", max)
+	case "hi":
+		return fmt.Sprintf("%d से कम या उसके बराबर होना चाहिए", max)
 	case "hr":
 		return fmt.Sprintf("Mora biti manje od ili jednako %d", max)
 	case "hu":
@@ -143,6 +147,8 @@ func (e *ErrorMessagesEntity) GetMoreOrEqualMinUint64Number(locale string, min u
 		return fmt.Sprintf("Doit être supérieur ou égal à %d", min)
 	case "he":
 		return fmt.Sprintf("חייב להיות גדול או שווה ל- %d", min)
+	case "hi":
+		return fmt.Sprintf("%d से अधिक या उसके बराबर होना चाहिए", min)
 	case "hr":
 		return fmt.Sprintf("Mora biti veći od ili jednak %d", min)
 	case "hu":
@@ -198,6 +204,8 @@ func (e *ErrorMessagesEntity) GetLessOrEqualMaxUint64Number(locale string, max u
 		return fmt.Sprintf("Doit être inférieur ou égal à %d", max)
 	case "he":
 		return fmt.Sprintf("חייב להיות קטן או שווה ל- %d", max)
+	case "hi":
+		return fmt.Sprintf("%d से कम या उसके बराबर होना चाहिए", max)
 	case "hr":
 		return fmt.Sprintf("Mora biti manje od ili jednako %d", max)
 	case "hu":
@@ -253,6 +261,8 @@ func (e *ErrorMessagesEntity) GetMaxSymbols(locale string, max int) string {
 		return fmt.Sprintf("Ne doit pas contenir plus de %d caractères", max)
 	case "he":
 		return fmt.Sprintf("חייב להיות לא יותר מ- %d תווים", max)
+	case "hi":
+		return fmt.Sprintf("%d वर्णों से अधिक नहीं होना चाहिए", max)
 	case "hr":
 		return fmt.Sprintf("Ne smije imati više od %d znakova", max)
 	case "hu":
@@ -308,6 +318,8 @@ func (e *ErrorMessagesEntity) GetFileMaxAmount(locale string, max int) string {
 		return fmt.Sprintf("Nombre maximum de fichiers %d", max)
 	case "he":
 		return fmt.Sprintf("מספר מקסימלי של קבצים %d", max)
+	case "hi":
+		return fmt.Sprintf("फ़ाइलों की अधिकतम संख्या %d", max)
 	case "hr":
 		return fmt.Sprintf("Maksimalan broj datoteka %d", max)
 	case "hu":
@@ -363,6 +375,8 @@ func (e *ErrorMessagesEntity) GetFileMaxSize(locale string, max int) string {
 		return fmt.Sprintf("Taille maximale du fichier %dMb", max)
 	case "he":
 		return fmt.Sprintf("גודל קובץ מקסימלי %dMB", max)
+	case "hi":
+		return fmt.Sprintf("अधिकतम फ़ाइल आकार %dMb", max)
 	case "hr":
 		return fmt.Sprintf("Maksimalna veličina datoteke %dMb", max)
 	case "hu":
@@ -418,6 +432,8 @@ func (e *ErrorMessagesEntity) GetNotEmpty(locale string) string {
 		return "Le champ ne peut pas être vide"
 	case "he":
 		return "שדה לא יכול להיות ריק"
+	case "hi":
+		return "फ़ील्ड खाली नहीं हो सकती"
 	case "hr":
 		return "Polje ne može biti prazno"
 	case "hu":
@@ -473,6 +489,8 @@ func (e *ErrorMessagesEntity) GetNonNegativeNumber(locale string) string {
 		return "Le nombre doit être positif"
 	case "he":
 		return "המספר חייב להיות חיובי"
+	case "hi":
+		return "संख्या धनात्मक होनी चाहिए"
 	case "hr":
 		return "Broj mora biti pozitivan"
 	case "hu":
