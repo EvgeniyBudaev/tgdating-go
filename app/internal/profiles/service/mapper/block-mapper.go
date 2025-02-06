@@ -11,13 +11,23 @@ type BlockMapper struct {
 }
 
 func (pm *BlockMapper) MapToAddRequest(
-	pr *request.BlockAddRequestDto) *request.BlockAddRequestRepositoryDto {
+	pr *request.BlockAddRequestDto, initiatorId *string) *request.BlockAddRequestRepositoryDto {
 	return &request.BlockAddRequestRepositoryDto{
 		TelegramUserId:        pr.TelegramUserId,
 		BlockedTelegramUserId: pr.BlockedTelegramUserId,
+		InitiatorId:           initiatorId,
 		IsBlocked:             true,
 		CreatedAt:             time.Now().UTC(),
 		UpdatedAt:             time.Now().UTC(),
+	}
+}
+
+func (pm *BlockMapper) MapToUpdateRequest(
+	pr *request.BlockAddRequestDto, initiatorId *string) *request.BlockUpdateRequestRepositoryDto {
+	return &request.BlockUpdateRequestRepositoryDto{
+		TelegramUserId:        pr.TelegramUserId,
+		BlockedTelegramUserId: pr.BlockedTelegramUserId,
+		InitiatorId:           initiatorId,
 	}
 }
 

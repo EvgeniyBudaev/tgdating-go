@@ -877,15 +877,21 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddReque
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-
+	blockMapper := &mapper.BlockMapper{}
 	if blockExists != nil {
-		_, err = unitOfWork.BlockRepository().Update(ctx, pr.TelegramUserId, pr.BlockedTelegramUserId)
+		blockRequest := blockMapper.MapToUpdateRequest(pr, &pr.TelegramUserId)
+		_, err = unitOfWork.BlockRepository().Update(ctx, blockRequest)
 		if err != nil {
 			errorMessage := s.getErrorMessage("AddBlock", "BlockRepository().Update")
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
-		_, err = unitOfWork.BlockRepository().Update(ctx, pr.BlockedTelegramUserId, pr.TelegramUserId)
+		prForViewedUser := &request.BlockAddRequestDto{
+			TelegramUserId:        pr.BlockedTelegramUserId,
+			BlockedTelegramUserId: pr.TelegramUserId,
+		}
+		blockForViewedUserRequest := blockMapper.MapToUpdateRequest(prForViewedUser, nil)
+		_, err = unitOfWork.BlockRepository().Update(ctx, blockForViewedUserRequest)
 		if err != nil {
 			errorMessage := s.getErrorMessage("AddBlock", "BlockRepository().Update")
 			s.logger.Debug(errorMessage, zap.Error(err))
@@ -893,20 +899,19 @@ func (s *ProfileService) AddBlock(ctx context.Context, pr *request.BlockAddReque
 		}
 	}
 	if blockExists == nil {
-		blockMapper := &mapper.BlockMapper{}
-		blockRequest := blockMapper.MapToAddRequest(pr)
-		prForViewedUser := &request.BlockAddRequestDto{
-			TelegramUserId:        pr.BlockedTelegramUserId,
-			BlockedTelegramUserId: pr.TelegramUserId,
-		}
-		blockForViewedUserRequest := blockMapper.MapToAddRequest(prForViewedUser)
-		_, err = unitOfWork.BlockRepository().Add(ctx, blockForViewedUserRequest)
+		blockRequest := blockMapper.MapToAddRequest(pr, &pr.TelegramUserId)
+		_, err = unitOfWork.BlockRepository().Add(ctx, blockRequest)
 		if err != nil {
 			errorMessage := s.getErrorMessage("AddBlock", "BlockRepository().Add")
 			s.logger.Debug(errorMessage, zap.Error(err))
 			return nil, err
 		}
-		_, err := unitOfWork.BlockRepository().Add(ctx, blockRequest)
+		prForViewedUser := &request.BlockAddRequestDto{
+			TelegramUserId:        pr.BlockedTelegramUserId,
+			BlockedTelegramUserId: pr.TelegramUserId,
+		}
+		blockForViewedUserRequest := blockMapper.MapToAddRequest(prForViewedUser, nil)
+		_, err := unitOfWork.BlockRepository().Add(ctx, blockForViewedUserRequest)
 		if err != nil {
 			errorMessage := s.getErrorMessage("AddBlock", "BlockRepository().Add")
 			s.logger.Debug(errorMessage, zap.Error(err))
@@ -1100,7 +1105,7 @@ func (s *ProfileService) AddComplaint(
 		TelegramUserId:        pr.TelegramUserId,
 		BlockedTelegramUserId: pr.CriminalTelegramUserId,
 	}
-	blockRequest := blockMapper.MapToAddRequest(br)
+	blockRequest := blockMapper.MapToAddRequest(br, &br.TelegramUserId)
 	_, err := unitOfWork.BlockRepository().Add(ctx, blockRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddComplaint", "BlockRepository().Add")
@@ -1111,7 +1116,7 @@ func (s *ProfileService) AddComplaint(
 		TelegramUserId:        pr.CriminalTelegramUserId,
 		BlockedTelegramUserId: pr.TelegramUserId,
 	}
-	blockForViewedUserRequest := blockMapper.MapToAddRequest(prForViewedUser)
+	blockForViewedUserRequest := blockMapper.MapToAddRequest(prForViewedUser, nil)
 	_, err = unitOfWork.BlockRepository().Add(ctx, blockForViewedUserRequest)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddComplaint", "BlockRepository().Add")
@@ -1394,12 +1399,16 @@ func (s *ProfileService) GetMessageLike(locale string) string {
 		return "Jsou tam sympatie! Začněte komunikovat"
 	case "de":
 		return "Es gibt Mitgefühl! Beginnen Sie mit der Kommunikation"
+	case "es":
+		return "¡Hay simpatía! Empezar a comunicar"
 	case "fi":
 		return "Sympatiaa on! Aloita kommunikointi"
 	case "fr":
 		return "Il y a de la sympathie ! Commencez à communiquer"
 	case "he":
 		return "יש סימפטיה! תתחיל לתקשר"
+	case "hi":
+		return "सहानुभूति है! संवाद करना शुरू करें"
 	case "hr":
 		return "Postoji simpatija! Počnite komunicirati"
 	case "hu":
@@ -1408,13 +1417,25 @@ func (s *ProfileService) GetMessageLike(locale string) string {
 		return "Ada simpati! Mulailah berkomunikasi"
 	case "it":
 		return "C'è simpatia! Inizia a comunicare"
+	case "ja":
+		return "共感があるよ！通信を開始する"
 	case "kk":
 		return "Жанашырлық бар! Қарым-қатынасты бастаңызe"
 	case "ko":
 		return "동정심이 있습니다! 소통을 시작해 보세요"
 	case "nl":
 		return "Er is sympathie! Begin met communiceren"
+	case "no":
+		return "Det er sympati! Begynn å kommunisere"
+	case "pt":
+		return "Existe simpatia! Comece a se comunicar"
+	case "sv":
+		return "Det finns sympati! Börja kommunicera"
+	case "uk":
+		return "Є симпатія! Починай спілкуватися"
+	case "zh":
+		return "有同情心！开始沟通"
 	default:
-		return fmt.Sprintf("Unsupported language: %s", locale)
+		return "There is sympathy! Start communicating"
 	}
 }

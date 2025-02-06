@@ -124,6 +124,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_blocks
     id                       BIGSERIAL    NOT NULL PRIMARY KEY,
     telegram_user_id         VARCHAR(255) NOT NULL,
     blocked_telegram_user_id VARCHAR(255) NOT NULL,
+    initiator_id             VARCHAR(255),
     is_blocked               BOOL         NOT NULL,
     created_at               TIMESTAMP    NOT NULL,
     updated_at               TIMESTAMP    NOT NULL,

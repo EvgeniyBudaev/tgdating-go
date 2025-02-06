@@ -31,12 +31,12 @@ func NewBlockRepository(l logger.Logger, db *sql.DB) *BlockRepository {
 
 func (r *BlockRepository) Add(
 	ctx context.Context, p *request.BlockAddRequestRepositoryDto) (*response.ResponseDto, error) {
-	query := "INSERT INTO dating.profile_blocks (telegram_user_id, blocked_telegram_user_id, is_blocked, created_at," +
-		" updated_at)" +
-		" VALUES ($1, $2, $3, $4, $5)" +
+	query := "INSERT INTO dating.profile_blocks (telegram_user_id, blocked_telegram_user_id, initiator_id," +
+		" is_blocked, created_at, updated_at)" +
+		" VALUES ($1, $2, $3, $4, $5, $6)" +
 		" RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.BlockedTelegramUserId, &p.IsBlocked, &p.CreatedAt,
-		&p.UpdatedAt)
+	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.BlockedTelegramUserId, &p.InitiatorId,
+		&p.IsBlocked, &p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -56,11 +56,11 @@ func (r *BlockRepository) Add(
 }
 
 func (r *BlockRepository) Update(
-	ctx context.Context, telegramUserId, blockedTelegramUserId string) (*response.ResponseDto, error) {
+	ctx context.Context, p *request.BlockUpdateRequestRepositoryDto) (*response.ResponseDto, error) {
 	updatedAt := time.Now().UTC()
-	query := "UPDATE dating.profile_blocks SET is_blocked = $3, updated_at = $4" +
+	query := "UPDATE dating.profile_blocks SET initiator_id = $3, is_blocked = $4, updated_at = $5" +
 		" WHERE telegram_user_id = $1 AND blocked_telegram_user_id = $2"
-	_, err := r.db.ExecContext(ctx, query, telegramUserId, blockedTelegramUserId, true, updatedAt)
+	_, err := r.db.ExecContext(ctx, query, p.TelegramUserId, p.BlockedTelegramUserId, p.InitiatorId, true, updatedAt)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
@@ -75,14 +75,15 @@ func (r *BlockRepository) Update(
 func (r *BlockRepository) GetBlockedList(ctx context.Context,
 	telegramUserId string) (*response.BlockedListResponseDto, error) {
 	query := "WITH filtered_profiles AS (" +
-		"SELECT pb.id, pb.telegram_user_id, pb.blocked_telegram_user_id, pb.is_blocked, pb.created_at, pb.updated_at," +
+		"SELECT pb.id, pb.telegram_user_id, pb.blocked_telegram_user_id, pb.initiator_id, pb.is_blocked," +
+		" pb.created_at, pb.updated_at," +
 		" (SELECT url FROM dating.profile_images pi" +
 		" JOIN dating.profile_image_statuses pis ON pi.id = pis.id" +
 		" WHERE pi.telegram_user_id = pb.blocked_telegram_user_id AND" +
 		" pis.is_blocked = false AND pis.is_private = false" +
 		" ORDER BY pi.created_at DESC LIMIT 1) AS url" +
 		" FROM dating.profile_blocks pb" +
-		" WHERE pb.telegram_user_id = $1 AND pb.is_blocked = true" +
+		" WHERE pb.telegram_user_id = $1 AND pb.initiator_id = $1 AND pb.is_blocked = true" +
 		" )" +
 		" SELECT blocked_telegram_user_id, url" +
 		" FROM filtered_profiles" +
@@ -130,10 +131,10 @@ func (r *BlockRepository) FindBlock(ctx context.Context, telegramUserId, blocked
 }
 
 func (r *BlockRepository) Unblock(ctx context.Context, p *request.UnblockRequestDto) (*response.ResponseDto, error) {
-	query := "UPDATE dating.profile_blocks SET is_blocked = $1, updated_at = $2" +
-		" WHERE telegram_user_id = $3 AND blocked_telegram_user_id = $4"
+	query := "UPDATE dating.profile_blocks SET initiator_id = $1, is_blocked = $2, updated_at = $3" +
+		" WHERE telegram_user_id = $4 AND blocked_telegram_user_id = $5"
 	updatedAt := time.Now().UTC()
-	_, err := r.db.ExecContext(ctx, query, false, updatedAt, p.TelegramUserId, p.BlockedTelegramUserId)
+	_, err := r.db.ExecContext(ctx, query, nil, false, updatedAt, p.TelegramUserId, p.BlockedTelegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Unblock", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))
