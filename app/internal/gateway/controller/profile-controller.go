@@ -650,7 +650,61 @@ func (pc *ProfileController) UpdateLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusUnauthorized)
 		}
+		locale := ctf.Get("Accept-Language")
+		if locale == "" {
+			locale = defaultLocale
+		}
 		profileMapper := &mapper.ProfileMapper{}
+		if req.IsLiked {
+			telegramRequest := profileMapper.MapToTelegramGetRequest(req.TelegramUserId)
+			telegramProfile, err := pc.proto.GetTelegram(ctx, telegramRequest)
+			if err != nil {
+				errorMessage := pc.getErrorMessage("UpdateLike",
+					"proto.GetTelegram")
+				pc.logger.Debug(errorMessage, zap.Error(err))
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+			}
+			likedTelegramRequest := profileMapper.MapToTelegramGetRequest(req.LikedTelegramUserId)
+			likedTelegramProfile, err := pc.proto.GetTelegram(ctx, likedTelegramRequest)
+			if err != nil {
+				errorMessage := pc.getErrorMessage("UpdateLike",
+					"proto.GetTelegram likedTelegramRequest")
+				pc.logger.Debug(errorMessage, zap.Error(err))
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+			}
+			imageRequest := profileMapper.MapToGetImageLastRequest(req.TelegramUserId)
+			lastImage, err := pc.proto.GetImageLastByTelegramUserId(ctx, imageRequest)
+			if err != nil {
+				errorMessage := pc.getErrorMessage("UpdateLike",
+					"proto.GetImageLastByTelegramUserId")
+				pc.logger.Debug(errorMessage, zap.Error(err))
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+			}
+			hc := &entity.HubContent{
+				LikedTelegramUserId: req.LikedTelegramUserId,
+				Message:             pc.GetMessageLike(likedTelegramProfile.LanguageCode),
+				Type:                "like",
+				UserImageUrl:        lastImage.Url,
+				Username:            telegramProfile.Username,
+			}
+			hubContentJson, err := json.Marshal(hc)
+			if err != nil {
+				errorMessage := pc.getErrorMessage("UpdateLike", "json.Marshal")
+				pc.logger.Debug(errorMessage, zap.Error(err))
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+			}
+			err = pc.kafkaWriter.WriteMessages(context.Background(),
+				kafka.Message{
+					Key:   []byte(req.LikedTelegramUserId),
+					Value: hubContentJson,
+				},
+			)
+			if err != nil {
+				errorMessage := pc.getErrorMessage("UpdateLike", "kafkaWriter.WriteMessages")
+				pc.logger.Debug(errorMessage, zap.Error(err))
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+			}
+		}
 		likeRequest := profileMapper.MapToLikeUpdateRequest(req)
 		likeUpdated, err := pc.proto.UpdateLike(ctx, likeRequest)
 		if err != nil {

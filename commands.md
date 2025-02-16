@@ -25,6 +25,11 @@ sudo systemctl restart postgresql
 go mod init github.com/EvgeniyBudaev/tgdating-go/app
 ```
 
+Обновление зависимости
+```
+go get -u name_dependency
+```
+
 Сборка
 ```
 go build -v ./cmd/
