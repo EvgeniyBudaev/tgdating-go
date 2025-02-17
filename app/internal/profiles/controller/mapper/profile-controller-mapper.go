@@ -125,7 +125,6 @@ func (pm *ProfileControllerMapper) MapControllerResponse(
 			IsHiddenDistance: r.Status.IsHiddenDistance,
 			IsInvisible:      r.Status.IsInvisible,
 			IsLeftHand:       r.Status.IsLeftHand,
-			IsOnline:         r.Status.IsOnline,
 			IsPremium:        r.Status.IsPremium,
 		},
 		Settings: &pb.SettingsResponse{
@@ -137,6 +136,7 @@ func (pm *ProfileControllerMapper) MapControllerResponse(
 
 func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 	r *response.ProfileDetailResponseDto) *pb.ProfileDetailResponse {
+	lastOnlineTimestamp := timestamppb.New(r.LastOnline)
 	var navigatorResponse *pb.NavigatorDetailResponse
 	if r.Navigator != nil {
 		navigatorResponse = &pb.NavigatorDetailResponse{
@@ -175,7 +175,9 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
 		Age:            r.Age,
+		Gender:         r.Gender,
 		Description:    r.Description,
+		LastOnline:     lastOnlineTimestamp,
 		Navigator:      navigatorResponse,
 		Status: &pb.StatusResponse{
 			IsBlocked:        r.Status.IsBlocked,
@@ -184,7 +186,6 @@ func (pm *ProfileControllerMapper) MapControllerToDetailResponse(
 			IsHiddenDistance: r.Status.IsHiddenDistance,
 			IsInvisible:      r.Status.IsInvisible,
 			IsLeftHand:       r.Status.IsLeftHand,
-			IsOnline:         r.Status.IsOnline,
 			IsPremium:        r.Status.IsPremium,
 		},
 		Settings: &pb.SettingsResponse{
@@ -226,7 +227,6 @@ func (pm *ProfileControllerMapper) MapControllerToListResponse(
 				TelegramUserId: c.TelegramUserId,
 				Distance:       c.Distance,
 				Url:            c.Url,
-				IsOnline:       c.IsOnline,
 				IsLiked:        c.IsLiked,
 				LastOnline:     lastOnlineTimestamp,
 			})

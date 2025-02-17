@@ -1,10 +1,17 @@
 package response
 
+import (
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/gateway/shared/enum"
+	"time"
+)
+
 type ProfileDetailResponseDto struct {
 	TelegramUserId string                      `json:"telegramUserId"`
 	DisplayName    string                      `json:"displayName"`
 	Age            uint64                      `json:"age"`
+	Gender         enum.Gender                 `json:"gender"`
 	Description    string                      `json:"description"`
+	LastOnline     time.Time                   `json:"lastOnline"`
 	Navigator      *NavigatorDetailResponseDto `json:"navigator"`
 	Status         *StatusResponseDto          `json:"status"`
 	Settings       *SettingsResponseDto        `json:"settings"`

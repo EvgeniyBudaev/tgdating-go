@@ -148,7 +148,6 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
 			IsHiddenDistance: r.Status.IsHiddenDistance,
 			IsInvisible:      r.Status.IsInvisible,
 			IsLeftHand:       r.Status.IsLeftHand,
-			IsOnline:         r.Status.IsOnline,
 			IsPremium:        r.Status.IsPremium,
 		},
 		Settings: &response.SettingsResponseDto{
@@ -227,7 +226,9 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 		TelegramUserId: r.TelegramUserId,
 		DisplayName:    r.DisplayName,
 		Age:            r.Age,
+		Gender:         enum.Gender(r.Gender),
 		Description:    r.Description,
+		LastOnline:     r.LastOnline.AsTime(),
 		Navigator:      navigatorResponse,
 		Status: &response.StatusResponseDto{
 			IsBlocked:        r.Status.IsBlocked,
@@ -236,7 +237,6 @@ func (pm *ProfileMapper) MapToDetailResponse(r *pb.ProfileDetailResponse) *respo
 			IsHiddenDistance: r.Status.IsHiddenDistance,
 			IsInvisible:      r.Status.IsInvisible,
 			IsLeftHand:       r.Status.IsLeftHand,
-			IsOnline:         r.Status.IsOnline,
 			IsPremium:        r.Status.IsPremium,
 		},
 		Settings: &response.SettingsResponseDto{
@@ -282,7 +282,6 @@ func (pm *ProfileMapper) MapToListResponse(r *pb.ProfileListResponse) *response.
 				TelegramUserId: c.TelegramUserId,
 				Distance:       c.Distance,
 				Url:            c.Url,
-				IsOnline:       c.IsOnline,
 				IsLiked:        c.IsLiked,
 				LastOnline:     c.LastOnline.AsTime(),
 			})

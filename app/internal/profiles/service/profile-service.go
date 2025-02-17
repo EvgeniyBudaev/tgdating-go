@@ -1323,17 +1323,6 @@ func (s *ProfileService) updateNavigator(ctx context.Context, telegramUserId str
 	return navigatorResponse, nil
 }
 
-func (s *ProfileService) getNowUtc() time.Time {
-	return time.Now().UTC()
-}
-
-func (s *ProfileService) checkIsOnline(lastOnline time.Time) bool {
-	now := s.getNowUtc()
-	duration := now.Sub(lastOnline)
-	minutes := duration.Minutes()
-	return minutes < 5
-}
-
 func (s *ProfileService) replaceFileName(filename string) string {
 	// Получаем текущее время
 	now := time.Now().UTC()

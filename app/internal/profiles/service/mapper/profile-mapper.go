@@ -20,7 +20,6 @@ func (pm *ProfileMapper) MapToResponse(
 		IsHiddenDistance: p.Status.IsHiddenDistance,
 		IsInvisible:      p.Status.IsInvisible,
 		IsLeftHand:       p.Status.IsLeftHand,
-		IsOnline:         p.Status.IsOnline,
 		IsPremium:        isPremium,
 	}
 	st := &response.SettingsResponseDto{
@@ -57,7 +56,6 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		IsHiddenDistance: p.Status.IsHiddenDistance,
 		IsInvisible:      p.Status.IsInvisible,
 		IsLeftHand:       p.Status.IsLeftHand,
-		IsOnline:         p.Status.IsOnline,
 		IsPremium:        isPremium,
 	}
 	st := &response.SettingsResponseDto{
@@ -67,7 +65,9 @@ func (pm *ProfileMapper) MapToDetailResponse(
 		TelegramUserId: p.TelegramUserId,
 		DisplayName:    p.DisplayName,
 		Age:            p.Age,
+		Gender:         p.Gender,
 		Description:    p.Description,
+		LastOnline:     p.LastOnline,
 		Navigator:      navigator,
 		Status:         s,
 		Settings:       st,

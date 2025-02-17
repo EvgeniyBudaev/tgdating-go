@@ -7,5 +7,4 @@ type StatusResponseRepositoryDto struct {
 	IsHiddenDistance bool `json:"isHiddenDistance"`
 	IsInvisible      bool `json:"isInvisible"`
 	IsLeftHand       bool `json:"isLeftHand"`
-	IsOnline         bool `json:"isOnline"`
 }

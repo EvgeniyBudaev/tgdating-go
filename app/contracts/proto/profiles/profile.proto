@@ -62,11 +62,10 @@ message StatusResponse {
   bool isBlocked = 1; // заблокирован пользователь да/нет
   bool isFrozen = 2; // заморожен пользователь да/нет
   bool isInvisible = 3; // неведимка да/нет
-  bool isOnline = 4; // онлайн да/нет
-  bool isPremium = 5; // наличие премиум да/нет
-  bool isHiddenDistance = 6; // показывать дистанцию до текущего пользователя да/нет
-  bool isHiddenAge = 7; // показывать возраст до текущего пользователя да/нет
-  bool isLeftHand = 8; // интерфейс адаптирован под леую руку да/нет
+  bool isPremium = 4; // наличие премиум да/нет
+  bool isHiddenDistance = 5; // показывать дистанцию до текущего пользователя да/нет
+  bool isHiddenAge = 6; // показывать возраст до текущего пользователя да/нет
+  bool isLeftHand = 7; // интерфейс адаптирован под леую руку да/нет
 }
 
 message SettingsResponse {
@@ -212,13 +211,15 @@ message ProfileDetailResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   string displayName = 2; // Имя для отображения
   uint64 age = 3; // возраст
-  string description = 4; // описание
-  NavigatorDetailResponse navigator = 5; // объект навигатор
-  StatusResponse status = 6; // статус пользователя
-  SettingsResponse settings = 7; // статус пользователя
-  BlockResponse block = 8; // объект блок
-  LikeResponse like = 9; //  объект дайк
-  repeated ImageResponse images = 10; // список изображений
+  string gender = 4; // пол
+  string description = 5; // описание
+  google.protobuf.Timestamp lastOnline = 6; // дата последнего входа в систему
+  NavigatorDetailResponse navigator = 7; // объект навигатор
+  StatusResponse status = 8; // статус пользователя
+  SettingsResponse settings = 9; // статус пользователя
+  BlockResponse block = 10; // объект блок
+  LikeResponse like = 11; //  объект дайк
+  repeated ImageResponse images = 12; // список изображений
 }
 
 message ProfileGetShortInfoRequest {
@@ -254,9 +255,8 @@ message ProfileListItemResponse {
   string telegramUserId = 1; // id пользователя в телеграм
   optional double distance = 2; // дистанция
   string url = 3; // url изображения
-  bool isOnline = 4; // пользователь онлайн да/нет
-  bool isLiked = 5; // имеет лайк да/нет
-  google.protobuf.Timestamp lastOnline = 6; // дата последнего входа в систему
+  bool isLiked = 4; // имеет лайк да/нет
+  google.protobuf.Timestamp lastOnline = 5; // дата последнего входа в систему
 }
 
 message ProfileListResponse {
