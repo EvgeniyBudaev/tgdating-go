@@ -948,6 +948,8 @@ func (pc *ProfileController) GetMessageLike(locale string) string {
 		return "Il y a de la sympathie ! Commencez à communiquer"
 	case "he":
 		return "יש סימפטיה! תתחיל לתקשר"
+	case "hi":
+		return "सहानुभूति है! संवाद शुरू करें"
 	case "hr":
 		return "Postoji simpatija! Počnite komunicirati"
 	case "hu":

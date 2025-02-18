@@ -46,6 +46,8 @@ message FilterResponse {
   double distance = 4; // дистанция
   uint64 page = 5; // номер текущей страницы
   uint64 size = 6; // количество элементов на странице
+  bool isLiked = 7; // показывать пользователей у которых лайк
+  bool isOnline = 8; // показывать только онлайн пользователей
 }
 
 message TelegramResponse {
@@ -114,9 +116,11 @@ message ProfileAddRequest {
   double distance = 20; // дистанция
   uint64 page = 21; // номер текущей страницы
   uint64 size = 22; // количество элементов на странице
-  bool isLeftHand = 23; // интерфейс адаптирован под леую руку да/нет
-  string measurement = 24; // единицы измерения метрическая/американская
-  repeated FileMetadata files = 25; // список файлов-изображений
+  bool isLiked = 23; // показывать пользователей у которых лайк
+  bool isOnline = 24; // показывать только онлайн пользователей
+  bool isLeftHand = 25; // интерфейс адаптирован под леую руку да/нет
+  string measurement = 26; // единицы измерения метрическая/американская
+  repeated FileMetadata files = 27; // список файлов-изображений
 }
 
 message ProfileAddResponse {
@@ -146,9 +150,11 @@ message ProfileUpdateRequest {
   double distance = 20; // дистанция
   uint64 page = 21; // номер текущей страницы
   uint64 size = 22; // количество элементов на странице
-  bool isImages = 23; // наличие ранее сохранненых фотографий
-  string measurement = 24; // единицы измерения метрическая/американская
-  repeated FileMetadata files = 25;
+  bool isLiked = 23; // показывать пользователей у которых лайк
+  bool isOnline = 24; // показывать только онлайн пользователей
+  bool isImages = 25; // наличие ранее сохранненых фотографий
+  string measurement = 26; // единицы измерения метрическая/американская
+  repeated FileMetadata files = 27;
 }
 
 message ProfileFreezeRequest {
@@ -232,14 +238,9 @@ message ProfileShortInfoResponse {
   bool isFrozen = 3; // заморожен пользователь да/нет
   bool isPremium = 4; // активирован премиум аккаунт да/нет
   google.protobuf.Timestamp availableUntil = 5; // премиум действует до
-  string searchGender = 6; // поиск по половому признаку
-  uint64 ageFrom = 7; // возраст от
-  uint64 ageTo = 8; // возраст до
-  double distance = 9; // дистанция
-  uint64 page = 10; // номер текущей страницы
-  uint64 size = 11; // количество элементов на странице
-  string languageCode = 12; // язык пользователя
-  string measurement = 13; // единицы измерения метрическая/американская
+  string languageCode = 6; // язык пользователя
+  string measurement = 7; // единицы измерения метрическая/американская
+  FilterResponse filter = 8; // объект фильтр
 }
 
 message ProfileGetListRequest {
@@ -311,6 +312,8 @@ message FilterUpdateRequest {
   string searchGender = 2; // поиск по половому признаку
   uint64 ageFrom = 3; // возраст от
   uint64 ageTo = 4; // возраст до
+  bool isLiked = 5; // показывать пользователей у которых лайк
+  bool isOnline = 6; // показывать только онлайн пользователей
 }
 
 message TelegramGetRequest {

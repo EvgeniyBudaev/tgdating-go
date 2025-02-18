@@ -7,4 +7,6 @@ type FilterResponseDto struct {
 	Distance     float64 `json:"distance"`
 	Page         uint64  `json:"page"`
 	Size         uint64  `json:"size"`
+	IsLiked      bool    `json:"isLiked"`
+	IsOnline     bool    `json:"isOnline"`
 }

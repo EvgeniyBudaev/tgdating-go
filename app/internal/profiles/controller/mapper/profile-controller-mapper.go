@@ -74,6 +74,8 @@ func (pm *ProfileControllerMapper) MapControllerToUpdateRequest(
 		Distance:                in.Distance,
 		Page:                    in.Page,
 		Size:                    in.Size,
+		IsLiked:                 in.IsLiked,
+		IsOnline:                in.IsOnline,
 		IsImages:                in.IsImages,
 		Measurement:             enum.Measurement(in.Measurement),
 		Files:                   fileList,
@@ -117,6 +119,8 @@ func (pm *ProfileControllerMapper) MapControllerResponse(
 			Distance:     r.Filter.Distance,
 			Page:         r.Filter.Page,
 			Size:         r.Filter.Size,
+			IsLiked:      r.Filter.IsLiked,
+			IsOnline:     r.Filter.IsOnline,
 		},
 		Status: &pb.StatusResponse{
 			IsBlocked:        r.Status.IsBlocked,
@@ -206,14 +210,18 @@ func (pm *ProfileControllerMapper) MapControllerToShortInfoResponse(
 		IsFrozen:       r.IsFrozen,
 		IsPremium:      r.IsPremium,
 		AvailableUntil: availableUntilTimestamp,
-		SearchGender:   r.SearchGender,
-		AgeFrom:        r.AgeFrom,
-		AgeTo:          r.AgeTo,
-		Distance:       r.Distance,
-		Page:           r.Page,
-		Size:           r.Size,
 		LanguageCode:   r.LanguageCode,
 		Measurement:    string(r.Measurement),
+		Filter: &pb.FilterResponse{
+			SearchGender: r.Filter.SearchGender,
+			AgeFrom:      r.Filter.AgeFrom,
+			AgeTo:        r.Filter.AgeTo,
+			Distance:     r.Filter.Distance,
+			Page:         r.Filter.Page,
+			Size:         r.Filter.Size,
+			IsLiked:      r.Filter.IsLiked,
+			IsOnline:     r.Filter.IsOnline,
+		},
 	}
 }
 
@@ -267,6 +275,8 @@ func (pm *ProfileControllerMapper) MapControllerToFilterResponse(
 		Distance:     r.Distance,
 		Page:         r.Page,
 		Size:         r.Size,
+		IsLiked:      r.IsLiked,
+		IsOnline:     r.IsOnline,
 	}
 }
 

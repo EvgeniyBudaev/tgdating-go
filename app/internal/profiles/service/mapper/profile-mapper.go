@@ -84,14 +84,9 @@ func (pm *ProfileMapper) MapToShortInfoResponse(
 		IsFrozen:       p.IsFrozen,
 		IsPremium:      pr.IsPremium,
 		AvailableUntil: pr.AvailableUntil,
-		SearchGender:   p.SearchGender,
-		AgeFrom:        p.AgeFrom,
-		AgeTo:          p.AgeTo,
-		Distance:       p.Distance,
-		Page:           p.Page,
-		Size:           p.Size,
 		LanguageCode:   p.LanguageCode,
 		Measurement:    p.Measurement,
+		Filter:         p.Filter,
 	}
 }
 
@@ -138,5 +133,7 @@ func (pm *ProfileMapper) MapToListRequest(
 		Distance:       f.Distance,
 		Page:           f.Page,
 		Size:           f.Size,
+		IsLiked:        f.IsLiked,
+		IsOnline:       f.IsOnline,
 	}
 }

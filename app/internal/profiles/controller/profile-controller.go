@@ -297,6 +297,8 @@ func (pc *ProfileController) UpdateFilter(
 		SearchGender:   in.SearchGender,
 		AgeFrom:        in.AgeFrom,
 		AgeTo:          in.AgeTo,
+		IsLiked:        in.IsLiked,
+		IsOnline:       in.IsOnline,
 	}
 	filterUpdated, err := pc.service.UpdateFilter(ctx, req)
 	if err != nil {

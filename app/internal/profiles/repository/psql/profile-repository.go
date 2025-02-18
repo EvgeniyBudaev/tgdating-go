@@ -116,6 +116,8 @@ func (r *ProfileRepository) GetProfile(
 		" pf.distance AS distance," +
 		" pf.page AS page," +
 		" pf.size AS size," +
+		" pf.is_liked AS is_liked," +
+		" pf.is_online AS is_online," +
 		" pst.measurement AS measurement" +
 		" FROM dating.profiles p" +
 		" JOIN dating.profile_statuses ps ON ps.telegram_user_id = p.telegram_user_id" +
@@ -126,7 +128,8 @@ func (r *ProfileRepository) GetProfile(
 		" )" +
 		" SELECT telegram_user_id, display_name, age, gender, description," +
 		" is_blocked, is_frozen, is_hidden_age, is_hidden_distance, is_invisible, is_left_hand," +
-		" longitude, latitude, search_gender, age_from, age_to, distance, page, size, measurement" +
+		" longitude, latitude, search_gender, age_from, age_to, distance, page, size," +
+		" is_liked, is_online, measurement" +
 		" FROM profile"
 	row := r.db.QueryRowContext(ctx, query, telegramUserId)
 	if row == nil {
@@ -136,7 +139,8 @@ func (r *ProfileRepository) GetProfile(
 	}
 	err := row.Scan(&p.TelegramUserId, &p.DisplayName, &p.Age, &p.Gender, &p.Description,
 		&s.IsBlocked, &s.IsFrozen, &s.IsHiddenAge, &s.IsHiddenDistance, &s.IsInvisible, &s.IsLeftHand,
-		&longitude, &latitude, &f.SearchGender, &f.AgeFrom, &f.AgeTo, &f.Distance, &f.Page, &f.Size, &st.Measurement)
+		&longitude, &latitude, &f.SearchGender, &f.AgeFrom, &f.AgeTo, &f.Distance, &f.Page, &f.Size,
+		&f.IsLiked, &f.IsOnline, &st.Measurement)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("GetProfile", "Scan")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
@@ -280,9 +284,10 @@ func (r *ProfileRepository) GetDetail(ctx context.Context,
 
 func (r *ProfileRepository) GetShortInfo(
 	ctx context.Context, telegramUserId string) (*response.ProfileShortInfoResponseRepositoryDto, error) {
+	f := &response.FilterResponseDto{}
 	p := &response.ProfileShortInfoResponseRepositoryDto{}
-	query := "SELECT p.telegram_user_id, ps.is_blocked, ps.is_frozen," +
-		" pf.search_gender, pf.age_from, pf.age_to, pf.distance, pf.page, pf.size, pt.language_code, pst.measurement" +
+	query := "SELECT p.telegram_user_id, ps.is_blocked, ps.is_frozen, pt.language_code, pst.measurement," +
+		" pf.search_gender, pf.age_from, pf.age_to, pf.distance, pf.page, pf.size, pf.is_liked, pf.is_online" +
 		" FROM dating.profiles p" +
 		" JOIN dating.profile_statuses ps ON ps.telegram_user_id = p.telegram_user_id" +
 		" JOIN dating.profile_settings pst ON pst.telegram_user_id = p.telegram_user_id" +
@@ -295,8 +300,8 @@ func (r *ProfileRepository) GetShortInfo(
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
 		return nil, ErrNotRowFound
 	}
-	err := row.Scan(&p.TelegramUserId, &p.IsBlocked, &p.IsFrozen, &p.SearchGender,
-		&p.AgeFrom, &p.AgeTo, &p.Distance, &p.Page, &p.Size, &p.LanguageCode, &p.Measurement)
+	err := row.Scan(&p.TelegramUserId, &p.IsBlocked, &p.IsFrozen, &p.LanguageCode, &p.Measurement, &f.SearchGender,
+		&f.AgeFrom, &f.AgeTo, &f.Distance, &f.Page, &f.Size, &f.IsLiked, &f.IsOnline)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		errorMessage := r.getErrorMessage("GetShortInfo", "Scan")
 		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
@@ -306,6 +311,14 @@ func (r *ProfileRepository) GetShortInfo(
 		errorMessage := r.getErrorMessage("GetShortInfo", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
+	}
+	p = &response.ProfileShortInfoResponseRepositoryDto{
+		TelegramUserId: p.TelegramUserId,
+		IsBlocked:      p.IsBlocked,
+		IsFrozen:       p.IsFrozen,
+		LanguageCode:   p.LanguageCode,
+		Measurement:    p.Measurement,
+		Filter:         f,
 	}
 	return p, nil
 }
@@ -342,14 +355,16 @@ func (r *ProfileRepository) SelectList(ctx context.Context,
 		" ($2 = 'all' OR p.gender = $2) AND p.telegram_user_id <> $1 AND" +
 		" (pb.id IS NULL OR pb.is_blocked = false)" +
 		" AND p.last_online >= NOW() AT TIME ZONE 'UTC' - INTERVAL '1 month'" +
+		" AND ($9 = false OR p.last_online >= NOW() AT TIME ZONE 'UTC' - INTERVAL '5 minutes')" +
 		" )" +
 		" SELECT telegram_user_id, last_online, distance, url, is_liked" +
 		" FROM filtered_profiles" +
 		" WHERE distance IS NULL OR (distance < $5 * 1000 AND distance IS NOT NULL)" +
+		" AND ($8 = false OR is_liked = true)" +
 		" ORDER BY CASE WHEN distance IS NULL THEN 1 ELSE 0 END, distance ASC, last_online DESC" +
 		" LIMIT $6 OFFSET $7"
 	rows, err := r.db.QueryContext(ctx, query, telegramUserId, pr.SearchGender, pr.AgeFrom, pr.AgeTo, pr.Distance,
-		pr.Size, offset)
+		pr.Size, offset, pr.IsLiked, pr.IsOnline)
 	if err != nil {
 		errorMessage := r.getErrorMessage("SelectListByTelegramUserId",
 			"QueryContext")

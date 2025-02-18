@@ -36,6 +36,8 @@ func (pm *ProfileMapper) MapToAddRequest(
 		Distance:                r.Distance,
 		Page:                    r.Page,
 		Size:                    r.Size,
+		IsLiked:                 r.IsLiked,
+		IsOnline:                r.IsOnline,
 		IsLeftHand:              r.IsLeftHand,
 		Measurement:             string(r.Measurement),
 		Files:                   fileList,
@@ -67,6 +69,8 @@ func (pm *ProfileMapper) MapToUpdateRequest(
 		Distance:                r.Distance,
 		Page:                    r.Page,
 		Size:                    r.Size,
+		IsLiked:                 r.IsLiked,
+		IsOnline:                r.IsOnline,
 		IsImages:                r.IsImages,
 		Measurement:             string(r.Measurement),
 		Files:                   fileList,
@@ -140,6 +144,8 @@ func (pm *ProfileMapper) MapToByTelegramUserIdResponse(
 			Distance:     r.Filter.Distance,
 			Page:         r.Filter.Page,
 			Size:         r.Filter.Size,
+			IsLiked:      r.Filter.IsLiked,
+			IsOnline:     r.Filter.IsOnline,
 		},
 		Status: &response.StatusResponseDto{
 			IsBlocked:        r.Status.IsBlocked,
@@ -164,14 +170,18 @@ func (pm *ProfileMapper) MapToShortInfoResponse(r *pb.ProfileShortInfoResponse) 
 		IsFrozen:       r.IsFrozen,
 		IsPremium:      r.IsPremium,
 		AvailableUntil: r.AvailableUntil.AsTime(),
-		SearchGender:   r.SearchGender,
-		AgeFrom:        r.AgeFrom,
-		AgeTo:          r.AgeTo,
-		Distance:       r.Distance,
-		Page:           r.Page,
-		Size:           r.Size,
 		LanguageCode:   r.LanguageCode,
 		Measurement:    enum.Measurement(r.Measurement),
+		Filter: &response.FilterResponseDto{
+			SearchGender: r.Filter.SearchGender,
+			AgeFrom:      r.Filter.AgeFrom,
+			AgeTo:        r.Filter.AgeTo,
+			Distance:     r.Filter.Distance,
+			Page:         r.Filter.Page,
+			Size:         r.Filter.Size,
+			IsLiked:      r.Filter.IsLiked,
+			IsOnline:     r.Filter.IsOnline,
+		},
 	}
 }
 
@@ -336,6 +346,8 @@ func (pm *ProfileMapper) MapToFilterUpdateRequest(r *request.FilterUpdateRequest
 		SearchGender:   r.SearchGender,
 		AgeFrom:        r.AgeFrom,
 		AgeTo:          r.AgeTo,
+		IsLiked:        r.IsLiked,
+		IsOnline:       r.IsOnline,
 	}
 }
 

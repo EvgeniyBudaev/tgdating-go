@@ -727,25 +727,30 @@ func (s *ProfileService) GetFilter(ctx context.Context, telegramUserId string) (
 
 func (s *ProfileService) UpdateFilter(
 	ctx context.Context, req *request.FilterUpdateRequestDto) (*response.FilterResponseDto, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId", "Begin")
-		s.logger.Debug(errorMessage, zap.Error(err))
-		return nil, err
-	}
-	defer tx.Rollback()
+	unitOfWork := s.uwf.CreateUnit()
 	filterMapper := &mapper.FilterMapper{}
 	filterRequest := filterMapper.MapToUpdateRequest(req)
-	filterEntity, err := s.filterRepository.Update(ctx, filterRequest)
+	filterEntity, err := unitOfWork.FilterRepository().Update(ctx, filterRequest)
 	if err != nil {
-		errorMessage := s.getErrorMessage("GetFilterByTelegramUserId",
-			"filterRepository.Update")
+		errorMessage := s.getErrorMessage("UpdateFilter", "filterRepository.Update")
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
 	filterResponse := filterMapper.MapToResponse(filterEntity)
-	tx.Commit()
-	return filterResponse, nil
+	defer func() {
+		if err != nil {
+			if err := unitOfWork.Rollback(ctx); err != nil {
+				errorMessage := s.getErrorMessage("UpdateFilter", "Rollback")
+				s.logger.Debug(errorMessage, zap.Error(err))
+			}
+		}
+	}()
+	if err = unitOfWork.Commit(ctx); err != nil {
+		errorMessage := s.getErrorMessage("UpdateFilter", "Commit")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	return filterResponse, err
 }
 
 func (s *ProfileService) GetTelegram(

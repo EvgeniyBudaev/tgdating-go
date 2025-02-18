@@ -19,6 +19,8 @@ func (pm *FilterMapper) MapToResponse(
 		Distance:     pe.Distance,
 		Page:         pe.Page,
 		Size:         pe.Size,
+		IsLiked:      pe.IsLiked,
+		IsOnline:     pe.IsOnline,
 	}
 }
 
@@ -32,6 +34,8 @@ func (pm *FilterMapper) MapToAddRequest(
 		Distance:       pr.Distance,
 		Page:           pr.Page,
 		Size:           pr.Size,
+		IsLiked:        pr.IsLiked,
+		IsOnline:       pr.IsOnline,
 		CreatedAt:      time.Now().UTC(),
 		UpdatedAt:      time.Now().UTC(),
 	}
@@ -44,6 +48,8 @@ func (pm *FilterMapper) MapToUpdateRequest(
 		SearchGender:   fr.SearchGender,
 		AgeFrom:        fr.AgeFrom,
 		AgeTo:          fr.AgeTo,
+		IsLiked:        fr.IsLiked,
+		IsOnline:       fr.IsOnline,
 		UpdatedAt:      time.Now().UTC(),
 	}
 }
@@ -55,6 +61,8 @@ func (pm *FilterMapper) MapProfileToUpdateRequest(
 		SearchGender:   string(pr.SearchGender),
 		AgeFrom:        pr.AgeFrom,
 		AgeTo:          pr.AgeTo,
+		IsLiked:        pr.IsLiked,
+		IsOnline:       pr.IsOnline,
 		UpdatedAt:      time.Now().UTC(),
 	}
 }

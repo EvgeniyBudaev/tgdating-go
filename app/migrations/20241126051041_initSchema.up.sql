@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS dating.profile_payments
     currency         VARCHAR(255) NOT NULL,
     tariff           VARCHAR(255) NOT NULL,
     created_at       TIMESTAMP    NOT NULL,
-    available_until       TIMESTAMP    NOT NULL,
+    available_until  TIMESTAMP    NOT NULL,
     CONSTRAINT fk_profile_payments_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
 );
 
@@ -88,6 +88,8 @@ CREATE TABLE IF NOT EXISTS dating.profile_filters
     distance         REAL         NOT NULL,
     page             INTEGER      NOT NULL,
     size             INTEGER      NOT NULL,
+    is_liked         BOOL         NOT NULL,
+    is_online        BOOL         NOT NULL,
     created_at       TIMESTAMP    NOT NULL,
     updated_at       TIMESTAMP    NOT NULL,
     CONSTRAINT fk_profile_filters_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
@@ -144,10 +146,10 @@ CREATE TABLE IF NOT EXISTS dating.profile_complaints
 
 CREATE TABLE IF NOT EXISTS dating.profile_settings
 (
-    id                        BIGSERIAL    NOT NULL PRIMARY KEY,
-    telegram_user_id          VARCHAR(255) NOT NULL,
-    measurement               VARCHAR(255) NOT NULL,
-    created_at                TIMESTAMP    NOT NULL,
-    updated_at                TIMESTAMP    NOT NULL,
+    id               BIGSERIAL    NOT NULL PRIMARY KEY,
+    telegram_user_id VARCHAR(255) NOT NULL,
+    measurement      VARCHAR(255) NOT NULL,
+    created_at       TIMESTAMP    NOT NULL,
+    updated_at       TIMESTAMP    NOT NULL,
     CONSTRAINT fk_profile_settings_telegram_user_id FOREIGN KEY (telegram_user_id) REFERENCES dating.profiles (telegram_user_id) ON DELETE CASCADE
 );
