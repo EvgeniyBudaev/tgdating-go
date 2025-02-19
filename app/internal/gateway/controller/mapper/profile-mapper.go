@@ -346,6 +346,7 @@ func (pm *ProfileMapper) MapToFilterUpdateRequest(r *request.FilterUpdateRequest
 		SearchGender:   r.SearchGender,
 		AgeFrom:        r.AgeFrom,
 		AgeTo:          r.AgeTo,
+		Distance:       r.Distance,
 		IsLiked:        r.IsLiked,
 		IsOnline:       r.IsOnline,
 	}

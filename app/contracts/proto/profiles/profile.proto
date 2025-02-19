@@ -312,8 +312,9 @@ message FilterUpdateRequest {
   string searchGender = 2; // поиск по половому признаку
   uint64 ageFrom = 3; // возраст от
   uint64 ageTo = 4; // возраст до
-  bool isLiked = 5; // показывать пользователей у которых лайк
-  bool isOnline = 6; // показывать только онлайн пользователей
+  double distance = 5; // дистанция
+  bool isLiked = 6; // показывать пользователей у которых лайк
+  bool isOnline = 7; // показывать только онлайн пользователей
 }
 
 message TelegramGetRequest {

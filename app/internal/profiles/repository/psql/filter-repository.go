@@ -50,10 +50,10 @@ func (r *FilterRepository) Add(
 func (r *FilterRepository) Update(
 	ctx context.Context, p *request.FilterUpdateRequestRepositoryDto) (*entity.FilterEntity, error) {
 	query := "UPDATE dating.profile_filters SET search_gender = $1, age_from = $2, age_to = $3," +
-		" is_liked = $4, is_online = $5, updated_at = $6" +
-		" WHERE telegram_user_id = $7"
+		" distance = $4, is_liked = $5, is_online = $6, updated_at = $7" +
+		" WHERE telegram_user_id = $8"
 	_, err := r.db.ExecContext(ctx, query, &p.SearchGender, &p.AgeFrom, &p.AgeTo,
-		&p.IsLiked, &p.IsOnline, &p.UpdatedAt, &p.TelegramUserId)
+		&p.Distance, &p.IsLiked, &p.IsOnline, &p.UpdatedAt, &p.TelegramUserId)
 	if err != nil {
 		errorMessage := r.getErrorMessage("Update", "ExecContext")
 		r.logger.Debug(errorMessage, zap.Error(err))

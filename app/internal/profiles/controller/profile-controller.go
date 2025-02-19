@@ -297,6 +297,7 @@ func (pc *ProfileController) UpdateFilter(
 		SearchGender:   in.SearchGender,
 		AgeFrom:        in.AgeFrom,
 		AgeTo:          in.AgeTo,
+		Distance:       in.Distance,
 		IsLiked:        in.IsLiked,
 		IsOnline:       in.IsOnline,
 	}
