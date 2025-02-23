@@ -78,6 +78,7 @@ type ComplaintRepository interface {
 	Add(ctx context.Context, p *request.ComplaintAddRequestRepositoryDto) (*response.ResponseDto, error)
 	DeleteRelatedProfiles(ctx context.Context, id string) (*response.ResponseDto, error)
 	GetCountUserComplaintsByToday(ctx context.Context, telegramUserId string) (uint64, error)
+	GetCountUserComplaintsByCurrentMonth(ctx context.Context, telegramUserId string) (uint64, error)
 }
 
 type StatusRepository interface {

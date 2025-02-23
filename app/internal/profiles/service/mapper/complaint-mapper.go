@@ -13,7 +13,8 @@ func (pm *ComplaintMapper) MapToAddRequest(
 	return &request.ComplaintAddRequestRepositoryDto{
 		TelegramUserId:         pr.TelegramUserId,
 		CriminalTelegramUserId: pr.CriminalTelegramUserId,
-		Reason:                 pr.Reason,
+		Type:                   pr.Type,
+		Description:            pr.Description,
 		CreatedAt:              time.Now().UTC(),
 		UpdatedAt:              time.Now().UTC(),
 	}

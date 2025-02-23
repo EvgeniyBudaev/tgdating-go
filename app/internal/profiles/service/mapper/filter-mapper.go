@@ -62,6 +62,7 @@ func (pm *FilterMapper) MapProfileToUpdateRequest(
 		SearchGender:   string(pr.SearchGender),
 		AgeFrom:        pr.AgeFrom,
 		AgeTo:          pr.AgeTo,
+		Distance:       pr.Distance,
 		IsLiked:        pr.IsLiked,
 		IsOnline:       pr.IsOnline,
 		UpdatedAt:      time.Now().UTC(),

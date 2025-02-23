@@ -411,7 +411,8 @@ func (pc *ProfileController) AddComplaint(
 	req := &request.ComplaintAddRequestDto{
 		TelegramUserId:         in.TelegramUserId,
 		CriminalTelegramUserId: in.CriminalTelegramUserId,
-		Reason:                 in.Reason,
+		Type:                   enum.Complaint(in.Type),
+		Description:            in.Description,
 	}
 	complaintAdded, err := pc.service.AddComplaint(ctx, req)
 	if err != nil {
@@ -420,6 +421,21 @@ func (pc *ProfileController) AddComplaint(
 	profileMapper := &mapper.ProfileControllerMapper{}
 	complaintResponse := profileMapper.MapControllerToComplaintAddResponse(complaintAdded)
 	return complaintResponse, nil
+}
+
+func (pc *ProfileController) GetStatusByTelegramUserId(
+	ctx context.Context, in *pb.GetStatusByTelegramUserIdRequest) (*pb.StatusResponse, error) {
+	pc.logger.Info("GET GetStatusByTelegramUserId")
+	statusByTelegramUserId, err := pc.service.GetStatusByTelegramUserId(ctx, in.TelegramUserId)
+	if err != nil {
+		if errors.Is(err, psql.ErrNotRowFound) {
+			return nil, status.Errorf(codes.NotFound, psql.ErrNotRowFoundMessage)
+		}
+		return nil, err
+	}
+	profileMapper := &mapper.ProfileControllerMapper{}
+	statusResponse := profileMapper.MapControllerToStatusResponse(statusByTelegramUserId)
+	return statusResponse, nil
 }
 
 func (pc *ProfileController) AddPayment(

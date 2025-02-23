@@ -28,12 +28,12 @@ func NewComplaintRepository(l logger.Logger, db *sql.DB) *ComplaintRepository {
 
 func (r *ComplaintRepository) Add(
 	ctx context.Context, p *request.ComplaintAddRequestRepositoryDto) (*response.ResponseDto, error) {
-	query := "INSERT INTO dating.profile_complaints (telegram_user_id, criminal_telegram_user_id, reason, created_at," +
-		" updated_at)" +
-		" VALUES ($1, $2, $3, $4, $5)" +
+	query := "INSERT INTO dating.profile_complaints (telegram_user_id, criminal_telegram_user_id, type, description," +
+		" created_at, updated_at)" +
+		" VALUES ($1, $2, $3, $4, $5, $6)" +
 		" RETURNING id"
-	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.CriminalTelegramUserId, &p.Reason, p.CreatedAt,
-		&p.UpdatedAt)
+	row := r.db.QueryRowContext(ctx, query, &p.TelegramUserId, &p.CriminalTelegramUserId, &p.Type, &p.Description,
+		p.CreatedAt, &p.UpdatedAt)
 	id := uint64(0)
 	err := row.Scan(&id)
 	if err != nil {
@@ -69,6 +69,23 @@ func (r *ComplaintRepository) GetCountUserComplaintsByToday(
 		" JOIN dating.profile_complaints pc ON p.telegram_user_id = pc.telegram_user_id" +
 		" WHERE pc.telegram_user_id = $1" +
 		" AND DATE(pc.created_at) = CURRENT_DATE"
+	var countUserComplaints uint64
+	err := r.db.QueryRowContext(ctx, query, telegramUserId).Scan(&countUserComplaints)
+	if err != nil {
+		errorMessage := r.getErrorMessage("getTotalEntities", "QueryRowContext")
+		r.logger.Debug(errorMessage, zap.Error(err))
+		return 0, err
+	}
+	return countUserComplaints, nil
+}
+
+func (r *ComplaintRepository) GetCountUserComplaintsByCurrentMonth(
+	ctx context.Context, telegramUserId string) (uint64, error) {
+	query := "SELECT COUNT(*)" +
+		" FROM dating.profiles p" +
+		" JOIN dating.profile_complaints pc ON p.telegram_user_id = pc.telegram_user_id" +
+		" WHERE pc.telegram_user_id = $1" +
+		" AND DATE_TRUNC('month', pc.created_at) = DATE_TRUNC('month', CURRENT_DATE)"
 	var countUserComplaints uint64
 	err := r.db.QueryRowContext(ctx, query, telegramUserId).Scan(&countUserComplaints)
 	if err != nil {

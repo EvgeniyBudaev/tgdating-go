@@ -23,7 +23,7 @@ import (
 
 const (
 	errorFilePath          = "internal/profiles/service/profile-service.go"
-	maxCountUserComplaints = 10
+	maxCountUserComplaints = 1
 )
 
 type ProfileService struct {
@@ -1137,7 +1137,8 @@ func (s *ProfileService) AddComplaint(
 		s.logger.Debug(errorMessage, zap.Error(err))
 		return nil, err
 	}
-	countUserComplaints, err := unitOfWork.ComplaintRepository().GetCountUserComplaintsByToday(ctx, pr.TelegramUserId)
+	countUserComplaints, err := unitOfWork.ComplaintRepository().GetCountUserComplaintsByCurrentMonth(
+		ctx, pr.TelegramUserId)
 	if err != nil {
 		errorMessage := s.getErrorMessage("AddComplaint",
 			"complaintRepository.GetCountUserComplaintsByToday")
@@ -1145,7 +1146,7 @@ func (s *ProfileService) AddComplaint(
 		return nil, err
 	}
 	if countUserComplaints >= maxCountUserComplaints {
-		_, err := unitOfWork.StatusRepository().Block(ctx, pr.TelegramUserId)
+		_, err := unitOfWork.StatusRepository().Block(ctx, pr.CriminalTelegramUserId)
 		if err != nil {
 			errorMessage := s.getErrorMessage("AddComplaint",
 				"statusRepository().Block")
@@ -1167,6 +1168,27 @@ func (s *ProfileService) AddComplaint(
 		return nil, err
 	}
 	return complaintResponse, nil
+}
+
+func (s *ProfileService) GetStatusByTelegramUserId(
+	ctx context.Context, telegramUserId string) (*response.StatusResponseDto, error) {
+	checkPremium, err := s.CheckPremium(ctx, telegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetStatusByTelegramUserId",
+			"s.CheckPremium")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	statusEntity, err := s.statusRepository.FindByTelegramUserId(ctx, telegramUserId)
+	if err != nil {
+		errorMessage := s.getErrorMessage("GetStatusByTelegramUserId",
+			"s.statusRepository.FindByTelegramUserId")
+		s.logger.Debug(errorMessage, zap.Error(err))
+		return nil, err
+	}
+	statusMapper := &mapper.StatusMapper{}
+	statusResponse := statusMapper.MapToResponse(statusEntity, checkPremium.IsPremium)
+	return statusResponse, nil
 }
 
 func (s *ProfileService) AddPayment(

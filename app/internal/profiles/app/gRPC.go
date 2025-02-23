@@ -37,8 +37,8 @@ func (app *App) StartServer(ctx context.Context, hub *entity.Hub) error {
 		hub,
 		s3Client, ufw,
 		profileRepository, navigatorRepository, filterRepository, telegramRepository, imageRepository,
-		imageStatusRepository, likeRepository, blockRepository, complaintRepository, statusRepository,
-		paymentRepository, settingsRepository)
+		imageStatusRepository, likeRepository, blockRepository, complaintRepository,
+		statusRepository, paymentRepository, settingsRepository)
 	profileController := controller.NewProfileController(app.Logger, profileService)
 	pb.RegisterProfileServer(app.gRPCServer, profileController)
 	go func() {

@@ -43,6 +43,7 @@ const (
 	Profile_UpdateLike_FullMethodName                   = "/protobuf.Profile/UpdateLike"
 	Profile_GetLastLike_FullMethodName                  = "/protobuf.Profile/GetLastLike"
 	Profile_AddComplaint_FullMethodName                 = "/protobuf.Profile/AddComplaint"
+	Profile_GetStatusByTelegramUserId_FullMethodName    = "/protobuf.Profile/GetStatusByTelegramUserId"
 	Profile_UpdateCoordinates_FullMethodName            = "/protobuf.Profile/UpdateCoordinates"
 	Profile_AddPayment_FullMethodName                   = "/protobuf.Profile/AddPayment"
 	Profile_CheckPremium_FullMethodName                 = "/protobuf.Profile/CheckPremium"
@@ -77,6 +78,7 @@ type ProfileClient interface {
 	UpdateLike(ctx context.Context, in *LikeUpdateRequest, opts ...grpc.CallOption) (*LikeUpdateResponse, error)
 	GetLastLike(ctx context.Context, in *LikeGetLastRequest, opts ...grpc.CallOption) (*LikeGetLastResponse, error)
 	AddComplaint(ctx context.Context, in *ComplaintAddRequest, opts ...grpc.CallOption) (*ComplaintAddResponse, error)
+	GetStatusByTelegramUserId(ctx context.Context, in *GetStatusByTelegramUserIdRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 	UpdateCoordinates(ctx context.Context, in *NavigatorUpdateRequest, opts ...grpc.CallOption) (*NavigatorUpdateResponse, error)
 	AddPayment(ctx context.Context, in *PaymentAddRequest, opts ...grpc.CallOption) (*PaymentAddResponse, error)
 	CheckPremium(ctx context.Context, in *CheckPremiumRequest, opts ...grpc.CallOption) (*CheckPremiumResponse, error)
@@ -307,6 +309,15 @@ func (c *profileClient) AddComplaint(ctx context.Context, in *ComplaintAddReques
 	return out, nil
 }
 
+func (c *profileClient) GetStatusByTelegramUserId(ctx context.Context, in *GetStatusByTelegramUserIdRequest, opts ...grpc.CallOption) (*StatusResponse, error) {
+	out := new(StatusResponse)
+	err := c.cc.Invoke(ctx, Profile_GetStatusByTelegramUserId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *profileClient) UpdateCoordinates(ctx context.Context, in *NavigatorUpdateRequest, opts ...grpc.CallOption) (*NavigatorUpdateResponse, error) {
 	out := new(NavigatorUpdateResponse)
 	err := c.cc.Invoke(ctx, Profile_UpdateCoordinates_FullMethodName, in, out, opts...)
@@ -371,6 +382,7 @@ type ProfileServer interface {
 	UpdateLike(context.Context, *LikeUpdateRequest) (*LikeUpdateResponse, error)
 	GetLastLike(context.Context, *LikeGetLastRequest) (*LikeGetLastResponse, error)
 	AddComplaint(context.Context, *ComplaintAddRequest) (*ComplaintAddResponse, error)
+	GetStatusByTelegramUserId(context.Context, *GetStatusByTelegramUserIdRequest) (*StatusResponse, error)
 	UpdateCoordinates(context.Context, *NavigatorUpdateRequest) (*NavigatorUpdateResponse, error)
 	AddPayment(context.Context, *PaymentAddRequest) (*PaymentAddResponse, error)
 	CheckPremium(context.Context, *CheckPremiumRequest) (*CheckPremiumResponse, error)
@@ -453,6 +465,9 @@ func (UnimplementedProfileServer) GetLastLike(context.Context, *LikeGetLastReque
 }
 func (UnimplementedProfileServer) AddComplaint(context.Context, *ComplaintAddRequest) (*ComplaintAddResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddComplaint not implemented")
+}
+func (UnimplementedProfileServer) GetStatusByTelegramUserId(context.Context, *GetStatusByTelegramUserIdRequest) (*StatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStatusByTelegramUserId not implemented")
 }
 func (UnimplementedProfileServer) UpdateCoordinates(context.Context, *NavigatorUpdateRequest) (*NavigatorUpdateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCoordinates not implemented")
@@ -911,6 +926,24 @@ func _Profile_AddComplaint_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Profile_GetStatusByTelegramUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStatusByTelegramUserIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).GetStatusByTelegramUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Profile_GetStatusByTelegramUserId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).GetStatusByTelegramUserId(ctx, req.(*GetStatusByTelegramUserIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Profile_UpdateCoordinates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NavigatorUpdateRequest)
 	if err := dec(in); err != nil {
@@ -1085,6 +1118,10 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddComplaint",
 			Handler:    _Profile_AddComplaint_Handler,
+		},
+		{
+			MethodName: "GetStatusByTelegramUserId",
+			Handler:    _Profile_GetStatusByTelegramUserId_Handler,
 		},
 		{
 			MethodName: "UpdateCoordinates",

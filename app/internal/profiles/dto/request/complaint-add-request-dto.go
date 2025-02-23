@@ -1,7 +1,10 @@
 package request
 
+import "github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/shared/enum"
+
 type ComplaintAddRequestDto struct {
-	TelegramUserId         string `json:"telegramUserId"`
-	CriminalTelegramUserId string `json:"criminalTelegramUserId"`
-	Reason                 string `json:"reason"`
+	TelegramUserId         string         `json:"telegramUserId"`
+	CriminalTelegramUserId string         `json:"criminalTelegramUserId"`
+	Type                   enum.Complaint `json:"type"`
+	Description            string         `json:"description"`
 }

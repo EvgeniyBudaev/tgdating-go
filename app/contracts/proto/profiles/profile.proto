@@ -383,11 +383,16 @@ message LikeGetLastResponse {
 message ComplaintAddRequest {
   string telegramUserId = 1; // id пользователя в телеграм
   string criminalTelegramUserId = 2; // id мошенника
-  string reason = 3; // причина жалобы
+  string type = 3; // тип жалобы
+  string description = 4; // описание жалобы
 }
 
 message ComplaintAddResponse {
   bool success = 1; // успешно заблокирован да/нет
+}
+
+message GetStatusByTelegramUserIdRequest {
+  string telegramUserId = 1; // id пользователя в телеграм
 }
 
 message PaymentAddRequest {
@@ -461,6 +466,7 @@ service Profile {
   rpc UpdateLike(LikeUpdateRequest) returns (LikeUpdateResponse); // обновить лайк
   rpc GetLastLike(LikeGetLastRequest) returns (LikeGetLastResponse); // получить последний лайк по id пользователя
   rpc AddComplaint(ComplaintAddRequest) returns (ComplaintAddResponse); // добавить жалобу
+  rpc GetStatusByTelegramUserId(GetStatusByTelegramUserIdRequest) returns (StatusResponse); // статус пользователя
   rpc UpdateCoordinates(NavigatorUpdateRequest) returns (NavigatorUpdateResponse); // обновление координат
   rpc AddPayment(PaymentAddRequest) returns (PaymentAddResponse); // добавление информации о платеже
   rpc CheckPremium(CheckPremiumRequest) returns (CheckPremiumResponse); // проверка активации премиум аккаунта

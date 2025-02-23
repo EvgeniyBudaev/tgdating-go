@@ -83,7 +83,8 @@ func (r *BlockRepository) GetBlockedList(ctx context.Context,
 		" pis.is_blocked = false AND pis.is_private = false" +
 		" ORDER BY pi.created_at DESC LIMIT 1) AS url" +
 		" FROM dating.profile_blocks pb" +
-		" WHERE pb.telegram_user_id = $1 AND pb.initiator_id = $1 AND pb.is_blocked = true" +
+		" JOIN dating.profile_statuses ps ON pb.blocked_telegram_user_id = ps.telegram_user_id" +
+		" WHERE pb.telegram_user_id = $1 AND pb.initiator_id = $1 AND pb.is_blocked = true AND ps.is_blocked = false" +
 		" )" +
 		" SELECT blocked_telegram_user_id, url" +
 		" FROM filtered_profiles" +

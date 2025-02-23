@@ -599,29 +599,41 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		hc := &entity.HubContent{
-			LikedTelegramUserId: req.LikedTelegramUserId,
-			Message:             pc.GetMessageLike(likedTelegramProfile.LanguageCode),
-			Type:                "like",
-			UserImageUrl:        lastImage.Url,
-			Username:            telegramProfile.Username,
-		}
-		hubContentJson, err := json.Marshal(hc)
+		statusRequest := profileMapper.MapToGetStatusRequest(req.TelegramUserId)
+		statusTelegramUserId, err := pc.proto.GetStatusByTelegramUserId(ctx, statusRequest)
 		if err != nil {
-			errorMessage := pc.getErrorMessage("AddLike", "json.Marshal")
+			errorMessage := pc.getErrorMessage("AddLike",
+				"proto.GetStatusByTelegramUserId")
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		err = pc.kafkaWriter.WriteMessages(context.Background(),
-			kafka.Message{
-				Key:   []byte(req.LikedTelegramUserId),
-				Value: hubContentJson,
-			},
-		)
-		if err != nil {
-			errorMessage := pc.getErrorMessage("AddLike", "kafkaWriter.WriteMessages")
-			pc.logger.Debug(errorMessage, zap.Error(err))
-			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+		fmt.Println("statusTelegramUserId.IsBlocked: ", statusTelegramUserId.IsBlocked)
+		if !statusTelegramUserId.IsBlocked {
+			hc := &entity.HubContent{
+				LikedTelegramUserId: req.LikedTelegramUserId,
+				Message:             pc.GetMessageLike(likedTelegramProfile.LanguageCode),
+				Type:                "like",
+				UserImageUrl:        lastImage.Url,
+				Username:            telegramProfile.Username,
+			}
+			hubContentJson, err := json.Marshal(hc)
+			if err != nil {
+				errorMessage := pc.getErrorMessage("AddLike", "json.Marshal")
+				pc.logger.Debug(errorMessage, zap.Error(err))
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+			}
+			fmt.Println("hc.LikedTelegramUserId: ", hc.LikedTelegramUserId)
+			err = pc.kafkaWriter.WriteMessages(context.Background(),
+				kafka.Message{
+					Key:   []byte(req.LikedTelegramUserId),
+					Value: hubContentJson,
+				},
+			)
+			if err != nil {
+				errorMessage := pc.getErrorMessage("AddLike", "kafkaWriter.WriteMessages")
+				pc.logger.Debug(errorMessage, zap.Error(err))
+				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+			}
 		}
 		likeRequest := profileMapper.MapToLikeAddRequest(req, locale)
 		likeAdded, err := pc.proto.AddLike(ctx, likeRequest)
@@ -680,29 +692,45 @@ func (pc *ProfileController) UpdateLike() fiber.Handler {
 				pc.logger.Debug(errorMessage, zap.Error(err))
 				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 			}
-			hc := &entity.HubContent{
-				LikedTelegramUserId: req.LikedTelegramUserId,
-				Message:             pc.GetMessageLike(likedTelegramProfile.LanguageCode),
-				Type:                "like",
-				UserImageUrl:        lastImage.Url,
-				Username:            telegramProfile.Username,
-			}
-			hubContentJson, err := json.Marshal(hc)
+			statusRequest := profileMapper.MapToGetStatusRequest(req.TelegramUserId)
+			statusTelegramUserId, err := pc.proto.GetStatusByTelegramUserId(ctx, statusRequest)
 			if err != nil {
-				errorMessage := pc.getErrorMessage("UpdateLike", "json.Marshal")
+				errorMessage := pc.getErrorMessage("UpdateLike",
+					"proto.GetStatusByTelegramUserId")
 				pc.logger.Debug(errorMessage, zap.Error(err))
 				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 			}
-			err = pc.kafkaWriter.WriteMessages(context.Background(),
-				kafka.Message{
-					Key:   []byte(req.LikedTelegramUserId),
-					Value: hubContentJson,
-				},
-			)
 			if err != nil {
-				errorMessage := pc.getErrorMessage("UpdateLike", "kafkaWriter.WriteMessages")
+				errorMessage := pc.getErrorMessage("UpdateLike",
+					"proto.GetImageLastByTelegramUserId")
 				pc.logger.Debug(errorMessage, zap.Error(err))
 				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+			}
+			if !statusTelegramUserId.IsBlocked {
+				hc := &entity.HubContent{
+					LikedTelegramUserId: req.LikedTelegramUserId,
+					Message:             pc.GetMessageLike(likedTelegramProfile.LanguageCode),
+					Type:                "like",
+					UserImageUrl:        lastImage.Url,
+					Username:            telegramProfile.Username,
+				}
+				hubContentJson, err := json.Marshal(hc)
+				if err != nil {
+					errorMessage := pc.getErrorMessage("UpdateLike", "json.Marshal")
+					pc.logger.Debug(errorMessage, zap.Error(err))
+					return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+				}
+				err = pc.kafkaWriter.WriteMessages(context.Background(),
+					kafka.Message{
+						Key:   []byte(req.LikedTelegramUserId),
+						Value: hubContentJson,
+					},
+				)
+				if err != nil {
+					errorMessage := pc.getErrorMessage("UpdateLike", "kafkaWriter.WriteMessages")
+					pc.logger.Debug(errorMessage, zap.Error(err))
+					return v1.ResponseError(ctf, err, http.StatusInternalServerError)
+				}
 			}
 		}
 		likeRequest := profileMapper.MapToLikeUpdateRequest(req)

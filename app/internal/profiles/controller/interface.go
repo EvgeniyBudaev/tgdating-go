@@ -35,6 +35,8 @@ type ProfileService interface {
 	GetLastLike(
 		ctx context.Context, telegramUserId string) (*entity.LikeEntity, error)
 	AddComplaint(ctx context.Context, pr *request.ComplaintAddRequestDto) (*response.ResponseDto, error)
+	GetStatusByTelegramUserId(
+		ctx context.Context, telegramUserId string) (*response.StatusResponseDto, error)
 	UpdateCoordinates(
 		ctx context.Context, pr *request.NavigatorUpdateRequestDto) (*response.ResponseDto, error)
 	AddPayment(ctx context.Context, pr *request.PaymentAddRequestDto) (*response.ResponseDto, error)

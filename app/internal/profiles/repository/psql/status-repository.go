@@ -129,6 +129,11 @@ func (r *StatusRepository) FindByTelegramUserId(
 	row := r.db.QueryRowContext(ctx, query, telegramUserId)
 	err := row.Scan(&p.Id, &p.TelegramUserId, &p.IsBlocked, &p.IsFrozen, &p.IsHiddenAge, &p.IsHiddenDistance,
 		&p.IsInvisible, &p.IsLeftHand, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		errorMessage := r.getErrorMessage("FindByTelegramUserId", "Scan")
+		r.logger.Info(errorMessage, zap.Error(ErrNotRowFound))
+		return nil, ErrNotRowFound
+	}
 	if err != nil {
 		errorMessage := r.getErrorMessage("FindByTelegramUserId", "Scan")
 		r.logger.Debug(errorMessage, zap.Error(err))

@@ -2,6 +2,8 @@ package mapper
 
 import (
 	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/request"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/dto/response"
+	"github.com/EvgeniyBudaev/tgdating-go/app/internal/profiles/entity"
 	"time"
 )
 
@@ -27,5 +29,17 @@ func (pm *StatusMapper) MapToUpdateSettingsRequest(
 	return &request.StatusUpdateSettingsRequestRepositoryDto{
 		TelegramUserId: pr.TelegramUserId,
 		IsHiddenAge:    pr.IsHiddenAge,
+	}
+}
+
+func (pm *StatusMapper) MapToResponse(s *entity.StatusEntity, isPremium bool) *response.StatusResponseDto {
+	return &response.StatusResponseDto{
+		IsBlocked:        s.IsBlocked,
+		IsFrozen:         s.IsFrozen,
+		IsHiddenAge:      s.IsHiddenAge,
+		IsHiddenDistance: s.IsHiddenDistance,
+		IsInvisible:      s.IsInvisible,
+		IsLeftHand:       s.IsLeftHand,
+		IsPremium:        isPremium,
 	}
 }

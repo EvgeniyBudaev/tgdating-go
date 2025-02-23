@@ -418,7 +418,14 @@ func (pm *ProfileMapper) MapToComplaintAddRequest(r *request.ComplaintAddRequest
 	return &pb.ComplaintAddRequest{
 		TelegramUserId:         r.TelegramUserId,
 		CriminalTelegramUserId: r.CriminalTelegramUserId,
-		Reason:                 r.Reason,
+		Type:                   string(r.Type),
+		Description:            r.Description,
+	}
+}
+
+func (pm *ProfileMapper) MapToGetStatusRequest(telegramUserId string) *pb.GetStatusByTelegramUserIdRequest {
+	return &pb.GetStatusByTelegramUserIdRequest{
+		TelegramUserId: telegramUserId,
 	}
 }
 

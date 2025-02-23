@@ -365,6 +365,17 @@ func (pm *ProfileControllerMapper) MapControllerToComplaintAddResponse(
 		Success: r.Success,
 	}
 }
+func (pm *ProfileControllerMapper) MapControllerToStatusResponse(s *response.StatusResponseDto) *pb.StatusResponse {
+	return &pb.StatusResponse{
+		IsBlocked:        s.IsBlocked,
+		IsFrozen:         s.IsFrozen,
+		IsHiddenAge:      s.IsHiddenAge,
+		IsHiddenDistance: s.IsHiddenDistance,
+		IsInvisible:      s.IsInvisible,
+		IsLeftHand:       s.IsLeftHand,
+		IsPremium:        s.IsPremium,
+	}
+}
 
 func (pm *ProfileControllerMapper) MapControllerToPaymentAddResponse(
 	r *response.ResponseDto) *pb.PaymentAddResponse {
