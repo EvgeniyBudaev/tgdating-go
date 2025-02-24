@@ -607,7 +607,6 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 			pc.logger.Debug(errorMessage, zap.Error(err))
 			return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 		}
-		fmt.Println("statusTelegramUserId.IsBlocked: ", statusTelegramUserId.IsBlocked)
 		if !statusTelegramUserId.IsBlocked {
 			hc := &entity.HubContent{
 				LikedTelegramUserId: req.LikedTelegramUserId,
@@ -622,7 +621,6 @@ func (pc *ProfileController) AddLike() fiber.Handler {
 				pc.logger.Debug(errorMessage, zap.Error(err))
 				return v1.ResponseError(ctf, err, http.StatusInternalServerError)
 			}
-			fmt.Println("hc.LikedTelegramUserId: ", hc.LikedTelegramUserId)
 			err = pc.kafkaWriter.WriteMessages(context.Background(),
 				kafka.Message{
 					Key:   []byte(req.LikedTelegramUserId),
